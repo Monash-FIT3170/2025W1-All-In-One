@@ -4,3 +4,4 @@ Brandon Luu
 Naailah Taqui Hasan - nhas0021@student.monash.edu  
 Aryan Chordia
 Nicolas Winarto - nwin0008@student.monash.edu
+Claire Zhang - czha0152@student.monash.edu
