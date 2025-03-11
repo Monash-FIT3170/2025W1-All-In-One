@@ -2,3 +2,4 @@
 ## Members
 Brandon Luu  
 Naailah Taqui Hasan
+Aryan Chordia
