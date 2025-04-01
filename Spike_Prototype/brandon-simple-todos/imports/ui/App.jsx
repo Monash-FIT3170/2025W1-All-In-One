@@ -10,9 +10,15 @@ const tasks = [
 
 export const App = () => (
   <div>
-    <h1>Welcome to Brandon's Todo List</h1>
-    <ul>
-      { tasks.map(task => <Task key={ tasks._id } task = { task }/>) }
+    <h1 className="text-3xl text-red-600 font-bold underline">
+      Welcome to Brandon's Todo List
+      </h1>
+    
+    <body className="indent-4">
+      <ul className="list-decimal list-inside text-l text-purple-600 italic">
+        { tasks.map(task => <Task key={ tasks._id } task = { task }/>) }
       </ul>
+    </body>
+    
   </div>
 );
