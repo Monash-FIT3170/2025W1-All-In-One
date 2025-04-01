@@ -1,5 +1,5 @@
 import React from 'react';
-import { Task } from './Task.jsx';
+import { Task } from './Task';
 
 const tasks = [
   {_id: 1, text: 'Task One - Install Meteor'},
@@ -19,6 +19,10 @@ export const App = () => (
         { tasks.map(task => <Task key={ tasks._id } task = { task }/>) }
       </ul>
     </body>
-    
+
+    <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+      I may be useless
+    </button>
+
   </div>
 );
