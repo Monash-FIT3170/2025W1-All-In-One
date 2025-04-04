@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTracker, useSubscribe } from 'meteor/react-meteor-data';
 import { TasksCollection } from "/imports/api/TasksCollection";
 import { Task } from './Task';
@@ -15,12 +15,25 @@ const tasks = [
 
 export const App = () => {
   
+  const [hideCompleted, setHideCompleted] = useState(false);
+
   const isLoading = useSubscribe("tasks");
-  const tasks = useTracker(() => TasksCollection.find({}, {sort: { createdAt: 1}}).fetch());
+
+  const hideCompletedFilter = { isChecked: { $ne: true } };
+
+  const tasks = useTracker(() =>
+    TasksCollection.find(hideCompleted ? hideCompletedFilter : {}, {
+      sort: { createdAt: 1 },
+    }).fetch()
+  );
+
   const handleToggleChecked = ({ _id, isChecked }) =>
     Meteor.callAsync("tasks.toggleChecked",  {_id, isChecked });
+
   const handleDelete = ({ _id }) => 
     Meteor.callAsync("tasks.delete", { _id });
+  
+  
 
   if (isLoading()) {
     return<div>Loading Tasks...</div>
@@ -45,7 +58,14 @@ export const App = () => {
         </ul>
       </body>
 
-      <TaskForm />
+      <div>
+        <div className="filter">
+          <button onClick={ () => setHideCompleted(!hideCompleted)}>
+            {hideCompleted ? 'Show All' : 'Hide Completed'}
+          </button>
+        </div>
+        <TaskForm />
+      </div>
 
   </div>
   );

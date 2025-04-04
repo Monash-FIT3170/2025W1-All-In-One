@@ -17,8 +17,8 @@ export const TaskForm = () => {
     };
 
     return (
+        
         <form className="task-form" onSubmit={handleSubmit}>
-            <label class="label">Enter New Task Here: </label>
             <input 
                 type="text" 
                 class="input" 
