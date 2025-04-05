@@ -10,7 +10,7 @@ body {
 }
 
 .heading1 {
-  @apply text-3xl text-red-600 font-bold underline;
+  @apply text-3xl text-red-600 font-bold underline text-center;
 }
 
 .list {
@@ -22,11 +22,11 @@ body {
 }
 
 .task-form{
-  @apply m-auto;
+  @apply mb-6 md:grid-cols-2 items-center;
 }
 
 .input {
-  @apply bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
+  @apply max-w-sm bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500;
 }
 
 .label {
@@ -39,4 +39,12 @@ body {
 
 .btn-delete{
   @apply ml-2 text-white bg-purple-700 hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-300 font-medium rounded-full text-sm p-1 text-center inline-flex items-center me-2 dark:bg-purple-600 dark:hover:bg-purple-700 dark:focus:ring-purple-800;
+}
+
+.filter{
+  @apply justify-center flex;
+}
+
+.filter > button{
+  @apply mt-2 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
 }
