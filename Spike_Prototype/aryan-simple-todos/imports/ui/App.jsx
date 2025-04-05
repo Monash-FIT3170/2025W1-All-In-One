@@ -6,6 +6,7 @@ import { TasksCollection } from '/imports/api/TasksCollection';
 import { Task } from './Task';
 import { TaskForm } from './TaskForm';
 import { LoginForm } from './LoginForm';
+import { Calendar } from './Calendar';
 
 
 export const App = () => {
@@ -43,7 +44,7 @@ export const App = () => {
       {user ? (
         <Fragment>
           <div className="user" onClick={logout}>
-            {user.username} 🚪
+            Log out 👋
           </div>
           {/* Text Transition Section */}
           <div className="relative h-16">
@@ -63,6 +64,15 @@ export const App = () => {
               </button>
             </div>
           )}
+
+          {/* Calendar Section */}
+          <div
+            className={`calendar-section transition-all duration-700 ${showTasks ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              }`}
+          >
+            <span></span>
+            {showTasks && <Calendar tasks={tasks}/>}
+          </div>
 
           {/* Task Form */}
           <div
