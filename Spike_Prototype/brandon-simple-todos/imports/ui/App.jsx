@@ -33,7 +33,13 @@ export const App = () => {
   const handleDelete = ({ _id }) => 
     Meteor.callAsync("tasks.delete", { _id });
   
-  
+  const pendingTasksCount = useTracker(() => 
+    TasksCollection.find(hideCompletedFilter).count()
+  );
+
+  const pendingTasksTitle = `${
+    pendingTasksCount ? ` (${pendingTasksCount})` : ''
+  }`;
 
   if (isLoading()) {
     return<div>Loading Tasks...</div>
@@ -42,8 +48,15 @@ export const App = () => {
   return(
     <div>
       <h1 class="heading1">
-        Welcome to Brandon's Todo List
+        Brandon's Todo List 
+        {pendingTasksTitle}
       </h1>
+
+      <div className="filter">
+          <button onClick={ () => setHideCompleted(!hideCompleted)}>
+            {hideCompleted ? 'Show All' : 'Hide Completed'}
+          </button>
+      </div>
 
       <body>
         <ul class="list">
@@ -59,11 +72,6 @@ export const App = () => {
       </body>
 
       <div>
-        <div className="filter">
-          <button onClick={ () => setHideCompleted(!hideCompleted)}>
-            {hideCompleted ? 'Show All' : 'Hide Completed'}
-          </button>
-        </div>
         <TaskForm />
       </div>
 
