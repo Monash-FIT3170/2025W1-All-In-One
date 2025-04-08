@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import { Meteor } from 'meteor/meteor';
+import React, { useState, Fragment } from 'react';
 import { useTracker, useSubscribe } from 'meteor/react-meteor-data';
 import { TasksCollection } from "/imports/api/TasksCollection";
 import { Task } from './Task';
-import { TaskForm } from './TaskForm'
-import { Meteor } from 'meteor/meteor';
+import { TaskForm } from './TaskForm';
+import { LoginForm } from './LoginForm';
+
 /*
 const tasks = [
   {_id: 1, text: 'Task One - Install Meteor'},
@@ -14,6 +16,8 @@ const tasks = [
 */
 
 export const App = () => {
+
+  const user = useTracker(() => Meteor.user());
   
   const [hideCompleted, setHideCompleted] = useState(false);
 
@@ -21,29 +25,42 @@ export const App = () => {
 
   const hideCompletedFilter = { isChecked: { $ne: true } };
 
-  const tasks = useTracker(() =>
-    TasksCollection.find(hideCompleted ? hideCompletedFilter : {}, {
+  const tasks = useTracker(() =>{
+    if (!user) {
+      return [];
+    }
+
+    return TasksCollection.find(
+      hideCompleted ? hideCompletedFilter : {},
+      {
       sort: { createdAt: 1 },
-    }).fetch()
-  );
+      }
+    ).fetch();
+  });
+  
+  const pendingTasksCount = useTracker(() => {
+    if (!user) { 
+      return 0;
+    }
+    
+    return TasksCollection.find(hideCompletedFilter).count();
+  });
+
+  const pendingTasksTitle = `${
+    pendingTasksCount ? ` (${pendingTasksCount})` : ''
+  }`;
 
   const handleToggleChecked = ({ _id, isChecked }) =>
     Meteor.callAsync("tasks.toggleChecked",  {_id, isChecked });
 
   const handleDelete = ({ _id }) => 
     Meteor.callAsync("tasks.delete", { _id });
-  
-  const pendingTasksCount = useTracker(() => 
-    TasksCollection.find(hideCompletedFilter).count()
-  );
-
-  const pendingTasksTitle = `${
-    pendingTasksCount ? ` (${pendingTasksCount})` : ''
-  }`;
 
   if (isLoading()) {
     return<div>Loading Tasks...</div>
   };
+
+  const logout = () => Meteor.logout();
 
   return(
     <div>
@@ -52,8 +69,15 @@ export const App = () => {
         {pendingTasksTitle}
       </h1>
 
-      <div className="filter">
-          <button onClick={ () => setHideCompleted(!hideCompleted)}>
+      <div className='main'>
+        {user ? (
+          <Fragment>
+            <div className='user' onClick={logout}>
+              {user.username} 🚪
+            </div>
+            
+            <div className="filter">
+              <button onClick={ () => setHideCompleted(!hideCompleted)}>
             {hideCompleted ? 'Show All' : 'Hide Completed'}
           </button>
       </div>
@@ -75,6 +99,11 @@ export const App = () => {
         <TaskForm />
       </div>
 
+          </Fragment>
+        ) : (
+          <LoginForm />
+        )}
+      </div>
   </div>
   );
 };
