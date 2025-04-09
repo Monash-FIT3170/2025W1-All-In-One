@@ -6,8 +6,7 @@ import "../imports/api/tasksMethods";
 const SEED_USERNAME = 'meteorite';
 const SEED_PASSWORD = 'password';
 
-const insertTask = (taskText) =>
-  TasksCollection.insertAsync({ text: taskText });
+const insertTask = (taskText) => TasksCollection.insertAsync({ text: taskText });
 
 Meteor.startup(async () => {
   if ((await TasksCollection.find().countAsync()) === 0) {
@@ -17,7 +16,7 @@ Meteor.startup(async () => {
         password: SEED_PASSWORD,
       });
     }
-    
+
     [
       "Task Uno",
       "Task Dos",
