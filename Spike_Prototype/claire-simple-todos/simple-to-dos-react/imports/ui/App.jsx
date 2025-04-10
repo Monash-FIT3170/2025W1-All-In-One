@@ -31,18 +31,22 @@ export const App = () => {
         {user ? (
           <Fragment>
             <div className="header">
-              <h1>Welcome, {user.username}!</h1>
-              <button onClick={handleLogout}>Logout</button>
+            <h1 class="heading1">
+              Welcome, {user.username}!
+            </h1>
+              <button onClick={handleLogout} class="btn">Logout</button>
             </div>
 
-            <ul className="tasks">
-              {tasks.map(task => (
-                <Task
-                  key={task._id}
-                  task={task}
-                />
-              ))}
-            </ul>
+            <body>
+              <ul  class="list">
+                {tasks.map(task => (
+                  <Task
+                    key={task._id}
+                    task={task}
+                  />
+                ))}
+              </ul>
+            </body>
 
             <div>
               <TaskForm />
