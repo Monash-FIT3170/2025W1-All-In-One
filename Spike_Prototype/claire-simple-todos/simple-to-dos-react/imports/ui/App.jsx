@@ -30,15 +30,13 @@ export const App = () => {
     <div className="main">
         {user ? (
           <Fragment>
-            <div className="header">
-            <h1 class="heading1">
+            <h1 className="heading1">
               Welcome, {user.username}!
             </h1>
-              <button onClick={handleLogout} class="btn">Logout</button>
-            </div>
+              <button onClick={handleLogout} className="btn">Logout</button>
 
             <body>
-              <ul  class="list">
+              <ul  className="list">
                 {tasks.map(task => (
                   <Task
                     key={task._id}
