@@ -32,12 +32,15 @@ export const App = () => {
           <TaskForm />
 
           <div className="filter">
-            <button onClick={() => setHideCompleted(!hideCompleted)}>
+            <button class="btn" onClick={() => setHideCompleted(!hideCompleted)}>
               {hideCompleted ? 'Show All' : 'Hide Completed'}
             </button>
           </div>
 
-          <ul className="tasks">
+          <h1 class="heading1">Tasks</h1>
+
+          <body>
+          <ul class="list">
             {filteredTasks.map(task => (
               <Task
                 key={task._id}
@@ -47,6 +50,7 @@ export const App = () => {
               />
             ))}
           </ul>
+          </body>
         </Fragment>
       ) : (
         <LoginForm />

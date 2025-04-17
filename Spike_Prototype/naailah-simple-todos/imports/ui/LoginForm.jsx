@@ -12,6 +12,8 @@ export const LoginForm = () => {
 
   return (
     <form onSubmit={submit} className="login-form">
+
+      <div>
       <label htmlFor="username">Username</label>
 
       <input
@@ -21,7 +23,9 @@ export const LoginForm = () => {
         required
         onChange={(e) => setUsername(e.target.value)}
       />
+      </div>
 
+      <div>
       <label htmlFor="password">Password</label>
 
       <input
@@ -31,8 +35,11 @@ export const LoginForm = () => {
         required
         onChange={(e) => setPassword(e.target.value)}
       />
+      </div>
 
+      <div>
       <button type="submit">Log In</button>
+      </div>
     </form>
   );
 };
