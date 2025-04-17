@@ -10,17 +10,17 @@ const insertTask = (taskText) => TasksCollection.insertAsync({ text: taskText })
 
 Meteor.startup(async () => {
   if ((await TasksCollection.find().countAsync()) === 0) {
-    if (!(await Accounts.findUserByUsername(SEED_USERNAME))) {
-      await Accounts.createUser({
-        username: SEED_USERNAME,
-        password: SEED_PASSWORD,
-      });
-    }
-
     [
       "Task Uno",
       "Task Dos",
       "Task Tres",
     ].forEach(insertTask);
+  }
+
+  if (!(await Accounts.findUserByUsername(SEED_USERNAME))) {
+    await Accounts.createUser({
+      username: SEED_USERNAME,
+      password: SEED_PASSWORD,
+    });
   }
 });
