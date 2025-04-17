@@ -3,7 +3,7 @@ import { TasksCollection } from "/imports/api/TasksCollection";
 import "../imports/api/Publications"; 
 import "../imports/api/tasksMethods"; 
 
-const SEED_USERNAME = 'meteorite';
+const SEED_USERNAME = 'meteor';
 const SEED_PASSWORD = 'password';
 
 const insertTask = (taskText) => TasksCollection.insertAsync({ text: taskText });
