@@ -1,3 +1,61 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form > div {
+  margin: 8px;
+}
+
+.login-form > div > label {
+  font-weight: bold;
+}
+
+.login-form > div > input {
+  flex-grow: 1;
+  box-sizing: border-box;
+  padding: 10px 6px;
+  background: transparent;
+  border: 1px solid #aaa;
+  width: 100%;
+  font-size: 1em;
+  margin-right: 16px;
+  margin-top: 4px;
+}
+
+.login-form > div > input:focus {
+  outline: 0;
+}
+
+.login-form > div > button {
+  background-color: #62807e;
+} */
+
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.heading1 {
+  @apply text-3xl text-red-600 font-bold underline;
+}
+
+.list {
+  @apply list-decimal list-inside text-lg text-purple-600 italic;
+}
+
+.btn {
+  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+}
+
 body {
   padding: 10px;
   font-family: sans-serif;

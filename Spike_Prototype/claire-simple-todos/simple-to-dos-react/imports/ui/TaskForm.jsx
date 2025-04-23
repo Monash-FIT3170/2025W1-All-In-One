@@ -26,7 +26,7 @@ export const TaskForm = () => {
         onChange={(e) => setText(e.target.value)}
       />
 
-      <button class="btn" type="submit">Add Task</button>
+      <button type="submit" className="btn">Add Task</button>
     </form>
   );
 };
