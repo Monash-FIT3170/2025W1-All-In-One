@@ -1,4 +1,3 @@
-
 import { Meteor } from 'meteor/meteor';
 import React, { useState, Fragment } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
@@ -51,7 +50,7 @@ export const App = () => {
             {!showTasks ? (
               <h1 className="text-transition">Welcome!</h1>
             ) : (
-              <h1 className="text-transition">☑️ Your Tasks!</h1>
+              <h1 className="text-transition">Your todo list!</h1>
             )}
           </div>
 
@@ -65,41 +64,39 @@ export const App = () => {
             </div>
           )}
 
-          {/* Calendar Section */}
-          <div
-            className={`calendar-section transition-all duration-700 ${showTasks ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
-          >
-            <span></span>
-            {showTasks && <Calendar tasks={tasks}/>}
-          </div>
+          {/* Main Layout */}
+          {showTasks && (
+            <div className="transition-all duration-700 opacity-100 h-auto">
+              <div className="main-container">
+                {/* Tasks Section (Left) */}
+                <div className="tasks-container flex-1 p-4 rounded shadow-lg">
+                  <h2 className="text-xl font-bold mb-4">All Tasks</h2>
+                  {showTasks && (
+                    <ul className="space-y-3">
+                      {tasks.map((task) => (
+                        <Task
+                          key={task._id}
+                          task={task}
+                          onCheckboxClick={handleToggleChecked}
+                          onDeleteClick={handleDelete}
+                        />
+                      ))}
+                    </ul>
+                  )}
+                </div>
 
-          {/* Task Form */}
-          <div
-            className={`task-form-container transition-all duration-700 ${showTasks ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
-          >
-            {showTasks && <TaskForm />}
-          </div>
-
-          {/* Tasks Section */}
-          <div
-            className={`tasks-section transition-all duration-700 ${showTasks ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
-          >
-            {showTasks && (
-              <ul className="space-y-3">
-                {tasks.map((task) => (
-                  <Task
-                    key={task._id}
-                    task={task}
-                    onCheckboxClick={handleToggleChecked}
-                    onDeleteClick={handleDelete}
-                  />
-                ))}
-              </ul>
-            )}
-          </div>
+                {/* Calendar Section (Right) */}
+                <div className="calendar-container flex-1 p-4 rounded shadow-lg">
+                  {showTasks && <Calendar tasks={tasks} />}
+                </div>
+              </div>
+              <div className="task-form-container mt-6">
+                <h2 className="text-xl font-bold mb-2">Add a Task</h2>
+                {/* Task Form */}
+                <TaskForm />
+              </div>
+            </div>
+          )}
         </Fragment>
       ) : (
         <LoginForm />
