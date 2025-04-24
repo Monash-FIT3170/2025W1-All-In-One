@@ -48,7 +48,7 @@ export const ReviewApplication = () => {
                     height: .5,
                     borderColor: '#000000'
                 }} className="my-4" />
-            
+
 
                 {/* Search + Filters */}
                 <div className="mt-4 bg-[#D6F2F2] p-4 rounded-lg flex gap-4">
@@ -67,7 +67,7 @@ export const ReviewApplication = () => {
                 </div>
 
                 {/* Applications Grid */}
-                <div className="grid grid-cols-2 gap-6 mt-6">
+                <div className="grid grid-cols-2 gap-6 mt-6 ">
                     {mockApplications.map(app => (
                         <div key={app.id} className="flex bg-white rounded-lg shadow overflow-hidden">
                             {/* Left: Property Image + Info */}
@@ -84,14 +84,16 @@ export const ReviewApplication = () => {
 
                             {/* Right: Applicant Info */}
                             <div className="w-1/2 p-4 bg-[#EBFAFA] flex flex-col justify-between">
-                                <div>
-                                    <h3 className="font-semibold text-lg">{app.name}</h3>
-                                    <p className="text-sm">Age: {app.age}</p>
-                                    <p className="text-sm">Occupation: {app.occupation}</p>
-                                </div>
-                                <div className="flex items-center justify-between mt-4">
-                                    <span className="text-sm font-medium">{app.status}</span>
-                                    <span className="text-xl">{app.statusIcon}</span>
+                                <div className="w-full h-full rounded p-4 bg-white flex flex-col justify-between">
+                                    <div>
+                                        <h3 className="font-semibold text-lg">{app.name}</h3>
+                                        <p className="text-sm">Age: {app.age}</p>
+                                        <p className="text-sm">Occupation: {app.occupation}</p>
+                                    </div>
+                                    <div className="flex items-center justify-between mt-4">
+                                        <span className="text-sm font-medium">{app.status}</span>
+                                        <span className="text-xl">{app.statusIcon}</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
