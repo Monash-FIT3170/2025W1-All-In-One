@@ -34,7 +34,7 @@ export const ReviewApplication = () => {
                         </button>
                     ))}
                     <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold">Log out</button>
-                    <img src="/user-avatar.png" alt="User" className="w-10 h-10 rounded-full" />
+                    <img src="/images/user-avatar.png" alt="User" className="w-10 h-10 rounded-full" />
                 </div>
             </div>
 
@@ -42,6 +42,13 @@ export const ReviewApplication = () => {
             <div className="px-12 mt-6">
                 <h2 className="text-2xl font-semibold">Review Applications</h2>
                 <p className="text-sm text-gray-600">All applications in one place!</p>
+                <hr style={{
+                    color: '#000000',
+                    backgroundColor: '#000000',
+                    height: .5,
+                    borderColor: '#000000'
+                }} className="my-4" />
+            
 
                 {/* Search + Filters */}
                 <div className="mt-4 bg-[#D6F2F2] p-4 rounded-lg flex gap-4">
@@ -51,13 +58,10 @@ export const ReviewApplication = () => {
                         className="flex-1 px-4 py-2 rounded-md"
                         style={{ backgroundColor: '#FFF8E9' }}
                     />
-                    <select className="px-4 py-2 rounded-md">
-                        <option
-                            style={{ backgroundColor: '#FFF8E9' }}
-                        >
-                            Select Property</option>
+                    <select className="dropdown-arrow flex-1">
+                        <option>Select Property</option>
                     </select>
-                    <select className="px-4 py-2 rounded-md">
+                    <select className="dropdown-arrow flex-1">
                         <option>Filter</option>
                     </select>
                 </div>
@@ -68,7 +72,7 @@ export const ReviewApplication = () => {
                         <div key={app.id} className="flex bg-white rounded-lg shadow overflow-hidden">
                             {/* Left: Property Image + Info */}
                             <div className="w-1/2 p-4 bg-[#D6F2F2]">
-                                <img src="/property.jpg" alt="Property" className="rounded mb-2" />
+                                <img src="/images/property.png" alt="Property" className="rounded mb-2" />
                                 <p className="text-lg font-semibold">{app.price}</p>
                                 <p className="text-sm text-gray-700">{app.location}</p>
                                 <div className="flex gap-4 mt-2 text-sm text-gray-600">
