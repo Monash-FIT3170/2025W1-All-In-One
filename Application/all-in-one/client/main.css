@@ -3,6 +3,18 @@
 @tailwind utilities;
 
 body {
-  padding: 10px;
-  font-family: sans-serif;
+  @apply font-geist;
+}
+
+select {
+  background: #FFF8E9;
+  border: 0;
+  box-shadow: none;
+  
+}
+
+.dropdown-arrow {
+  background: #FFF8E9;
+  border: 0;
+  box-shadow: none;
 }
