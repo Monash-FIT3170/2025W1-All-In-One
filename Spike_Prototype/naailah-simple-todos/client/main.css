@@ -1,4 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
   padding: 10px;
   font-family: sans-serif;
+}
+
+.heading1 {
+  @apply text-3xl text-red-600 font-bold underline;
+}
+
+.list {
+  @apply list-decimal list-inside text-lg text-purple-600 italic;
+}
+
+.btn {
+  @apply bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded;
+}
+
+input {
+  border: 1px solid gray;
+  margin: 10px;
 }

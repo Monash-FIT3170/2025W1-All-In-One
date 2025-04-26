@@ -7,12 +7,11 @@
 body {
   @apply font-sans;
   font-family: 'Montserrat', sans-serif;
-  padding: 10px;
 }
 
 /* General styles */
 .app-container {
-  @apply w-full h-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white py-6 text-center shadow-lg transition-all duration-700;
+  @apply w-screen h-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white py-6 text-center shadow-lg transition-all duration-700;
 }
 
 .text-transition {
@@ -25,16 +24,20 @@ body {
 
 /* Tasks Section */
 .tasks-section {
-  @apply transition-transform transition-opacity duration-700 mt-6 flex flex-col items-center;
+  @apply transition-transform transition-opacity duration-700 mt-6 flex flex-col items-center mx-4;
 }
 
 /* Task item container */
 .task-item {
-  @apply w-96 p-5 bg-white text-gray-800 rounded shadow-md;
+  @apply w-full p-5 bg-white text-gray-800 rounded shadow-md;
 }
 
 .task-form-container {
   @apply transition-opacity transition-transform duration-700;
+}
+
+.task-box {
+  @apply task-item flex justify-around items-center p-2 border-b border-gray-300;
 }
 
 /* Task checkbox */
@@ -44,7 +47,7 @@ body {
 
 /* Task text */
 .task-text {
-  @apply text-lg;
+  @apply text-lg mr-16;
 }
 
 /* Task delete button */
@@ -53,38 +56,55 @@ body {
 }
 
 .login-form {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-
-  justify-content: center;
-  align-items: center;
+  @apply flex flex-col h-full justify-center items-center;
 }
 
 .login-form > div {
-  margin: 8px;
+  @apply my-2;
 }
 
 .login-form > div > label {
-  font-weight: bold;
+  @apply font-bold;
 }
 
 .login-form > div > input {
-  flex-grow: 1;
-  box-sizing: border-box;
-  padding: 10px 6px;
-  background: transparent;
-  border: 1px solid #aaa;
-  width: 100%;
-  font-size: 1em;
-  margin-right: 16px;
-  margin-top: 4px;
+  @apply flex-grow box-border p-2 bg-transparent border border-gray-400 w-full text-base mt-1;
 }
 
 .login-form > div > input:focus {
-  outline: 0;
+  @apply outline-none;
 }
 
 .login-form > div > button {
-  background-color: #62807e;
+  @apply bg-teal-700 text-white px-4 py-2 rounded hover:bg-teal-800 transition-colors duration-300;
+}
+
+/* Remove unnecessary custom CSS and use Tailwind classes directly */
+
+/* Calendar Section */
+.calendar-section {
+  @apply w-screen p-16 transition-all duration-700 transition-transform duration-700;
+}
+
+/* Task View */
+.view-task {
+  @apply p-2 border rounded flex bg-white transition-transform duration-700 text-black;
+}
+
+/* Tasks Modal */
+.tasks-modal {
+  @apply max-w-lg mx-auto mt-6 p-4 rounded shadow-lg transition-transform duration-700;
+}
+
+/* Calendar Day */
+.calendar-day {
+  @apply cursor-pointer border p-2 text-center rounded;
+}
+
+.calendar-day:hover {
+  @apply bg-blue-100;
+}
+
+.main-container {
+  @apply flex flex-row gap-4 mt-6 p-5;
 }
