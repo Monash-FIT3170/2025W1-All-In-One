@@ -1,4 +1,90 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 body {
+  @apply font-sans;
+  font-family: 'Montserrat', sans-serif;
   padding: 10px;
-  font-family: sans-serif;
+}
+
+/* General styles */
+.app-container {
+  @apply w-full h-screen bg-gradient-to-r from-blue-400 to-purple-600 text-white py-6 text-center shadow-lg transition-all duration-700;
+}
+
+.text-transition {
+  @apply absolute inset-0 text-3xl font-extrabold drop-shadow-lg transition-opacity duration-700;
+}
+
+.rocket-button {
+  @apply cursor-pointer drop-shadow-lg text-4xl animate-bounce;
+}
+
+/* Tasks Section */
+.tasks-section {
+  @apply transition-transform transition-opacity duration-700 mt-6 flex flex-col items-center;
+}
+
+/* Task item container */
+.task-item {
+  @apply w-96 p-5 bg-white text-gray-800 rounded shadow-md;
+}
+
+.task-form-container {
+  @apply transition-opacity transition-transform duration-700;
+}
+
+/* Task checkbox */
+.task-checkbox {
+  @apply w-4 h-4 cursor-pointer;
+}
+
+/* Task text */
+.task-text {
+  @apply text-lg;
+}
+
+/* Task delete button */
+.task-delete {
+  @apply bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600 transition-colors duration-300;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+
+  justify-content: center;
+  align-items: center;
+}
+
+.login-form > div {
+  margin: 8px;
+}
+
+.login-form > div > label {
+  font-weight: bold;
+}
+
+.login-form > div > input {
+  flex-grow: 1;
+  box-sizing: border-box;
+  padding: 10px 6px;
+  background: transparent;
+  border: 1px solid #aaa;
+  width: 100%;
+  font-size: 1em;
+  margin-right: 16px;
+  margin-top: 4px;
+}
+
+.login-form > div > input:focus {
+  outline: 0;
+}
+
+.login-form > div > button {
+  background-color: #62807e;
 }
