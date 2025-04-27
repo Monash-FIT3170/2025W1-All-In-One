@@ -1,0 +1,14 @@
+node_modules/
+
+.meteor/local/
+platforms/
+release/
+versions/
+
+.DS_Store
+Thumbs.db
+
+npm-debug.log
+yarn-error.log
+
+*.log
