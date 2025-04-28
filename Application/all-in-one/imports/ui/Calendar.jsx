@@ -1,17 +1,42 @@
 import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
+import interactionPlugin from '@fullcalendar/interaction';
+
+
 
 export const Calendar = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
+  
+  // events id
+  const [events, setEvents] = useState([
+    { id: 1, title: 'Inspection Availability', start: '2025-03-25T10:00:00' },
+    { id: 2, title: 'Inspection Availability', start: '2025-03-26T09:00:00' },
+    { id: 3, title: 'Inspection Availability', start: '2025-03-26T10:00:00' },
+    { id: 4, title: 'Inspection Availability', start: '2025-03-27T10:00:00' },
+    { id: 5, title: 'Inspection Availability', start: '2025-03-27T15:00:00' },
+  ]);
+
+  // handle slot selection
+  const handleSelect = (info) => {
+    const newEvent = {
+      id: Date.now(),
+      title: 'Available for Inspection',
+      start: info.startStr,
+      end: info.endStr,
+      allDay: false
+    };
+    setEvents((prevEvents) => [...prevEvents, newEvent]);
+  };
 
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
+      
       {/* Header */}
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Add Inspection Booking Availabilities</h2>
-        <p className="text-gray-500 mt-2">Click empty timeslot to create Inspection Availability. </p>
-        <p className="text-gray-500 mt 2">These will appear as timeslots for possible tenants to book inspections for any property.</p>
+        <p className="text-gray-500 mt-2">Click empty timeslot to create Inspection Availability.</p>
+        <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections for any property.</p>
       </div>
 
       {/* Divider */}
@@ -20,22 +45,18 @@ export const Calendar = () => {
       {/* Calendar */}
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-6xl mx-auto">
         <FullCalendar
-          plugins={[timeGridPlugin]}
+          plugins={[timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
           slotMinTime="07:00:00"
           slotMaxTime="18:00:00"
           scrollTime="07:00:00"
           allDaySlot={false}
-          selectable={true}
-          events={[
-            { title: 'Inspection Availability', start: '2025-03-25T10:00:00' },
-            { title: 'Inspection Availability', start: '2025-03-26T09:00:00' },
-            { title: 'Inspection Availability', start: '2025-03-26T10:00:00' },
-            { title: 'Inspection Availability', start: '2025-03-27T10:00:00' },
-            { title: 'Inspection Availability', start: '2025-03-27T15:00:00' },
-          ]}
-          eventBackgroundColor="#D6F2F2"
-          eventBorderColor="#D6F2F2"
+          selectable={true}          
+          select={handleSelect}      
+          events={events}
+          eventTextColor='#24A89E'             
+          eventBackgroundColor="#CEF4F1"
+          eventBorderColor="#24A89E"
           headerToolbar={{
             left: 'prev today next',
             center: '',
@@ -58,6 +79,7 @@ export const Calendar = () => {
           Confirm
         </button>
       </div>
+
     </div>
   );
 };
