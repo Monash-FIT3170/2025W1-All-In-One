@@ -3,6 +3,25 @@
 @tailwind utilities;
 
 body {
-  padding: 10px;
-  font-family: sans-serif;
+  /* @apply font-geist; */
+}
+
+select,
+.dropdown-arrow {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-color: #FFF8E9;
+  border: none;
+  box-shadow: none;
+  color: black; /* Make sure text is visible */
+  padding-right: 5rem; /* space for the arrow */
+}
+
+.dropdown-arrow {
+  @apply px-4 py-2 rounded-md;
+  background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 24 24' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 0.75rem center;
+  background-size: 1rem;
 }
