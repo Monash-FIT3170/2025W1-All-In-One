@@ -3,6 +3,10 @@ import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { ConfirmDialog } from './ConfirmDialog'; 
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
+import { InspectionAvailabilities } from '../api/InspectionAvailabilities'; // Adjust path if needed
+
 
 
 
@@ -10,37 +14,51 @@ import { ConfirmDialog } from './ConfirmDialog';
 export const Calendar = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
 
+  const [newEvents, setNewEvents] = useState([]);
+
   const [showDialog, setShowDialog] = useState(false);
 
+  const { availabilities, isLoading } = useTracker(() => {
+    const handler = Meteor.subscribe('inspectionAvailabilities');
+    const data = InspectionAvailabilities.find().fetch();
+    return {
+      availabilities: data,
+      isLoading: !handler.ready(),
+    };
+  });
   
-  // events id
-  const [events, setEvents] = useState([
-    { id: 1, title: 'Inspection Availability', start: '2025-03-25T10:00:00' },
-    { id: 2, title: 'Inspection Availability', start: '2025-03-26T09:00:00' },
-    { id: 3, title: 'Inspection Availability', start: '2025-03-26T10:00:00' },
-    { id: 4, title: 'Inspection Availability', start: '2025-03-27T10:00:00' },
-    { id: 5, title: 'Inspection Availability', start: '2025-03-27T15:00:00' },
-  ]);
-
   const handleSelect = (info) => {
-    setSelectedSlot(info);   
-    setShowDialog(true);       
+    const tempEvent = {
+      id: Date.now(), 
+      start: info.startStr,
+      end: info.endStr,
+      title: 'Pending',
+      allDay: false
+    };
+    setNewEvents((prev) => [...prev, tempEvent]);
+  };
+
+  const handleConfirmButtonClick = () => {
+    if (newEvents.length > 0) {
+      setShowDialog(true);
+    } else {
+      alert('Please select at least one slot before confirming!');
+    }
   };
 
   const handleConfirm = () => {
-    if (selectedSlot) {
-      const newEvent = {
-        id: Date.now(),
-        title: 'Available for Inspection',
-        start: selectedSlot.startStr,
-        end: selectedSlot.endStr,
-        allDay: false
-      };
-      setEvents((prevEvents) => [...prevEvents, newEvent]);
-    }
-    setSelectedSlot(null);
+    newEvents.forEach(event => {
+      Meteor.call('inspectionAvailabilities.insert', event.start, event.end, (error) => {
+        if (error) {
+          console.error('Failed to create availability:', error.reason);
+        }
+      });
+    });
+    setNewEvents([]);  
     setShowDialog(false);
   };
+  
+  
   
   const handleCancel = () => {
     setSelectedSlot(null);
@@ -72,7 +90,16 @@ export const Calendar = () => {
           allDaySlot={false}
           selectable={true}          
           select={handleSelect}      
-          events={events}
+          events={[
+            ...availabilities.map(slot => ({
+              id: slot._id,
+              title: 'Available for Inspection',
+              start: slot.start,
+              end: slot.end,
+              allDay: false
+            })),
+            ...newEvents
+          ]}             
           eventTextColor='#24A89E'             
           eventBackgroundColor="#CEF4F1"
           eventBorderColor="#24A89E"
@@ -95,13 +122,13 @@ export const Calendar = () => {
 
       </div>
 
-      {/* Confirm Button */}
-      <div className="flex justify-start max-w-6xl mx-auto mt-6">
-        <button className="bg-[#FFE284] hover:bg-yellow-200 text-black font-bold py-3 px-6 rounded-md">
+      {/* Confirm button */}
+      <div className="flex justify-between max-w-6xl mx-auto mt-6">
+        <button onClick={handleConfirmButtonClick} className="bg-[#FFE284] hover:bg-yellow-200 text-black font-bold py-3 px-6 rounded-md">
           Confirm
         </button>
-        
       </div>
+
 
     </div>
   );
