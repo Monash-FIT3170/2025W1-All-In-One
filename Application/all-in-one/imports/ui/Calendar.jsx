@@ -5,16 +5,18 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { ConfirmDialog } from './ConfirmDialog'; 
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { InspectionAvailabilities } from '../api/InspectionAvailabilities'; // Adjust path if needed
+import { InspectionAvailabilities } from '../api/InspectionAvailabilities';
+import { ClearDialog } from './ClearDialog'; 
+
+
 
 
 
 export const Calendar = () => {
-  const [selectedSlot, setSelectedSlot] = useState(null);
-
   const [newEvents, setNewEvents] = useState([]);
-
   const [showDialog, setShowDialog] = useState(false);
+  const [showClearDialog, setShowClearDialog] = useState(false);
+
 
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('inspectionAvailabilities');
@@ -37,11 +39,15 @@ export const Calendar = () => {
   };
 
   const handleConfirmButtonClick = () => {
-    if (newEvents.length > 0) {
-      setShowDialog(true);
-    } else {
+    if (newEvents.length === 0) {
       alert('Please select at least one slot before confirming!');
+      return;
     }
+    setShowDialog(true); 
+  };
+
+  const handleClearButtonClick = () => {
+    setShowClearDialog(true);   
   };
 
   const handleConfirm = () => {
@@ -52,30 +58,36 @@ export const Calendar = () => {
         }
       });
     });
-    setNewEvents([]);  
+  
+    setNewEvents([]);
     setShowDialog(false);
+    alert('Availabilities successfully confirmed!');
+    window.location.reload();
   };
   
-  
-  
-  
-  const handleCancel = () => {
-    setSelectedSlot(null);
-    setShowDialog(false);
-  };
-
-  const handleClear = () => {
+  const handleClearConfirm = () => {
     Meteor.call('inspectionAvailabilities.clear', (error) => {
       if (error) {
         alert('Failed to clear availabilities: ' + error.reason);
       } else {
         alert('All availabilities have been cleared!');
+        window.location.reload();
       }
     });
+    setNewEvents([]);
+    setShowClearDialog(false);
+  };
+
+  const handleCancel = () => {
+    setNewEvents([]);
+    setShowDialog(false);
+  };
+  
+  const handleClearCancel = () => {
+    setShowClearDialog(false);
   };
   
   
-
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       
@@ -125,25 +137,26 @@ export const Calendar = () => {
             year: 'numeric', month: 'long' 
           }}
           height="auto"
-          eventClick={(info) => setSelectedSlot(info.event.start)}
         />
         <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel}
         />
-
+        <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} 
+        />
       </div>
 
       {/* Buttons */}
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
 
         {/* Confirm */}
-        <button onClick={handleConfirmButtonClick} className="bg-[#FFE284] hover:bg-yellow-200 text-black font-bold py-3 px-6 rounded-md">
-          Confirm
+        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0}className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0? 'bg-gray-200 cursor-not-allowed': 'bg-[#FFE284] hover:bg-yellow-200 text-black'}`}>
+            Confirm 
         </button>
 
-        {/* Clear */}
-        <button onClick={handleClear} className="bg-red-400 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-md">
-            Clear All 
+
+        <button onClick={handleClearButtonClick} className="bg-red-400 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-md">
+            Clear All
         </button>
+
       </div>
 
 
