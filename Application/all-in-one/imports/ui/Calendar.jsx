@@ -16,6 +16,7 @@ export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
+//   const [successMessage, setSuccessMessage] = useState('');
 
 
   const { availabilities, isLoading } = useTracker(() => {
@@ -39,10 +40,10 @@ export const Calendar = () => {
   };
 
   const handleConfirmButtonClick = () => {
-    if (newEvents.length === 0) {
-      alert('Please select at least one slot before confirming!');
-      return;
-    }
+    // if (newEvents.length === 0) {
+    //   alert('Please select at least one slot before confirming!');
+    //   return;
+    // }
     setShowDialog(true); 
   };
 
@@ -62,15 +63,23 @@ export const Calendar = () => {
     setNewEvents([]);
     setShowDialog(false);
     alert('Availabilities successfully confirmed!');
+    // setSuccessMessage('Availabilities successfully confirmed!');
+    // setTimeout(() => {
+    //     setSuccessMessage('');
+    //   }, 2000);
     window.location.reload();
   };
   
   const handleClearConfirm = () => {
     Meteor.call('inspectionAvailabilities.clear', (error) => {
       if (error) {
-        alert('Failed to clear availabilities: ' + error.reason);
+        console.error('Failed to clear availabilities: ' + error.reason);
       } else {
-        alert('All availabilities have been cleared!');
+        alert('Availabilities successfully cleared!')
+        // setSuccessMessage('Availabilities successfully cleared!');
+        // setTimeout(() => {
+        //     setSuccessMessage('');
+        // }, 2000);
         window.location.reload();
       }
     });
@@ -90,7 +99,14 @@ export const Calendar = () => {
   
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
-      
+
+        {/* Success Message
+        {successMessage && (
+            <div className="fixed top-5 right-5 bg-green-400 text-white font-semibold px-6 py-3 rounded-lg shadow-lg animate-bounce z-50">
+                {successMessage}
+            </div>
+        )} */}
+
       {/* Header */}
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Add Inspection Booking Availabilities</h2>
@@ -148,12 +164,12 @@ export const Calendar = () => {
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
 
         {/* Confirm */}
-        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0}className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0? 'bg-gray-200 cursor-not-allowed': 'bg-[#FFE284] hover:bg-yellow-200 text-black'}`}>
+        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0}className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0? 'bg-gray-300 cursor-not-allowed': 'bg-[#FFE284] hover:bg-yellow-200 text-black'}`}>
             Confirm 
         </button>
 
 
-        <button onClick={handleClearButtonClick} className="bg-red-400 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-md">
+        <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
             Clear All
         </button>
 

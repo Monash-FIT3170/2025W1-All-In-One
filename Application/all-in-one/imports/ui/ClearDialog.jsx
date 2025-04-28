@@ -11,13 +11,13 @@ export const ClearDialog = ({ isOpen, onConfirm, onCancel }) => {
         <div className="flex justify-around">
           <button
             onClick={onCancel}
-            className="bg-gray-300 hover:bg-gray-400 text-black font-semibold py-2 px-4 rounded"
+            className="bg-gray-300 hover:bg-gray-200 text-black font-semibold py-2 px-4 rounded"
           >
             Cancel
           </button>
           <button
             onClick={onConfirm}
-            className="bg-red-400 hover:bg-red-500 text-white font-semibold py-2 px-4 rounded"
+            className="bg-red-500 hover:bg-red-400 text-white font-semibold py-2 px-4 rounded"
           >
             Confirm
           </button>
