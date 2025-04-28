@@ -125,6 +125,22 @@ export default function DetailedPropListing() {
         </div>
       </div>
 
+      {/*Description and buttons*/}
+      <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
+        <div className="p-6 flex space-x-4 mt-4">
+            <button className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg">
+                Book Inspection
+            </button>
+            <button className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg">
+                Apply
+            </button>
+            <button className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg">
+                Ticket
+            </button>
+        </div>
+        <p className="font-semibold text-lg text-[#434343]">{property.description}</p>
+      </div>
+
       {/*Footer*/}
       <footer className="bg-[#CEF4F1] text-white py-6 mt-auto"></footer>
     </div>
