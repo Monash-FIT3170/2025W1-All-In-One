@@ -41,10 +41,38 @@ export default function DetailedPropListing(){
                 </div>
             </div>
 
+            {/*Main content*/}
+            <div className="max-w-7xl mx-auto w-full px-6">
+                <div className="flex flex-col lg:flex-row p-6">
+                    {/*Images*/}
+                    <div className="w-full lg:w-2/3">
+                    <div className="flex space-x-2">
+                    <div className="w-[100%] h-[30rem] overflow-hidden rounded-lg">
+                        <img src={property.imageUrls[0]}
+                        alt="Property Image"
+                        className="w-full h-full object-cover"
+                        />
+                    </div>
+                    <div className="flex flex-col space-y-2 w-[50%]">
+                        {property.imageUrls.slice(1,4).map((imageUrl, index)=>(
+                            <div key={index} className="w-full h-[9.6rem] overflow-hidden rounded-lg">
+                                <img key={index}
+                                src={imageUrl}
+                                alt={"Properry image"}
+                                className="w-full h-full object-cover"
+                                />
+                            </div>    
+                        ))}
+                    </div>
+                    </div>
+                    </div>
+                </div>
+            </div>
+
 
             {/*Footer*/}
             <footer className= "bg-[#CEF4F1] text-white py-6 mt-auto">
-                
+
             </footer>
 
         </div>
