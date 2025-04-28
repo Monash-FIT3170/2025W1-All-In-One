@@ -1,3 +1,4 @@
+// App.js
 import React from 'react';
 import {
   BrowserRouter as Router,
@@ -6,14 +7,13 @@ import {
   Link
 } from 'react-router-dom';
 
-import {Apply} from './Apply.jsx';
-
+// Named import of Apply
+// App.js
+import Apply from './Apply.jsx'; // Default import (no curly braces)
 export const App = () => (
   <>
     <Router>
       <div>
-        
-
         <Routes>
           <Route path="/" element={
             <div>Welcome to the home page!
@@ -24,14 +24,10 @@ export const App = () => (
                 <h1>Home Page</h1>
               </div>
             </div>
-            
-            } 
-            />
+          } />
           <Route path="/apply" element={<Apply />} />
         </Routes>
       </div>
     </Router>
-
-
   </>
 );

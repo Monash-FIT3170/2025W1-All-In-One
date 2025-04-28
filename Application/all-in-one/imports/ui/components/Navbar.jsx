@@ -1,6 +1,6 @@
-import React, {useState, useEffect} from 'react';
-import {Link} from 'react-router-dom';
-import './Navbar.css';
+// Navbar.jsx
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { Button } from './Button';
 
 function Navbar() {
@@ -11,7 +11,7 @@ function Navbar() {
   const closeMobileMenu = () => setClick(false);
 
   const showButton = () => {
-    if(window.innerWidth <= 960) {
+    if (window.innerWidth <= 960) {
       setButton(false);
     } else {
       setButton(true);
@@ -19,53 +19,52 @@ function Navbar() {
   };
 
   useEffect(() => {
-    showButton()
+    showButton();
+    window.addEventListener('resize', showButton);
+    return () => window.removeEventListener('resize', showButton);
   }, []);
 
-  window.addEventListener('resize', showButton);
-
   return (
-    <>
-        <nav className='navbar'>
-            <div className='navbar-container'>
-                <Link to="/" className="navbar-logo" onClick={closeMobileMenu}>
-                    All in One <i className='fab fa-typo3'/>
-                </Link>
-                <div className='menu-icon' onClick={handleClick}>
-                  <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
-                </div>
-                <ul className={click ? 'nav-menu active' : 'nav-menu'}>
-                  <li className='nav-item'>
-                    <Link to='/' className='nav-links' onClick={closeMobileMenu}>
-                      Messages
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link to='/' className='nav-links' onClick={closeMobileMenu}>
-                      Applications
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link to='/' className='nav-links' onClick={closeMobileMenu}>
-                      Tickets
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link to='/' className='nav-links' onClick={closeMobileMenu}>
-                      Properties
-                    </Link>
-                  </li>
-                  <li className='nav-item'>
-                    <Link to='/' className='nav-links-mobile' onClick={closeMobileMenu}>
-                      Sign Up
-                    </Link>
-                  </li>
-                </ul>
-                {button && <Button buttonStyle='btn--outline'>SIGN UP</Button>}
-            </div>
-        </nav>
-    </>
-  )
+    <nav className='navbar'>
+      <div className='navbar-container'>
+        <Link to="/" className="navbar-logo" onClick={closeMobileMenu}>
+          All in One <i className='fab fa-typo3'/>
+        </Link>
+        <div className='menu-icon' onClick={handleClick}>
+          <i className={click ? 'fas fa-times' : 'fas fa-bars'} />
+        </div>
+        <ul className={click ? 'nav-menu active' : 'nav-menu'}>
+          <li className='nav-item'>
+            <Link to='/' className='nav-links' onClick={closeMobileMenu}>
+              Messages
+            </Link>
+          </li>
+          <li className='nav-item'>
+            <Link to='/' className='nav-links' onClick={closeMobileMenu}>
+              Applications
+            </Link>
+          </li>
+          <li className='nav-item'>
+            <Link to='/' className='nav-links' onClick={closeMobileMenu}>
+              Tickets
+            </Link>
+          </li>
+          <li className='nav-item'>
+            <Link to='/' className='nav-links' onClick={closeMobileMenu}>
+              Properties
+            </Link>
+          </li>
+          <li className='nav-item'>
+            <Link to='/' className='nav-links-mobile' onClick={closeMobileMenu}>
+              Sign Up
+            </Link>
+          </li>
+        </ul>
+        {button && <Button buttonStyle='btn--outline'>SIGN UP</Button>}
+      </div>
+    </nav>
+  );
 }
 
-export default Navbar
+// Correct named export
+export default Navbar;
