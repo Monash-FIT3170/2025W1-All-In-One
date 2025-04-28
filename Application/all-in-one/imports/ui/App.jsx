@@ -1,11 +1,37 @@
 import React from 'react';
-import { Hello } from './Hello.jsx';
-import { Info } from './Info.jsx';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link
+} from 'react-router-dom';
+
+import {Apply} from './Apply.jsx';
 
 export const App = () => (
-  <div>
-    <h1>Welcome to Meteor!</h1>
-    <Hello/>
-    <Info/>
-  </div>
+  <>
+    <Router>
+      <div>
+        
+
+        <Routes>
+          <Route path="/" element={
+            <div>Welcome to the home page!
+              <div>
+                <Link to="/apply">Apply For a Property</Link>
+              </div>
+              <div>
+                <h1>Home Page</h1>
+              </div>
+            </div>
+            
+            } 
+            />
+          <Route path="/apply" element={<Apply />} />
+        </Routes>
+      </div>
+    </Router>
+
+
+  </>
 );
