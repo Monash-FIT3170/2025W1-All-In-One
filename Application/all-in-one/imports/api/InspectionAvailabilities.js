@@ -21,7 +21,6 @@ Meteor.methods({
       createdAt: new Date(),
     });
   },
-
   async 'inspectionAvailabilities.clear'() {
     console.log('Clearing all availabilities...');
     return await InspectionAvailabilities.removeAsync({});

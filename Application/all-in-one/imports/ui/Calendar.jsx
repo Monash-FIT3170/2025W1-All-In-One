@@ -9,8 +9,6 @@ import { InspectionAvailabilities } from '../api/InspectionAvailabilities'; // A
 
 
 
-
-
 export const Calendar = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
 
@@ -60,10 +58,22 @@ export const Calendar = () => {
   
   
   
+  
   const handleCancel = () => {
     setSelectedSlot(null);
     setShowDialog(false);
   };
+
+  const handleClear = () => {
+    Meteor.call('inspectionAvailabilities.clear', (error) => {
+      if (error) {
+        alert('Failed to clear availabilities: ' + error.reason);
+      } else {
+        alert('All availabilities have been cleared!');
+      }
+    });
+  };
+  
   
 
   return (
@@ -122,10 +132,17 @@ export const Calendar = () => {
 
       </div>
 
-      {/* Confirm button */}
+      {/* Buttons */}
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
+
+        {/* Confirm */}
         <button onClick={handleConfirmButtonClick} className="bg-[#FFE284] hover:bg-yellow-200 text-black font-bold py-3 px-6 rounded-md">
           Confirm
+        </button>
+
+        {/* Clear */}
+        <button onClick={handleClear} className="bg-red-400 hover:bg-red-500 text-white font-bold py-3 px-6 rounded-md">
+            Clear All 
         </button>
       </div>
 
