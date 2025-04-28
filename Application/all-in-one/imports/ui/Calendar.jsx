@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
+import { ConfirmDialog } from './ConfirmDialog'; 
+
 
 
 
 export const Calendar = () => {
   const [selectedSlot, setSelectedSlot] = useState(null);
+
+  const [showDialog, setShowDialog] = useState(false);
+
   
   // events id
   const [events, setEvents] = useState([
@@ -17,17 +22,31 @@ export const Calendar = () => {
     { id: 5, title: 'Inspection Availability', start: '2025-03-27T15:00:00' },
   ]);
 
-  // handle slot selection
   const handleSelect = (info) => {
-    const newEvent = {
-      id: Date.now(),
-      title: 'Available for Inspection',
-      start: info.startStr,
-      end: info.endStr,
-      allDay: false
-    };
-    setEvents((prevEvents) => [...prevEvents, newEvent]);
+    setSelectedSlot(info);   
+    setShowDialog(true);       
   };
+
+  const handleConfirm = () => {
+    if (selectedSlot) {
+      const newEvent = {
+        id: Date.now(),
+        title: 'Available for Inspection',
+        start: selectedSlot.startStr,
+        end: selectedSlot.endStr,
+        allDay: false
+      };
+      setEvents((prevEvents) => [...prevEvents, newEvent]);
+    }
+    setSelectedSlot(null);
+    setShowDialog(false);
+  };
+  
+  const handleCancel = () => {
+    setSelectedSlot(null);
+    setShowDialog(false);
+  };
+  
 
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
@@ -71,6 +90,9 @@ export const Calendar = () => {
           height="auto"
           eventClick={(info) => setSelectedSlot(info.event.start)}
         />
+        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel}
+        />
+
       </div>
 
       {/* Confirm Button */}
@@ -78,6 +100,7 @@ export const Calendar = () => {
         <button className="bg-[#FFE284] hover:bg-yellow-200 text-black font-bold py-3 px-6 rounded-md">
           Confirm
         </button>
+        
       </div>
 
     </div>
