@@ -1,6 +1,5 @@
 // ReviewApplication.jsx
 import React from 'react';
-import Navbar from './components/Navbar';
 import { ApplicantCard } from './components/ApplicantCard';
 
 const mockApplications = [
