@@ -1,5 +1,7 @@
 // ReviewApplication.jsx
 import React from 'react';
+import Navbar from './components/Navbar';
+import { ApplicantCard } from './components/ApplicantCard';
 
 const mockApplications = [
     {
@@ -60,25 +62,8 @@ const mockApplications = [
 export const ReviewApplication = () => {
     return (
         <div className="bg-[#FFF8EB] min-h-screen pb-20">
-            {/* Header */}
-            <div className="flex items-center justify-between px-8 py-4 bg-[#D6F2F2]">
-                <div className="flex items-center gap-2">
-                    <img src="/images/logo.png" alt="Logo" className="h-12" />
-                    <span className="text-xl font-bold">All In One</span>
-                </div>
-                <div className="flex gap-4">
-                    {['Messages', 'Applications', 'Tickets', 'Properties'].map(label => (
-                        <button key={label} className="bg-yellow-300 px-4 py-2 rounded-full font-semibold">
-                            {label}
-                        </button>
-                    ))}
-                    <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold">Log out</button>
-                    <img src="/images/user-avatar.png" alt="User" className="w-10 h-10 rounded-full" />
-                </div>
-            </div>
-
             {/* Content */}
-            <div className="px-12 mt-6">
+            <div className="px-12 py-8">
                 <h2 className="text-2xl font-semibold">Review Applications</h2>
                 <p className="text-sm text-gray-600">All applications in one place!</p>
                 <hr style={{
@@ -123,17 +108,13 @@ export const ReviewApplication = () => {
 
                             {/* Right: Applicant Info */}
                             <div className="w-1/2 p-4 bg-[#EBFAFA] flex flex-col justify-between">
-                                <div className="w-full h-full rounded p-4 bg-white flex flex-col justify-between">
-                                    <div>
-                                        <h3 className="font-semibold text-lg">{app.name}</h3>
-                                        <p className="text-sm">Age: {app.age}</p>
-                                        <p className="text-sm">Occupation: {app.occupation}</p>
-                                    </div>
-                                    <div className="flex items-center justify-between mt-4">
-                                        <span className="text-sm font-medium">{app.status}</span>
-                                        <span className="text-xl">{app.statusIcon}</span>
-                                    </div>
-                                </div>
+                                <ApplicantCard
+                                    name={app.name}
+                                    age={app.age}
+                                    occupation={app.occupation}
+                                    status={app.status}
+                                    statusIcon={app.statusIcon}
+                                />
                             </div>
                         </div>
                     ))}
