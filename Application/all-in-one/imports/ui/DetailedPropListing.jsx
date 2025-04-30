@@ -7,42 +7,36 @@ export default function DetailedPropListing() {
   const properties = [
     {
       id: 1,
-      title: "Modern Family Home",
-      location: "Melbourne, VIC",
-      price: "$850,000",
-      image: "https://via.placeholder.com/300x200?text=House+1"
+      location: "Melton South, 3338",
+      price: "$800",
+      image: "/images/Melton/melton_property_livingroom.png"
     },
     {
       id: 2,
-      title: "Cozy Apartment",
       location: "Sydney, NSW",
       price: "$620,000",
       image: "https://via.placeholder.com/300x200?text=House+2"
     },
     {
       id: 3,
-      title: "Luxury Villa",
       location: "Gold Coast, QLD",
       price: "$1,200,000",
       image: "https://via.placeholder.com/300x200?text=House+3"
     },
     {
       id: 4,
-      title: "Beachside Bungalow",
       location: "Byron Bay, NSW",
       price: "$980,000",
       image: "https://via.placeholder.com/300x200?text=House+4"
     },
     {
       id: 5,
-      title: "City Studio",
       location: "Brisbane, QLD",
       price: "$480,000",
       image: "https://via.placeholder.com/300x200?text=House+5"
     },
     {
       id: 6,
-      title: "Suburban Retreat",
       location: "Adelaide, SA",
       price: "$740,000",
       image: "https://via.placeholder.com/300x200?text=House+6"
@@ -133,11 +127,10 @@ export default function DetailedPropListing() {
           {properties.map((property) => (
             <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden"
             style={{ backgroundColor: '#D6F2F2' }}>
-              <img src={property.image} alt={property.title} className="w-full h-48 object-cover" />
+              <img src={property.image} alt={property.location} className="w-full h-48 object-cover" />
               <div className="p-4">
-                <h2 className="text-lg font-semibold text-gray-800">{property.title}</h2>
+                <h2 className="mt-2 font-medium text-blue-600">{property.price}</h2>
                 <p className="text-gray-600">{property.location}</p>
-                <p className="mt-2 font-medium text-blue-600">{property.price}</p>
               </div>
             </div>
           ))}
