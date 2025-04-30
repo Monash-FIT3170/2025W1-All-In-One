@@ -15,6 +15,9 @@ export const App = () => (
         {/* Login Page */}
         <Route path="/login" element={<LoginPage />} />
 
+        {/* Sign Up Page */}
+        <Route path="/signup" element={<SignUpPage />} />
+
         {/* You can add signup page later */}
       </Routes>
     </div>
