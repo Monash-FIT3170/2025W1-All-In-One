@@ -4,7 +4,7 @@ import { FaBath,FaBed, FaCar, FaCouch} from "react-icons/fa";
 export default function DetailedPropListing() {
   // mock data- should be connected to database once its set up
   const property = {
-    price: 2560,
+    price: 800,
     address: "Melton South, 3338",
     type: "Town house",
     AvailableDate: new Date("2025-05-01"),
@@ -38,13 +38,17 @@ export default function DetailedPropListing() {
             (label) => (
               <button
                 key={label}
-                className="bg-yellow-300 px-4 py-2 rounded-full font-semibold"
+                className="px-4 py-2 rounded-full font-semibold"
+                style={{ backgroundColor: "#fbe698" }}
               >
                 {label}
               </button>
             )
           )}
-          <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold">
+          <button 
+          className="px-4 py-2 rounded-full font-semibold"
+          style={{ backgroundColor: "#fbe698" }}
+          >
             Log out
           </button>
           <img
