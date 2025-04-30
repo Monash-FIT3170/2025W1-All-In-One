@@ -1,7 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
-import { LoginPage } from './LoginPage.jsx'; // your login page
+import { LoginPage } from './LoginPage.jsx';
+import { HomePage } from './HomePage.jsx'; // Add this import
 import { SignUpPage } from './SignUpPage.jsx'; // your signup page
 
 export const App = () => (
@@ -9,28 +10,12 @@ export const App = () => (
     <div>
       <Routes>
         {/* Home Page */}
-        <Route path="/" element={
-          <div>
-            <h1>Home Page</h1>
-            <p>Already have an account? 
-              <Link to="/login" style={{ color: "blue", marginLeft: "5px" }}>
-                Login here
-              </Link>
-            </p>
-            <p>Don't have an account? 
-              <Link to="/signup" style={{ color: "blue", marginLeft: "5px" }}>
-                Sign up here
-              </Link>
-            </p>
-          </div>
-        } />
+        <Route path="/" element={<HomePage />} />
 
         {/* Login Page */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Sign Up Page */}
-        <Route path="/signup" element={<SignUpPage />} />
-
+        {/* You can add signup page later */}
       </Routes>
     </div>
   </Router>
