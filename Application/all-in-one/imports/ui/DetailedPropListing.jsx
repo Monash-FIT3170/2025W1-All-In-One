@@ -65,29 +65,42 @@ export default function DetailedPropListing() {
           <h1 className="text-3xl font-medium text-gray-800">View Properties</h1>
           <p className="text-gray-600 text-base mt-1">All applications in one place!</p>
           <hr className="my-6 border-t-2 border-gray-300 w-full" 
-          style={{ width: '1185px' }}/>
+          style={{ borderTop: '1px solid #e0e0e3', width: '1185px' }}/>
         </div>
       </div>
       
       {/* Search + Filters */}
       <div className="mt-4 flex justify-center">
-        <div className="bg-[#D6F2F2] p-4 rounded-lg flex gap-4 w-full"
-        style={{ maxWidth: '1185px' }}>
+        <div className="bg-[#D6F2F2] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
           <input
             type="text"
-            placeholder="Search Applicant..."
+            placeholder="Search Property..."
             className="flex-1 px-4 py-2 rounded-md"
-            style={{ backgroundColor: '#FFF8E9' }}
+            style={{ backgroundColor: '#fffcf7' }}
           />
-          <select className="dropdown-arrow flex-1">
-            <option>Select Property</option>
-          </select>
-          <select className="dropdown-arrow flex-1">
+
+          <select className="dropdown-arrow ml-auto rounded-lg" style={{ width: '200px',backgroundColor: '#FFFCF7', color: '#9da3ae' }}>
             <option>Filter</option>
           </select>
         </div>
       </div>
-
+      
+      {/* Add Property Listing Button (Aligned and Indented) */}
+      <div className="mt-4 w-full flex justify-end">
+        <div className="w-full max-w-7xl px-3">
+          <button
+            className="px-6 py-2 text-white rounded-lg focus:outline-none"
+            style={{
+              backgroundColor: '#fbe698',
+              color: '#1f2937', // optional: dark text if needed
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e6c86a')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fbe698')}
+          >
+            Add Property Listing
+          </button>
+        </div>
+      </div>
 
       {/*Main content*/}
       <div className="max-w-7xl mx-auto w-full px-6">
