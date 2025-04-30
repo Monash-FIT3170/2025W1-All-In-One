@@ -59,6 +59,12 @@ export default function DetailedPropListing() {
         </div>
       </div>
 
+      {/* Page Heading */}
+      <div className="max-w-7xl mx-auto w-full px-6 mt-6">
+        <h1 className="text-3xl font-medium text-gray-800">View Properties</h1>
+        <p className="text-gray-600 text-base mt-1">All applications in one place!</p>
+      </div>
+
       {/*Main content*/}
       <div className="max-w-7xl mx-auto w-full px-6">
         <div className="flex flex-col lg:flex-row p-6">
