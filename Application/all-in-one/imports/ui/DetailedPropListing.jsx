@@ -4,7 +4,7 @@ import { FaBath,FaBed, FaCar, FaCouch} from "react-icons/fa";
 export default function DetailedPropListing() {
   // mock data- should be connected to database once its set up
   const property = {
-    price: 800,
+    price: 2560,
     address: "Melton South, 3338",
     type: "Town house",
     AvailableDate: new Date("2025-05-01"),
