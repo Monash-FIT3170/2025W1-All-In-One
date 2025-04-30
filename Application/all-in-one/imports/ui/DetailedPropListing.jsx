@@ -61,9 +61,33 @@ export default function DetailedPropListing() {
 
       {/* Page Heading */}
       <div className="max-w-7xl mx-auto w-full px-6 mt-6">
-        <h1 className="text-3xl font-medium text-gray-800">View Properties</h1>
-        <p className="text-gray-600 text-base mt-1">All applications in one place!</p>
+        <div className="pl-6">
+          <h1 className="text-3xl font-medium text-gray-800">View Properties</h1>
+          <p className="text-gray-600 text-base mt-1">All applications in one place!</p>
+          <hr className="my-6 border-t-2 border-gray-300 w-full" 
+          style={{ width: '1185px' }}/>
+        </div>
       </div>
+      
+      {/* Search + Filters */}
+      <div className="mt-4 flex justify-center">
+        <div className="bg-[#D6F2F2] p-4 rounded-lg flex gap-4 w-full"
+        style={{ maxWidth: '1185px' }}>
+          <input
+            type="text"
+            placeholder="Search Applicant..."
+            className="flex-1 px-4 py-2 rounded-md"
+            style={{ backgroundColor: '#FFF8E9' }}
+          />
+          <select className="dropdown-arrow flex-1">
+            <option>Select Property</option>
+          </select>
+          <select className="dropdown-arrow flex-1">
+            <option>Filter</option>
+          </select>
+        </div>
+      </div>
+
 
       {/*Main content*/}
       <div className="max-w-7xl mx-auto w-full px-6">
