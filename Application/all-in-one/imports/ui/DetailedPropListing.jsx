@@ -9,37 +9,61 @@ export default function DetailedPropListing() {
       id: 1,
       location: "Melton South, 3338",
       price: "$800",
-      image: "/images/Melton/melton_property_livingroom.png"
+      image: "/images/Melton/melton_property_livingroom.png",
+      beds: 3,
+      baths: 2,
+      cars: 1,
+      living: 1
     },
     {
       id: 2,
-      location: "Sydney, NSW",
-      price: "$620,000",
-      image: "/images/Sydney/Sydney_front.jpeg"
+      location: "Sydney, 2000",
+      price: "$620",
+      image: "/images/Sydney/Sydney_front.jpeg",
+      beds: 3,
+      baths: 2,
+      cars: 1,
+      living: 1
     },
     {
       id: 3,
-      location: "Gold Coast, QLD",
-      price: "$1,200,000",
-      image: "/images/GoldCoast/GoldCoast_front.jpeg"
+      location: "Gold Coast, 4207",
+      price: "$1200",
+      image: "/images/GoldCoast/GoldCoast_front.jpeg",
+      beds: 3,
+      baths: 2,
+      cars: 1,
+      living: 1
     },
     {
       id: 4,
-      location: "Byron Bay, NSW",
-      price: "$980,000",
-      image: "/images/Byron_Bay/Byron_Bay_front.jpeg"
+      location: "Byron Bay, 2481",
+      price: "$980",
+      image: "/images/Byron_Bay/Byron_Bay_front.jpeg",
+      beds: 3,
+      baths: 2,
+      cars: 1,
+      living: 1
     },
     {
       id: 5,
-      location: "Brisbane, QLD",
-      price: "$480,000",
-      image: "/images/Brisbane/brisbane_living_area.jpeg"
+      location: "Brisbane, 4000",
+      price: "$480",
+      image: "/images/Brisbane/brisbane_living_area.jpeg",
+      beds: 3,
+      baths: 2,
+      cars: 1,
+      living: 1
     },
     {
       id: 6,
-      location: "Adelaide, SA",
-      price: "$740,000",
-      image: "/images/Adelaide/Adelaide_ dining.jpeg"
+      location: "Adelaide, 5000",
+      price: "$740",
+      image: "/images/Adelaide/Adelaide_ dining.jpeg",
+      beds: 3,
+      baths: 2,
+      cars: 1,
+      living: 1
     }
   ];
 
@@ -89,7 +113,7 @@ export default function DetailedPropListing() {
       
       {/* Search + Filters */}
       <div className="mt-4 flex justify-center">
-        <div className="bg-[#D6F2F2] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
+        <div className="bg-[#CEF4F1] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
           <input
             type="text"
             placeholder="Search Property..."
@@ -126,28 +150,40 @@ export default function DetailedPropListing() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {properties.map((property) => (
             <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden"
-            style={{ backgroundColor: '#D6F2F2' }}>
+            style={{ backgroundColor: '#CEF4F1' }}>
               <img src={property.image} alt={property.location} className="w-full h-[250px] object-cover" />
               <div className="p-4">
-                <h2 className="mt-2 font-medium text-blue-600">{property.price}</h2>
-                <p className="text-gray-600">{property.location}</p>
+                <div className="mt-2 flex justify-between items-center">
+                  <h2 className="text-3xl font-medium text-gray-500">
+                    {property.price} <span className="text-3xl font-medium text-gray-500">per week</span>
+                  </h2>
+                  <p className="text-gray-600 text-right">{property.location}</p>
+                </div>
+                  <div className="px-4 pb-4 mt-4 flex justify-between text-gray-600 text-sm">
+                    <div className="flex items-center gap-2">
+                      <FaBath size={24} />
+                      <span className="text-xl">{property.beds}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <FaBed size={24} />
+                      <span className="text-xl">{property.beds}</span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <FaCar size={24} />
+                      <span className="text-xl">{property.beds}</span>
+                    </div>
+                  </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      
-
-      
-      {/*Description and buttons*/}
-      <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
-        <div className="p-6 flex space-x-4 mt-4">
-        </div>
-      </div>
+    
 
       {/*Footer*/}
-      <footer className="bg-[#CEF4F1] text-white py-6 mt-auto"></footer>
+      <footer className="bg-[#CEF4F1] text-white py-16 pt-6 mt-auto"></footer>
     </div>
   );
 }
