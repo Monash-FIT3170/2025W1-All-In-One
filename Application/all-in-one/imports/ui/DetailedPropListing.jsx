@@ -15,31 +15,31 @@ export default function DetailedPropListing() {
       id: 2,
       location: "Sydney, NSW",
       price: "$620,000",
-      image: "https://via.placeholder.com/300x200?text=House+2"
+      image: "/images/Sydney/Sydney_front.jpeg"
     },
     {
       id: 3,
       location: "Gold Coast, QLD",
       price: "$1,200,000",
-      image: "https://via.placeholder.com/300x200?text=House+3"
+      image: "/images/GoldCoast/GoldCoast_front.jpeg"
     },
     {
       id: 4,
       location: "Byron Bay, NSW",
       price: "$980,000",
-      image: "https://via.placeholder.com/300x200?text=House+4"
+      image: "/images/Byron_Bay/Byron_Bay_front.jpeg"
     },
     {
       id: 5,
       location: "Brisbane, QLD",
       price: "$480,000",
-      image: "https://via.placeholder.com/300x200?text=House+5"
+      image: "/images/Brisbane/brisbane_living_area.jpeg"
     },
     {
       id: 6,
       location: "Adelaide, SA",
       price: "$740,000",
-      image: "https://via.placeholder.com/300x200?text=House+6"
+      image: "/images/Adelaide/Adelaide_ dining.jpeg"
     }
   ];
 
@@ -123,11 +123,11 @@ export default function DetailedPropListing() {
 
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 w-full max-w-[1230px] px-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {properties.map((property) => (
             <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden"
             style={{ backgroundColor: '#D6F2F2' }}>
-              <img src={property.image} alt={property.location} className="w-full h-48 object-cover" />
+              <img src={property.image} alt={property.location} className="w-full h-[250px] object-cover" />
               <div className="p-4">
                 <h2 className="mt-2 font-medium text-blue-600">{property.price}</h2>
                 <p className="text-gray-600">{property.location}</p>
