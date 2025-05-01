@@ -127,14 +127,13 @@ export default function DetailedPropListing() {
         </div>
       </div>
       
-      {/* Add Property Listing Button (Aligned and Indented) */}
-      <div className="mt-4 w-full flex justify-end">
-        <div className="w-full max-w-7xl px-3">
+      <div className="mt-4 w-full flex justify-center">
+        <div className="w-[1220px] px-4 py-3 flex justify-start rounded-lg">
           <button
             className="px-6 py-2 text-white rounded-lg focus:outline-none"
             style={{
               backgroundColor: '#fbe698',
-              color: '#1f2937', // optional: dark text if needed
+              color: '#1f2937',
             }}
             onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e6c86a')}
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fbe698')}
@@ -180,10 +179,14 @@ export default function DetailedPropListing() {
         </div>
       </div>
 
-    
+      {/* Blank space before footer */}
+      <div className="h-40" />
+
 
       {/*Footer*/}
-      <footer className="bg-[#CEF4F1] text-white py-16 pt-6 mt-auto"></footer>
+      <footer className="bg-[#CEF4F1] text-white h-[1000px] py-4 mt-auto"></footer>  {/* Fixed height with padding */}
+
+
     </div>
   );
 }
