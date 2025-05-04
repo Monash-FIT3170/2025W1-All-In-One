@@ -184,7 +184,7 @@ export default function DetailedPropListing() {
 
 
       {/*Footer*/}
-      <footer className="bg-[#CEF4F1] text-white h-[1000px] py-4 mt-auto"></footer>  {/* Fixed height with padding */}
+      <footer className="bg-[#CEF4F1] text-white h-[500px] py-4 mt-auto"></footer>  {/* Fixed height with padding */}
 
 
     </div>
