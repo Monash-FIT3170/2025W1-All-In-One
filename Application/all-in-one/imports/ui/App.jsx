@@ -1,6 +1,6 @@
 import React from 'react';
-import DetailedPropListing from './DetailedPropListing';
+import PropListing from './PropListing';
 
 export default function App() {
-  return <DetailedPropListing />;
+  return <PropListing />;
 }
