@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 
 import { LoginPage } from './LoginPage.jsx';
 import { HomePage } from './HomePage.jsx'; // Add this import
+import { SignUpPage } from './SignUpPage.jsx'; // your signup page
 
 export const App = () => (
   <Router>
@@ -13,6 +14,9 @@ export const App = () => (
 
         {/* Login Page */}
         <Route path="/login" element={<LoginPage />} />
+
+        {/* Sign Up Page */}
+        <Route path="/signup" element={<SignUpPage />} />
 
         {/* You can add signup page later */}
       </Routes>

@@ -2,6 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fix for the white borders */
 html, body {
   margin: 0;
   padding: 0;
