@@ -8,6 +8,7 @@ import {
 
 import { About } from './About.jsx';
 import { BookInspection } from './BookInspection.jsx'; // import new page
+import { PropertyBooking } from './PropertyBooking2.jsx';
 
 export const App = () => (
   <Router>
@@ -16,12 +17,14 @@ export const App = () => (
       <div className="flex gap-4">
       <Link to="/about">Go to About Page</Link>
       <Link to="/book-inspection">Book Inspection Page</Link> {/* New Link */}
+      <Link to="/property-booking">property inspection</Link>
       </div>
 
       <Routes>
         <Route path="/" element={<div>Welcome to the home page!</div>} />
         <Route path="/about" element={<About />} />
         <Route path="/book-inspection" element={<BookInspection />} /> {/* New Route */}
+        <Route path="/property-booking" element={<PropertyBooking />} />
       </Routes>
     </div>
   </Router>
