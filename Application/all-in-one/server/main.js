@@ -5,26 +5,11 @@ import {
   RentalApplications
 } from '/imports/api/collections';
 import { Employment } from '../imports/api/collections';
-
-async function insertProperty(doc) {
-  await Properties.insertAsync(doc);
-}
-
-async function insertTenant(doc) {
-  await Tenants.insertAsync(doc);
-}
-
-async function insertRentalApplication(doc) {
-  await RentalApplications.insertAsync(doc);
-}
-
-async function insertEmployment(doc) {
-  await Employment.insertAsync(doc);
-}
+import '/imports/api/rentalApplications/methods';
 
 Meteor.startup(async () => {
-  if (await Properties.find().countAsync() === 0) {
-    await insertProperty({
+  if (!await Properties.findOneAsync({ prop_id: 'P001' })) {
+    await Properties.insertAsync({
       prop_id: 'P001',
       prop_address: '123 Main St, Melbourne VIC',
       prop_pricepweek: 450,
@@ -40,8 +25,8 @@ Meteor.startup(async () => {
     });
   }
 
-  if ((await Properties.find().countAsync()) < 2) {
-    await insertProperty({
+  if (!await Properties.findOneAsync({ prop_id: 'P002' })) {
+    await Properties.insertAsync({
       prop_id: 'P002',
       prop_address: '89 Beachside Ave, Sydney NSW',
       prop_pricepweek: 650,
@@ -57,8 +42,8 @@ Meteor.startup(async () => {
     });
   }
 
-  if (await Tenants.find().countAsync() === 0) {
-    await insertTenant({
+  if (!await Tenants.findOneAsync({ ten_id: 'T001' })) {
+    await Tenants.insertAsync({
       ten_id: 'T001',
       ten_fn: 'Alice',
       ten_ln: 'Smith',
@@ -71,8 +56,8 @@ Meteor.startup(async () => {
     });
   }
 
-  if ((await Tenants.find().countAsync()) < 2) {
-    await insertTenant({
+  if (!await Tenants.findOneAsync({ ten_id: 'T002' })) {
+    await Tenants.insertAsync({
       ten_id: 'T002',
       ten_fn: 'Bob',
       ten_ln: 'Lee',
@@ -85,8 +70,8 @@ Meteor.startup(async () => {
     });
   }
 
-  if (await RentalApplications.find().countAsync() === 0) {
-    await insertRentalApplication({
+  if (!await RentalApplications.findOneAsync({ rental_app_id: 'RA001' })) {
+    await RentalApplications.insertAsync({
       rental_app_id: 'RA001',
       prop_id: 'P001',
       rental_app_prop_inspected: true,
@@ -102,8 +87,8 @@ Meteor.startup(async () => {
     });
   }
 
-  if ((await RentalApplications.find().countAsync()) < 2) {
-    await insertRentalApplication({
+  if (!await RentalApplications.findOneAsync({ rental_app_id: 'RA002' })) {
+    await RentalApplications.insertAsync({
       rental_app_id: 'RA002',
       prop_id: 'P002',
       rental_app_prop_inspected: false,
@@ -119,8 +104,8 @@ Meteor.startup(async () => {
     });
   }
 
-  if (await Employment.find().countAsync() === 0) {
-    await insertEmployment({
+  if (!await Employment.findOneAsync({ employment_id: 'E001' })) {
+    await Employment.insertAsync({
       employment_id: 'E001',
       ten_id: 'T001',
       emp_type: 'Full-Time',
@@ -131,8 +116,8 @@ Meteor.startup(async () => {
     });
   }
 
-  if ((await Employment.find().countAsync()) < 2) {
-    await insertEmployment({
+  if (!await Employment.findOneAsync({ employment_id: 'E002' })) {
+    await Employment.insertAsync({
       employment_id: 'E002',
       ten_id: 'T002',
       emp_type: 'Part-Time',

@@ -111,13 +111,3 @@ export const ReviewApplication = () => {
         </div>
     );
 };
-
-// TEMPORARY: Ideally move to a server method file
-import { check } from 'meteor/check';
-Meteor.methods({
-    'rentalApplications.setStatus'(id, status) {
-        check(id, String);
-        check(status, String);
-        RentalApplications.update(id, { $set: { status } });
-    },
-});
