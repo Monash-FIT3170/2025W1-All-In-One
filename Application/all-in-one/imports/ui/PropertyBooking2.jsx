@@ -55,31 +55,23 @@ export const PropertyBooking = () => {
   const eventsByDate = groupEventsByDate(mockEvents);
   
   return (
-    <div className="flex flex-col min-h-screen bg-blue-50">
+     <div className="bg-[#FFF8E9] min-h-screen pb-20"> 
       {/* Header */}
-      <header className="bg-blue-100 p-4">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="bg-teal-200 rounded-full p-2">
-              <Home className="text-gray-700" size={20} />
-            </div>
-            <h1 className="text-gray-700 font-bold text-xl">ALL IN One</h1>
-          </div>
-          
-          <nav className="flex items-center gap-2">
-            <NavButton label="Messages" active={false} />
-            <NavButton label="Applications" active={false} />
-            <NavButton label="Tickets" active={false} />
-            <NavButton label="Properties" active={true} />
-            <button className="bg-yellow-200 px-4 py-2 rounded-full text-gray-800 font-medium">
-              Log out
-            </button>
-            <div className="bg-white rounded-full p-1">
-              <User className="text-gray-700" size={24} />
-            </div>
-          </nav>
+      <div className="flex items-center justify-between px-8 py-4 bg-[#CEF4F1]"> 
+        <div className="flex items-center gap-2">
+          <img src="/logo.png" alt="Logo" className="h-12" />
+          <span className="text-xl font-bold">All In One</span>
         </div>
-      </header>
+        <div className="flex gap-4">
+          {['Dashboard', 'Applications', 'Tickets', 'Properties'].map(label => (
+            <button key={label} className="bg-[#FFE284] hover:bg-yellow-200 px-4 py-2 rounded-full font-semibold">
+              {label}
+            </button>
+          ))}
+          <button className="bg-[#FFE284] hover:bg-yellow-200 px-4 py-2 rounded-full font-semibold">Log out</button>
+          <img src="/user-avatar.png" alt="User" className="w-10 h-10 rounded-full" />
+        </div>
+      </div>
       
       {/* Main Content */}
       <main className="flex-1 container mx-auto p-4">
