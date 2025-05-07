@@ -1,8 +1,14 @@
 import React from "react";
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Link
+} from 'react-router-dom';
 
 export default function AddPropertyListing() {
 
-  return (
+  return (     
     <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
       {/*Header*/}
       <div className="flex items-center justify-between px-8 py-4 bg-[#CEF4F1]">
@@ -21,9 +27,9 @@ export default function AddPropertyListing() {
               </button>
             )
           )}
-          <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold">
+          <Link to='/test' className="bg-yellow-300 px-4 py-2 rounded-full font-semibold">
             Log out
-          </button>
+          </Link>
           <img
             src="/images/user-avatar.png"
             alt="User"
