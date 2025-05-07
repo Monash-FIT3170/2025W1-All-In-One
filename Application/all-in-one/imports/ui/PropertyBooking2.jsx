@@ -160,13 +160,3 @@ export const PropertyBooking = () => {
 }
 
 
-// Navigation Button Component
-function NavButton({ label, active }) {
-  return (
-    <button 
-      className={`px-4 py-2 rounded-full font-medium ${active ? 'bg-yellow-200 text-gray-800' : 'bg-yellow-100 text-gray-600'}`}
-    >
-      {label}
-    </button>
-  );
-}
