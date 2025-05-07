@@ -10,7 +10,6 @@ export default function AddPropertyListing() {
 
   return (     
     <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
-      
       {/*Header*/}
       <div className="flex items-center justify-between px-8 py-4 bg-[#CEF4F1]">
         <div className="flex items-center gap-2">
@@ -29,12 +28,13 @@ export default function AddPropertyListing() {
             )
           )}
 
-          {/* Making text a Link */}
+          {/* !!! Making a BUTTON a Link !!! */}
           <Link to='/test' className="bg-yellow-300 px-4 py-2 rounded-full font-semibold">
             Log out
           </Link>
 
-          {/* Making an image a Link */}
+
+          {/* !!! Making an IMAGE a Link !!! */}
           <Link to='/test'>
             <img
               src="/images/user-avatar.png"
@@ -49,7 +49,9 @@ export default function AddPropertyListing() {
 
       <body className="flex-1 flex flex-col p-6 space-y-4">
         <div className="max-w-7xl mx-auto w-full px-6">
-          <div to='/test' className="text-3xl font-bold text-gray-800"> Add Property Listing </div>
+
+          {/* !!! Making TEXT a Link !!! */}
+          <Link to='/test' className="text-3xl font-bold text-gray-800"> Add Property Listing </Link>
           <div className="text-xl text-gray-600 mb-5"> Create a new rental property listing! </div>
 
           {/*Add Property Form*/}
