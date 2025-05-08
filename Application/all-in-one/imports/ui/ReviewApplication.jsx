@@ -51,9 +51,12 @@ export const ReviewApplication = () => {
                         className="flex-1 px-4 py-2 rounded-md"
                         style={{ backgroundColor: '#FFF8E9' }}
                     />
-                    <select className="dropdown-arrow flex-1">
-                        <option>Select Property</option>
-                    </select>
+                    <input
+                        type="text"
+                        placeholder="Search Property..."
+                        className="flex-1 px-4 py-2 rounded-md"
+                        style={{ backgroundColor: '#FFF8E9' }}
+                    />
                     <select className="dropdown-arrow flex-1">
                         <option>Filter</option>
                     </select>
