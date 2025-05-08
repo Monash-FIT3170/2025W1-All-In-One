@@ -63,7 +63,7 @@ export default function DetailedPropListing() {
       
       <div className="mt-4 w-full flex justify-center">
         <div className="w-[1220px] px-4 py-3 flex justify-start rounded-lg">
-          <button
+          <Link to="/AddPropertyListing"
             className="px-6 py-2 text-white rounded-lg focus:outline-none"
             style={{
               backgroundColor: '#fbe698',
@@ -73,7 +73,7 @@ export default function DetailedPropListing() {
             onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fbe698')}
           >
             Add Property Listing
-          </button>
+          </Link>
         </div>
       </div>
 
