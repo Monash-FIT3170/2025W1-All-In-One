@@ -125,9 +125,7 @@ if (!property){
             <button className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg">
                 Apply
             </button>
-            <button className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg">
-                Ticket
-            </button>
+          
         </div>
         <p className="font-semibold text-lg text-[#434343]">{property.description}</p>
       </div>
