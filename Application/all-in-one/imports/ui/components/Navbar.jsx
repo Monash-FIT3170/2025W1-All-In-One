@@ -4,10 +4,10 @@ import { Link } from 'react-router-dom';
 function Navbar() {
   return (
     <div className="flex items-center justify-between px-8 py-4 bg-[#D6F2F2]">
-      <div className="flex items-center gap-2">
+      <Link to="/" className="flex items-center gap-2">
         <img src="/images/logo.png" alt="Logo" className="h-12" />
         <span className="text-xl font-bold">All In One</span>
-      </div>
+      </Link> 
       <div className="flex items-center gap-4">
         {['Applications', 'Inspections','Tickets', 'Properties'].map((label) => (
           label === 'Applications' ? (
