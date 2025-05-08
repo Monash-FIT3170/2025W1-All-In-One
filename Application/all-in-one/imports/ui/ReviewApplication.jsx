@@ -1,12 +1,13 @@
 // ReviewApplication.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { ApplicantCard } from './components/ApplicantCard';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/collections';
 
-
 export const ReviewApplication = () => {
+    const [applicantSearch, setApplicantSearch] = useState('');
+    const [propertySearch, setPropertySearch] = useState('');
 
     const { isReady, applications, tenants, properties, employments } = useTracker(() => {
         const sub1 = Meteor.subscribe('rentalApplications');
@@ -29,6 +30,20 @@ export const ReviewApplication = () => {
         return <div className="p-8 text-gray-600">Loading applications...</div>;
     }
 
+    // Filter applications based on search criteria
+    const filteredApplications = applications.filter(app => {
+        const tenant = tenants.find(t => t.ten_id === app.ten_id);
+        const property = properties.find(p => p.prop_id === app.prop_id);
+        
+        const tenantName = `${tenant?.ten_fn || ''} ${tenant?.ten_ln || ''}`.toLowerCase();
+        const propertyAddress = (property?.prop_address || '').toLowerCase();
+        
+        const matchesApplicant = tenantName.includes(applicantSearch.toLowerCase());
+        const matchesProperty = propertyAddress.includes(propertySearch.toLowerCase());
+        
+        return matchesApplicant && matchesProperty;
+    });
+
     return (
         <div className="bg-[#FFF8EB] min-h-screen pb-20">
             {/* Content */}
@@ -42,7 +57,6 @@ export const ReviewApplication = () => {
                     borderColor: '#000000'
                 }} className="my-4" />
 
-
                 {/* Search + Filters */}
                 <div className="mt-4 bg-[#D6F2F2] p-4 rounded-lg flex gap-4">
                     <input
@@ -50,12 +64,16 @@ export const ReviewApplication = () => {
                         placeholder="Search Applicant..."
                         className="flex-1 px-4 py-2 rounded-md"
                         style={{ backgroundColor: '#FFF8E9' }}
+                        value={applicantSearch}
+                        onChange={(e) => setApplicantSearch(e.target.value)}
                     />
                     <input
                         type="text"
                         placeholder="Search Property..."
                         className="flex-1 px-4 py-2 rounded-md"
                         style={{ backgroundColor: '#FFF8E9' }}
+                        value={propertySearch}
+                        onChange={(e) => setPropertySearch(e.target.value)}
                     />
                     <select className="dropdown-arrow flex-1">
                         <option>Filter</option>
@@ -64,7 +82,7 @@ export const ReviewApplication = () => {
 
                 {/* Applications Grid */}
                 <div className="grid grid-cols-2 gap-6 mt-6 ">
-                    {applications.map(app => {
+                    {filteredApplications.map(app => {
                         const tenant = tenants.find(t => t.ten_id === app.ten_id);
                         const property = properties.find(p => p.prop_id === app.prop_id);
                         const employment = employments.find(e => e.employment_id === app.employment_id);
