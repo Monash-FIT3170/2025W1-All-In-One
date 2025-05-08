@@ -1,9 +1,15 @@
 import React from "react";
 import { FaBath,FaBed, FaCar, FaCouch} from "react-icons/fa";
+import { useParams } from 'react-router-dom';
+import Navbar from './components/Navbar';
+import Footer from './components/Footer';
 
 export default function DetailedPropListing() {
+
+  const { id } = useParams();
   // mock data- should be connected to database once its set up
-  const property = {
+  const mockProperties = [{
+    id:"1",
     price: 800,
     address: "Melton South, 3338",
     type: "Town house",
@@ -23,37 +29,22 @@ export default function DetailedPropListing() {
     },
     description:
       "Discover this expansive and elegant residence featuring 8 spacious rooms, 5 modern bathrooms, and ample parking for up to 4 vehicles. Designed with both functionality and luxury in mind, the home offers multiple living and entertainment zones, ideal for growing families or those who love to host. Each bathroom is thoughtfully appointed with contemporary fixtures and sleek finishes, while the generous floor plan provides flexibility for home offices, guest suites, or hobby spaces. Set on a sizable block in a desirable location, this property is the perfect blend of space, style, and convenience."
-  };
+  },
+];
 
+const property= mockProperties.find((p)=> p.id===id);
+
+if (!property){
+  return (
+    <div className="min-h-screen flex items-center justify-center text-xl text-red-600">
+      Property Not Found!
+    </div>
+  )
+}
   return (
     <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
       {/*Header*/}
-      <div className="flex items-center justify-between px-8 py-4 bg-[#CEF4F1]">
-        <div className="flex items-center gap-2">
-          <img src="/images/logo.png" alt="Logo" className="h-12" />
-          <span className="text-xl font-bold">All In One</span>
-        </div>
-        <div className="flex gap-4">
-          {["Messages", "Applications", "Tickets", "Properties"].map(
-            (label) => (
-              <button
-                key={label}
-                className="bg-yellow-300 px-4 py-2 rounded-full font-semibold"
-              >
-                {label}
-              </button>
-            )
-          )}
-          <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold">
-            Log out
-          </button>
-          <img
-            src="/images/user-avatar.png"
-            alt="User"
-            className="w-10 h-10 rounded-full"
-          />
-        </div>
-      </div>
+      <Navbar/>
 
       {/*Main content*/}
       <div className="max-w-7xl mx-auto w-full px-6">
@@ -142,7 +133,7 @@ export default function DetailedPropListing() {
       </div>
 
       {/*Footer*/}
-      <footer className="bg-[#CEF4F1] text-white py-6 mt-auto"></footer>
+      <Footer/>
     </div>
   );
 }

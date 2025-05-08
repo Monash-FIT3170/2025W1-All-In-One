@@ -1,6 +1,17 @@
 import React from 'react';
-import DetailedPropListing from './DetailedPropListing';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import BasicPropListing from './BasicPropListing.jsx';
+import DetailedPropListing from './DetailedPropListing.jsx';
 
-export default function App() {
-  return <DetailedPropListing />;
+export default function App ()  {
+  return(
+  <Router>
+    <Routes>
+      <Route path="/BasicPropListing" element={<BasicPropListing />} />
+      <Route path="/DetailedPropListing/:id" element={<DetailedPropListing/>}/>
+      <Route path="/" element={<div>Welcome Page</div>} />
+    </Routes>
+  </Router>
+  );
 }
+
