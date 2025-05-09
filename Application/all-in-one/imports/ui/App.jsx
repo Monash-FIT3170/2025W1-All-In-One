@@ -7,6 +7,10 @@ import {
   Link
 } from 'react-router-dom';
 
+import  About  from './About.jsx';
+import { ReviewApplication } from './ReviewApplication.jsx';
+import  Navbar  from './components/Navbar.jsx';
+
 // Named import of Apply
 // App.js
 import Apply from './Apply.jsx'; // Default import (no curly braces)
@@ -14,20 +18,18 @@ export const App = () => (
   <>
     <Router>
       <div>
+        <Navbar />
+        
+        
+
         <Routes>
-          <Route path="/" element={
-            <div>Welcome to the home page!
-              <div>
-                <Link to="/apply">Apply For a Property</Link>
-              </div>
-              <div>
-                <h1>Home Page</h1>
-              </div>
-            </div>
-          } />
-          <Route path="/apply" element={<Apply />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/applications" element={<ReviewApplication />} />
         </Routes>
       </div>
     </Router>
+
+
   </>
 );
+

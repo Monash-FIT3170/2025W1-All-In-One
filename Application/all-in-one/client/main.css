@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  /* @apply font-geist; */
+  @apply font-geist;
 }
 
 select,

@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom'; // ✅ import Link
 
 function Navbar() {
   return (
@@ -9,12 +10,22 @@ function Navbar() {
       </div>
       <div className="flex items-center gap-4">
         {['Messages', 'Applications', 'Tickets', 'Properties'].map((label) => (
-          <button
-            key={label}
-            className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
-          >
-            {label}
-          </button>
+          label === 'Applications' ? (
+            <Link
+              key={label}
+              to="/applications"
+              className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition flex items-center justify-center"
+            >
+              {label}
+            </Link>
+          ) : (
+            <button
+              key={label}
+              className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+            >
+              {label}
+            </button>
+          )
         ))}
         <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition">
           Log out
