@@ -8,7 +8,7 @@ import {
 
 
 import { BookInspection } from './BookInspection.jsx'; // import new page
-import { PropertyBooking } from './PropertyBooking2.jsx';
+import { PropertyBooking } from './PropertyBooking.jsx';
 
 export const App = () => (
   <Router>

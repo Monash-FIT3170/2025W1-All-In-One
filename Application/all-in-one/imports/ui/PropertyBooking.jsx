@@ -80,7 +80,7 @@ export const PropertyBooking = () => {
           <p className="text-gray-600">All upcoming events in one place!</p>
           
           {/* Search and Filter */}
-          <div className="bg-blue-100 p-4 rounded-xl mt-6 flex flex-wrap gap-4">
+          <div className="bg-[#CEF4F1] p-4 rounded-xl mt-6 flex flex-wrap gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-3 text-gray-500" size={18} />
               <input
@@ -131,12 +131,12 @@ export const PropertyBooking = () => {
                 </div>
                 
                 {eventsByDate[date].map(event => (
-                  <div key={event.id} className="bg-blue-100 rounded-lg mt-4 flex overflow-hidden">
+                  <div key={event.id} className="bg-[#CEF4F1] rounded-lg mt-4 flex overflow-hidden">
                     <div className="w-48 h-32">
                       <img src={event.image} alt="Property" className="w-full h-full object-cover" />
                     </div>
                     
-                    <div className="p-4 flex-grow bg-blue-100">
+                    <div className="p-4 flex-grow bg-[#CEF4F1]">
                       <h4 className="text-lg font-medium text-gray-700">{event.property}</h4>
                       <p className="text-gray-600">{event.time}</p>
                     </div>
