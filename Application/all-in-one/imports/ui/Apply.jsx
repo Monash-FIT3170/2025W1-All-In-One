@@ -38,8 +38,6 @@ function Apply() {
 
   return (
     <>
-      {/* Header */}
-      <Navbar/>
 
       {/* Application Section */}
       <div className="flex flex-col p-8 bg-yellow-100">

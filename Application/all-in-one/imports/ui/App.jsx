@@ -10,6 +10,7 @@ import {
 import  About  from './About.jsx';
 import { ReviewApplication } from './ReviewApplication.jsx';
 import  Navbar  from './components/Navbar.jsx';
+import  './Apply.jsx';
 
 // Named import of Apply
 // App.js
@@ -25,6 +26,7 @@ export const App = () => (
         <Routes>
           <Route path="/about" element={<About />} />
           <Route path="/applications" element={<ReviewApplication />} />
+          <Route path="/apply" element={<Apply />} />
         </Routes>
       </div>
     </Router>

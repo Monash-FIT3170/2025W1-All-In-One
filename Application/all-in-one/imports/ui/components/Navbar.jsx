@@ -9,24 +9,28 @@ function Navbar() {
         <span className="text-xl font-bold">All In One</span>
       </div>
       <div className="flex items-center gap-4">
-        {['Messages', 'Applications', 'Tickets', 'Properties'].map((label) => (
-          label === 'Applications' ? (
-            <Link
-              key={label}
-              to="/applications"
-              className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition flex items-center justify-center"
-            >
-              {label}
-            </Link>
-          ) : (
-            <button
-              key={label}
-              className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
-            >
-              {label}
-            </button>
-          )
-        ))}
+      {['Apply', 'Applications', 'Tickets', 'Properties'].map((label) => {
+        const path = label === 'Apply' ? '/apply' :
+                    label === 'Applications' ? '/applications' : null;
+
+        return path ? (
+          <Link
+            key={label}
+            to={path}
+            className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition flex items-center justify-center"
+          >
+            {label}
+          </Link>
+        ) : (
+          <button
+            key={label}
+            className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+          >
+            {label}
+          </button>
+        );
+      })}
+
         <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition">
           Log out
         </button>
