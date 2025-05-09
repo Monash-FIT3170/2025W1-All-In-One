@@ -83,7 +83,7 @@ export const Calendar = () => {
         window.location.reload();
       }
     });
-    setNewEvents([]);
+    // setNewEvents([]);
     setShowClearDialog(false);
   };
 
