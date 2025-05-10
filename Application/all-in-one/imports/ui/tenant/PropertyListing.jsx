@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Calendar, Filter, ChevronDown, Home, MessageSquare, Ticket, LogOut, User } from 'lucide-react';
 
+print("TENANT")
 // Mock data for events
-
-print("AGENT")
 const mockEvents = [
   {
     id: 1,
@@ -49,7 +48,7 @@ const groupEventsByDate = (events) => {
   return grouped;
 };
 
-export const PropertyBooking = () => {
+export const PropertyListing = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProperty, setSelectedProperty] = useState('');
   
@@ -65,7 +64,7 @@ export const PropertyBooking = () => {
           <span className="text-xl font-bold">All In One</span>
         </div>
         <div className="flex gap-4">
-          {['Dashboard', 'Applications', 'Tickets', 'Properties'].map(label => (
+          {['Inspections', 'Applications', 'Tickets', 'Properties'].map(label => (
             <button key={label} className="bg-[#FFE284] hover:bg-yellow-200 px-4 py-2 rounded-full font-semibold">
               {label}
             </button>
@@ -78,7 +77,7 @@ export const PropertyBooking = () => {
       {/* Main Content */}
       <main className="flex-1 container mx-auto p-4">
         <div className="bg-orange-50 p-6 rounded-lg">
-          <h2 className="text-2xl font-bold text-gray-800">View Events</h2>
+          <h2 className="text-2xl font-bold text-gray-800">View Inspections</h2>
           <p className="text-gray-600">All upcoming events in one place!</p>
           
           {/* Search and Filter */}
@@ -87,7 +86,7 @@ export const PropertyBooking = () => {
               <Search className="absolute left-3 top-3 text-gray-500" size={18} />
               <input
                 type="text"
-                placeholder="Search Applicant..."
+                placeholder="Search Agent..."
                 className="pl-10 p-2 rounded-md w-full"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -111,7 +110,7 @@ export const PropertyBooking = () => {
               <select className="p-2 rounded-md w-full appearance-none">
                 <option>Filter</option>
                 <option>By Date</option>
-                <option>By Applicant</option>
+                <option></option>
               </select>
               <ChevronDown className="absolute right-3 top-3 text-gray-500" size={18} />
             </div>
