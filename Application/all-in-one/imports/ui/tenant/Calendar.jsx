@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { ConfirmDialog } from './ConfirmDialog'; 
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { InspectionAvailabilities } from '../api/InspectionAvailabilities';
+import { InspectionAvailabilities } from '../../api/InspectionAvailabilities';
 import { ClearDialog } from './ClearDialog'; 
 
 

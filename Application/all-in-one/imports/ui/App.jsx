@@ -7,8 +7,8 @@ import {
 } from 'react-router-dom';
 
 
-import { BookInspection } from './BookInspection.jsx'; // import new page
-import { PropertyBooking } from './PropertyBooking.jsx';
+import { BookInspection } from './tenant/BookInspection.jsx'; // import new page
+import { PropertyBooking } from './agent/PropertyBooking.jsx';
 
 export const App = () => (
   <Router>
