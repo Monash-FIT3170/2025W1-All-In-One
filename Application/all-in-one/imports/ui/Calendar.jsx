@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -7,8 +7,9 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { InspectionAvailabilities } from '../api/InspectionAvailabilities';
 import { ClearDialog } from './ClearDialog'; 
-import { BookingDialog } from './BookingDialog';
-
+import { TypeDialog } from './TypeDialog';  
+import { OpenHouseDialog } from './OpenHouseDialog.jsx'; 
+import { InspectionDialog } from './InspectionDialog'; 
 
 
 
@@ -16,7 +17,9 @@ export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [showBookingDialog, setShowBookingDialog] = useState(false);
+  const [showTypeDialog, setShowTypeDialog] = useState(false);
+  const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
+  const [showInspectionDialog, setShowInspectionDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
 
   const { availabilities, isLoading } = useTracker(() => {
@@ -29,28 +32,38 @@ export const Calendar = () => {
   });
   
   const handleSelect = (info) => {
-    setPendingSlot({
-      start: info.startStr,
-      end: info.endStr,
-    });
-    setShowBookingDialog(true);
+    setPendingSlot({ start: info.startStr, end: info.endStr });
+    setShowTypeDialog(true);
   };
 
-  const handleBookingSelect = (type) => {
+  const handleTypeSelect = (type) => {
+    setShowTypeDialog(false);
+    if (type === 'Open House') {
+      setShowOpenHouseDialog(true);
+    } else if (type === 'Inspection') {
+      setShowInspectionDialog(true);
+    }
+  };
+
+  const handleBookingSelect = ({ type, property, tenant, notes }) => {
     const tempEvent = {
       id: Date.now(),
       start: pendingSlot.start,
       end: pendingSlot.end,
+      type,
       title: `Pending: ${type}`,
-      allDay: false
+      property,
+      tenant,
+      notes,
+      allDay: false,
     };
     setNewEvents((prev) => [...prev, tempEvent]);
     setPendingSlot(null);
-    setShowBookingDialog(false);
+    setShowOpenHouseDialog(false);
+    setShowInspectionDialog(false);
   };
-  
-  const handleConfirmButtonClick = () => {
 
+  const handleConfirmButtonClick = () => {
     setShowDialog(true); 
   };
 
@@ -60,15 +73,23 @@ export const Calendar = () => {
 
   const handleConfirm = () => {
     newEvents.forEach(event => {
-      Meteor.call('inspectionAvailabilities.insert', event.start, event.end, (error) => {
-        if (error) {
-          console.error('Failed to create availability:', error.reason);
+      Meteor.call(
+        'inspectionAvailabilities.insert',
+        event.start,
+        event.end,
+        event.type,
+        event.property,
+        event.tenant,
+        event.notes,
+        (error) => {
+          if (error) {
+            console.error('Failed to create availability:', error.reason);
+          }
         }
-      });
+      );
     });
     setNewEvents([]);
     setShowDialog(false);
-    // window.location.reload(); reload for confirm button
   };
   
   const handleClearConfirm = () => {
@@ -79,7 +100,7 @@ export const Calendar = () => {
         // window.location.reload(); reload for clear button
       }
     });
-    setNewEvents([]); // Q: Should I also clear pending tasks?
+    setNewEvents([]);
     setShowClearDialog(false);
   };
 
@@ -98,9 +119,9 @@ export const Calendar = () => {
 
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Add Booking Availabilities</h2>
-        <p className="text-gray-500 mt-2">Click empty timeslot to create Booking Availability.</p>
-        <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections or openhouse for any property.</p>
+        <h2 className="text-3xl font-bold text-gray-800">Book Availability</h2>
+        <p className="text-gray-500 mt-2">Click empty timeslot to create Availability.</p>
+        <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections or open house for any property.</p>
       </div>
 
       {/* Divider */}
@@ -120,12 +141,12 @@ export const Calendar = () => {
           events={[
             ...availabilities.map(slot => ({
               id: slot._id,
-              title: 'Available for Inspection',
+              title: slot.type ? `Available for ${slot.type}` : 'Available',
               start: slot.start,
               end: slot.end,
-              allDay: false
+              allDay: false,
             })),
-            ...newEvents
+            ...newEvents,
           ]}             
           eventTextColor='#24A89E'             
           eventBackgroundColor="#CEF4F1"
@@ -143,12 +164,13 @@ export const Calendar = () => {
           }}
           height="auto"
         />
-        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel}
-        />
-        <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} 
-        />
-        <BookingDialog isOpen={showBookingDialog} onSelect={handleBookingSelect} 
-        />
+        {/* Dialog Component */}
+        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
+        <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} />
+        <TypeDialog isOpen={showTypeDialog} onSelect={handleTypeSelect} /> 
+        {/* <OpenHouseDialog isOpen={true} /> */}
+        <OpenHouseDialog isOpen={showOpenHouseDialog} onSubmit={handleBookingSelect} />
+        <InspectionDialog isOpen={showInspectionDialog} onSubmit={handleBookingSelect} />
       </div>
 
       {/* Buttons */}
@@ -161,7 +183,7 @@ export const Calendar = () => {
 
 
         <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
-            Clear All
+            Clear
         </button>
 
       </div>
@@ -169,4 +191,4 @@ export const Calendar = () => {
 
     </div>
   );
-}
+};
