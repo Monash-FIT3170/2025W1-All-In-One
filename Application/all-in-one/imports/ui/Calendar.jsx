@@ -10,6 +10,8 @@ import { ClearDialog } from './ClearDialog';
 import { TypeDialog } from './TypeDialog';  
 import { OpenHouseDialog } from './OpenHouseDialog.jsx'; 
 import { InspectionDialog } from './InspectionDialog'; 
+import { EventDetailModal } from './EventDetailModal'; 
+
 
 
 
@@ -21,6 +23,7 @@ export const Calendar = () => {
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showInspectionDialog, setShowInspectionDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null);
 
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('inspectionAvailabilities');
@@ -81,6 +84,13 @@ export const Calendar = () => {
         event.property,
         event.tenant,
         event.notes,
+        event.occupation,
+        event.tenantAge,
+        event.price,
+        event.image,
+        event.bedrooms,
+        event.bathrooms,
+        event.garages,    
         (error) => {
           if (error) {
             console.error('Failed to create availability:', error.reason);
@@ -112,6 +122,7 @@ export const Calendar = () => {
   const handleClearCancel = () => {
     setShowClearDialog(false);
   };
+
   
   
   return (
@@ -148,6 +159,15 @@ export const Calendar = () => {
             })),
             ...newEvents,
           ]}             
+          eventClick={(info) => {
+            const clicked = info.event.extendedProps;
+            setSelectedEvent({
+              title: info.event.title,
+              start: info.event.start,
+              end: info.event.end,
+              ...clicked,
+            });
+          }}          
           eventTextColor='#24A89E'             
           eventBackgroundColor="#CEF4F1"
           eventBorderColor="#24A89E"
@@ -167,11 +187,18 @@ export const Calendar = () => {
         {/* Dialog Component */}
         <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} />
-        <TypeDialog isOpen={showTypeDialog} onSelect={handleTypeSelect} /> 
-        {/* <OpenHouseDialog isOpen={true} /> */}
-        <OpenHouseDialog isOpen={showOpenHouseDialog} onSubmit={handleBookingSelect} />
-        <InspectionDialog isOpen={showInspectionDialog} onSubmit={handleBookingSelect} />
+        <TypeDialog isOpen={showTypeDialog} onSelect={handleTypeSelect} onClose={() => setShowTypeDialog(false)} /> 
+        <OpenHouseDialog isOpen={showOpenHouseDialog} onSubmit={handleBookingSelect} onClose={() => setShowOpenHouseDialog(false)} />
+        <InspectionDialog isOpen={showInspectionDialog} onSubmit={handleBookingSelect} onClose={() => setShowInspectionDialog(false)} />
       </div>
+
+      {/* Detail view modal */}
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
 
       {/* Buttons */}
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
