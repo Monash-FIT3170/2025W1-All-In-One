@@ -5,6 +5,7 @@ import {
   RentalApplications
 } from '/imports/api/collections';
 import { Employment } from '../imports/api/collections';
+import '/imports/api/methods/account.js';
 
 Meteor.startup(async () => {
   if (!await Properties.findOneAsync({ prop_id: 'P001' })) {

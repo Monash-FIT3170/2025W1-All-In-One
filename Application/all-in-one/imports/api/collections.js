@@ -50,12 +50,11 @@ RentalApplications.schema = new SimpleSchema({
 
 export const Tenants = new Mongo.Collection('tenants');
 Tenants.schema = new SimpleSchema({
-  ten_id: { type: String },
+  ten_id: { type: String }, //set by meteor itself during registeration 
   ten_fn: { type: String },
   ten_ln: { type: String },
   ten_email: { type: String },
   ten_pn: { type: String },
-  ten_password: { type: String },
   ten_pfp: { type: String },
   ten_add: { type: String },
   ten_role: { type: String },
