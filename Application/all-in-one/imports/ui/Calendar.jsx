@@ -7,7 +7,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { InspectionAvailabilities } from '../api/InspectionAvailabilities';
 import { ClearDialog } from './ClearDialog'; 
-
+import { BookingDialog } from './BookingDialog';
 
 
 
@@ -16,8 +16,8 @@ export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
-//   const [successMessage, setSuccessMessage] = useState('');
-
+  const [showBookingDialog, setShowBookingDialog] = useState(false);
+  const [pendingSlot, setPendingSlot] = useState(null);
 
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('inspectionAvailabilities');
@@ -29,21 +29,28 @@ export const Calendar = () => {
   });
   
   const handleSelect = (info) => {
-    const tempEvent = {
-      id: Date.now(), 
+    setPendingSlot({
       start: info.startStr,
       end: info.endStr,
-      title: 'Pending',
+    });
+    setShowBookingDialog(true);
+  };
+
+  const handleBookingSelect = (type) => {
+    const tempEvent = {
+      id: Date.now(),
+      start: pendingSlot.start,
+      end: pendingSlot.end,
+      title: `Pending: ${type}`,
       allDay: false
     };
     setNewEvents((prev) => [...prev, tempEvent]);
+    setPendingSlot(null);
+    setShowBookingDialog(false);
   };
-
+  
   const handleConfirmButtonClick = () => {
-    // if (newEvents.length === 0) {
-    //   alert('Please select at least one slot before confirming!');
-    //   return;
-    // }
+
     setShowDialog(true); 
   };
 
@@ -59,15 +66,9 @@ export const Calendar = () => {
         }
       });
     });
-  
     setNewEvents([]);
     setShowDialog(false);
-    alert('Availabilities successfully confirmed!');
-    // setSuccessMessage('Availabilities successfully confirmed!');
-    // setTimeout(() => {
-    //     setSuccessMessage('');
-    //   }, 2000);
-    window.location.reload();
+    // window.location.reload(); reload for confirm button
   };
   
   const handleClearConfirm = () => {
@@ -75,15 +76,10 @@ export const Calendar = () => {
       if (error) {
         console.error('Failed to clear availabilities: ' + error.reason);
       } else {
-        alert('Availabilities successfully cleared!')
-        // setSuccessMessage('Availabilities successfully cleared!');
-        // setTimeout(() => {
-        //     setSuccessMessage('');
-        // }, 2000);
-        window.location.reload();
+        // window.location.reload(); reload for clear button
       }
     });
-    // setNewEvents([]);
+    setNewEvents([]); // Q: Should I also clear pending tasks?
     setShowClearDialog(false);
   };
 
@@ -100,18 +96,11 @@ export const Calendar = () => {
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
 
-        {/* Success Message
-        {successMessage && (
-            <div className="fixed top-5 right-5 bg-green-400 text-white font-semibold px-6 py-3 rounded-lg shadow-lg animate-bounce z-50">
-                {successMessage}
-            </div>
-        )} */}
-
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Add Inspection Booking Availabilities</h2>
-        <p className="text-gray-500 mt-2">Click empty timeslot to create Inspection Availability.</p>
-        <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections for any property.</p>
+        <h2 className="text-3xl font-bold text-gray-800">Add Booking Availabilities</h2>
+        <p className="text-gray-500 mt-2">Click empty timeslot to create Booking Availability.</p>
+        <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections or openhouse for any property.</p>
       </div>
 
       {/* Divider */}
@@ -158,6 +147,8 @@ export const Calendar = () => {
         />
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} 
         />
+        <BookingDialog isOpen={showBookingDialog} onSelect={handleBookingSelect} 
+        />
       </div>
 
       {/* Buttons */}
@@ -178,4 +169,4 @@ export const Calendar = () => {
 
     </div>
   );
-};
+}
