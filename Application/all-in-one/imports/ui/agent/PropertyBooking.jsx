@@ -3,7 +3,7 @@ import { Search, Calendar, Filter, ChevronDown, Home, MessageSquare, Ticket, Log
 
 // Mock data for events
 
-print("AGENT")
+
 const mockEvents = [
   {
     id: 1,
@@ -52,7 +52,8 @@ const groupEventsByDate = (events) => {
 export const PropertyBooking = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedProperty, setSelectedProperty] = useState('');
-  
+
+
   // Group events by date
   const eventsByDate = groupEventsByDate(mockEvents);
   
@@ -80,6 +81,8 @@ export const PropertyBooking = () => {
         <div className="bg-orange-50 p-6 rounded-lg">
           <h2 className="text-2xl font-bold text-gray-800">View Events</h2>
           <p className="text-gray-600">All upcoming events in one place!</p>
+          
+        
           
           {/* Search and Filter */}
           <div className="bg-[#CEF4F1] p-4 rounded-xl mt-6 flex flex-wrap gap-4">

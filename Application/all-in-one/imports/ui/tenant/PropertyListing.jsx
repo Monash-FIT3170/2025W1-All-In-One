@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Calendar, Filter, ChevronDown, Home, MessageSquare, Ticket, LogOut, User } from 'lucide-react';
 
-print("TENANT")
+
 // Mock data for events
 const mockEvents = [
   {
@@ -116,10 +116,6 @@ export const PropertyListing = () => {
             </div>
           </div>
           
-          {/* Edit Button */}
-          <button className="bg-yellow-200 px-4 py-2 rounded-lg mt-4 font-medium">
-            Edit Inspection Availability
-          </button>
           
           {/* Events List */}
           <div className="mt-6">
