@@ -1,11 +1,25 @@
 import React from 'react';
-import { Hello } from './Hello.jsx';
-import { Info } from './Info.jsx';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+
+import { LoginPage } from './LoginPage.jsx';
+import { HomePage } from './HomePage.jsx'; // Add this import
+import { SignUpPage } from './SignUpPage.jsx'; // your signup page
 
 export const App = () => (
-  <div>
-    <h1>Welcome to Meteor!</h1>
-    <Hello/>
-    <Info/>
-  </div>
+  <Router>
+    <div>
+      <Routes>
+        {/* Home Page */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* Login Page */}
+        <Route path="/login" element={<LoginPage />} />
+
+        {/* Sign Up Page */}
+        <Route path="/signup" element={<SignUpPage />} />
+
+        {/* You can add signup page later */}
+      </Routes>
+    </div>
+  </Router>
 );

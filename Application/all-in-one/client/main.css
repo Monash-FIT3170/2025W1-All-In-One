@@ -2,7 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  padding: 10px;
-  font-family: sans-serif;
+/* Fix for the white borders */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
 }
