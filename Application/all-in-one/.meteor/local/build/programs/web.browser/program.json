@@ -602,25 +602,25 @@
       "where": "client",
       "type": "js",
       "cacheable": true,
-      "url": "/app/app.js?hash=622f087fafa82ed8219deed904417e709097cf53",
+      "url": "/app/app.js?hash=8a7af219e25d4cd22dcaf9e3631274da07573ad3",
       "replaceable": true,
       "sourceMap": "app/app.js.map",
-      "sourceMapUrl": "/app/622f087fafa82ed8219deed904417e709097cf53.map",
-      "size": 7371,
-      "hash": "622f087fafa82ed8219deed904417e709097cf53",
-      "sri": "WFwLvbZwbueKvZkaz+YqW24VbV2JtyxslzOaDNe8UWDLcK070C3vOdY3WXV8618wIIeLpTbWK2EAaS2WGziE9g=="
+      "sourceMapUrl": "/app/8a7af219e25d4cd22dcaf9e3631274da07573ad3.map",
+      "size": 13925,
+      "hash": "8a7af219e25d4cd22dcaf9e3631274da07573ad3",
+      "sri": "G0uM20G2Y8jwcj6IQLRlglxR6VhR60amRbc+Qujq9jwsTgiWkyksBHxnBKYeB4ktC2OTcXgl8472VQyJO7qbbw=="
     },
     {
       "path": "merged-stylesheets.css",
       "where": "client",
       "type": "css",
       "cacheable": true,
-      "url": "/merged-stylesheets.css?hash=9a7eef1c76382c153ca1b3e2154f2363d41da507",
+      "url": "/merged-stylesheets.css?hash=d17062658bf72727bd88389b278bc2e2020a57f1",
       "sourceMap": "merged-stylesheets.css.map",
-      "sourceMapUrl": "/9a7eef1c76382c153ca1b3e2154f2363d41da507.map",
-      "size": 12068,
-      "hash": "9a7eef1c76382c153ca1b3e2154f2363d41da507",
-      "sri": "vSS15+yUS+17m2oWrYuiOTsLgBmkvuYabPkt8Bq63q7vZgwnXBVt6cjJii+/C/uHeohfRZ7JNwAR7spsF+SasA=="
+      "sourceMapUrl": "/d17062658bf72727bd88389b278bc2e2020a57f1.map",
+      "size": 13455,
+      "hash": "d17062658bf72727bd88389b278bc2e2020a57f1",
+      "sri": "Ld8a3QuUvD8yJzwbDrV5cXuW29YTCNWbymV04z6MiSBgj3F5/HISCwULJlQFLRg0VYr2DUZjILWe80l923gYnw=="
     },
     {
       "path": "packages/promise/promise.d.ts",
@@ -658,8 +658,8 @@
       "type": "asset",
       "cacheable": false,
       "url": "/images/logo.png",
-      "size": 13512,
-      "hash": "7ec4a235300a3cf4a733c14d530d3fa81d390c64",
+      "size": 24571,
+      "hash": "b0c16c1f4b87ae4f1251b738ffdafdfec1c94539",
       "sri": null
     },
     {
@@ -675,5 +675,5 @@
       "hash": "33a76f2b4c30f6e44559d748578e1b43c573b579"
     }
   ],
-  "hmrVersion": 1745745850221
+  "hmrVersion": 1746860676528
 }

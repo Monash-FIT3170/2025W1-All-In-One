@@ -8,6 +8,11 @@
       "path": "programs/web.browser/program.json"
     },
     {
+      "name": "web.browser.legacy",
+      "arch": "web.browser.legacy",
+      "path": "programs/web.browser.legacy/program.json"
+    },
+    {
       "name": "server",
       "arch": "os",
       "path": "programs/server/boot.js"
@@ -16,5 +21,5 @@
   "meteorRelease": "METEOR@3.1.2",
   "nodeVersion": "22.13.1",
   "npmVersion": "10.1.0",
-  "gitCommitHash": "a756cbc7cae360c0242cfd0688676e7a321d8a32"
+  "gitCommitHash": "57e3b9f20ad110735513d62ead346a1b836d5655"
 }

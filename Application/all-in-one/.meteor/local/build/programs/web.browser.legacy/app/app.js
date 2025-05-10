@@ -1,11 +1,11 @@
 var require = meteorInstall({"imports":{"ui":{"App.jsx":function module(require,exports,module){
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                                         //
-// imports/ui/App.jsx                                                                                      //
-//                                                                                                         //
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                                                                                           //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                              //
+// imports/ui/App.jsx                                                                                           //
+//                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                                                                //
 !function (module1) {
   module1.export({
     App: function () {
@@ -39,36 +39,105 @@ var require = meteorInstall({"imports":{"ui":{"App.jsx":function module(require,
       LoginPage = v;
     }
   }, 2);
+  var HomePage;
+  module1.link("./HomePage.jsx", {
+    HomePage: function (v) {
+      HomePage = v;
+    }
+  }, 3);
+  var SignUpPage;
+  module1.link("./SignUpPage.jsx", {
+    SignUpPage: function (v) {
+      SignUpPage = v;
+    }
+  }, 4);
   ___INIT_METEOR_FAST_REFRESH(module);
   var App = function () {
     return /*#__PURE__*/React.createElement(Router, null, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement(Routes, null, /*#__PURE__*/React.createElement(Route, {
       path: "/",
-      element: /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h1", null, "Home Page"), /*#__PURE__*/React.createElement("p", null, "Already have an account?", /*#__PURE__*/React.createElement(Link, {
-        to: "/login",
-        style: {
-          color: "blue",
-          marginLeft: "5px"
-        }
-      }, "Login here")))
+      element: /*#__PURE__*/React.createElement(HomePage, null)
     }), /*#__PURE__*/React.createElement(Route, {
       path: "/login",
       element: /*#__PURE__*/React.createElement(LoginPage, null)
+    }), /*#__PURE__*/React.createElement(Route, {
+      path: "/signup",
+      element: /*#__PURE__*/React.createElement(SignUpPage, null)
     }))));
   };
   _c = App;
   var _c;
   $RefreshReg$(_c, "App");
 }.call(this, module);
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+},"HomePage.jsx":function module(require,exports,module){
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                              //
+// imports/ui/HomePage.jsx                                                                                      //
+//                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                                                                //
+!function (module1) {
+  module1.export({
+    HomePage: function () {
+      return HomePage;
+    }
+  });
+  var React;
+  module1.link("react", {
+    "default": function (v) {
+      React = v;
+    }
+  }, 0);
+  var Link;
+  module1.link("react-router-dom", {
+    Link: function (v) {
+      Link = v;
+    }
+  }, 1);
+  ___INIT_METEOR_FAST_REFRESH(module);
+  // HomePage.jsx
+
+  var HomePage = function () {
+    return /*#__PURE__*/React.createElement("div", {
+      className: "flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#CEF4F1] via-[#FFF7E6] to-[#F3D673] relative"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "absolute top-6 right-6 flex gap-4"
+    }, /*#__PURE__*/React.createElement(Link, {
+      to: "/login"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-5 rounded-full"
+    }, "Log In")), /*#__PURE__*/React.createElement(Link, {
+      to: "/signup"
+    }, /*#__PURE__*/React.createElement("button", {
+      className: "bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-5 rounded-full"
+    }, "Sign Up"))), /*#__PURE__*/React.createElement("div", {
+      className: "text-center mb-4"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl text-gray-700 font-semibold"
+    }, "Your One Stop for Rental Solutions")), /*#__PURE__*/React.createElement("h1", {
+      className: "text-7xl font-extrabold text-[#368C87] uppercase tracking-wide"
+    }, "All In One"), /*#__PURE__*/React.createElement("img", {
+      src: "/images/logo.png",
+      alt: "Logo",
+      className: "w-40 h-40 mb-8"
+    }));
+  };
+  _c = HomePage;
+  var _c;
+  $RefreshReg$(_c, "HomePage");
+}.call(this, module);
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 },"LoginPage.jsx":function module(require,exports,module){
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                                         //
-// imports/ui/LoginPage.jsx                                                                                //
-//                                                                                                         //
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                                                                                           //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                              //
+// imports/ui/LoginPage.jsx                                                                                     //
+//                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                                                                //
 !function (module1) {
   var _slicedToArray;
   module1.link("@babel/runtime/helpers/slicedToArray", {
@@ -96,6 +165,12 @@ var require = meteorInstall({"imports":{"ui":{"App.jsx":function module(require,
       useState = v;
     }
   }, 1);
+  var Link;
+  module1.link("react-router-dom", {
+    Link: function (v) {
+      Link = v;
+    }
+  }, 2);
   ___INIT_METEOR_FAST_REFRESH(module);
   var _s = $RefreshSig$();
   var LoginPage = function () {
@@ -119,9 +194,10 @@ var require = meteorInstall({"imports":{"ui":{"App.jsx":function module(require,
       className: "mb-8"
     }), /*#__PURE__*/React.createElement("h2", {
       className: "text-2xl font-semibold mb-4"
-    }, "Don't have an account?"), /*#__PURE__*/React.createElement("button", {
-      className: "bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded flex items-center gap-2 mb-6"
-    }, /*#__PURE__*/React.createElement("span", null, "Sign Up")), /*#__PURE__*/React.createElement("p", {
+    }, "Don't have an account?"), /*#__PURE__*/React.createElement(Link, {
+      to: "/signup",
+      className: "bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded flex items-center gap-2 mb-6 no-underline"
+    }, " ", /*#__PURE__*/React.createElement("span", null, "Sign Up")), /*#__PURE__*/React.createElement("p", {
       className: "text-sm text-gray-600 mb-6"
     }, "Forgot Password?")), /*#__PURE__*/React.createElement("div", {
       className: "w-1/2 bg-[#CEF4F1] flex flex-col items-center justify-center p-10"
@@ -158,16 +234,111 @@ var require = meteorInstall({"imports":{"ui":{"App.jsx":function module(require,
   var _c;
   $RefreshReg$(_c, "LoginPage");
 }.call(this, module);
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+},"SignUpPage.jsx":function module(require,exports,module){
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                              //
+// imports/ui/SignUpPage.jsx                                                                                    //
+//                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                                                                //
+!function (module1) {
+  module1.export({
+    SignUpPage: function () {
+      return SignUpPage;
+    }
+  });
+  var Meteor;
+  module1.link("meteor/meteor", {
+    Meteor: function (v) {
+      Meteor = v;
+    }
+  }, 0);
+  var React, useState;
+  module1.link("react", {
+    "default": function (v) {
+      React = v;
+    },
+    useState: function (v) {
+      useState = v;
+    }
+  }, 1);
+  var Link;
+  module1.link("react-router-dom", {
+    Link: function (v) {
+      Link = v;
+    }
+  }, 2);
+  ___INIT_METEOR_FAST_REFRESH(module);
+  var SignUpPage = function () {
+    var submit = function (e) {};
+    return /*#__PURE__*/React.createElement("div", {
+      className: "flex min-h-screen"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "w-1/2 bg-[#FFF7E6] flex flex-col items-center justify-center p-10"
+    }, /*#__PURE__*/React.createElement("img", {
+      src: "/images/logo.png",
+      alt: "All In One Logo",
+      className: "mb-8"
+    }), /*#__PURE__*/React.createElement("h2", {
+      className: "text-2xl font-semibold mb-4"
+    }, "Already have an account?"), /*#__PURE__*/React.createElement(Link, {
+      to: "/login",
+      className: "bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded flex items-center gap-2 mb-6 no-underline"
+    }, " ", /*#__PURE__*/React.createElement("span", null, "Log In")), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-gray-600 mb-6"
+    }, "Forgot Password?")), /*#__PURE__*/React.createElement("div", {
+      className: "w-1/2 bg-[#CEF4F1] flex flex-col items-center justify-center p-10"
+    }, /*#__PURE__*/React.createElement("h1", {
+      className: "text-3xl font-bold mb-8"
+    }, "Create Account"), /*#__PURE__*/React.createElement("form", {
+      className: "w-3/4 flex flex-col gap-4"
+    }, /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      placeholder: "First Name",
+      className: "border p-2 rounded",
+      required: true
+    }), /*#__PURE__*/React.createElement("input", {
+      type: "text",
+      placeholder: "Last Name",
+      className: "border p-2 rounded",
+      required: true
+    }), /*#__PURE__*/React.createElement("input", {
+      type: "email",
+      placeholder: "Email",
+      className: "border p-2 rounded",
+      required: true
+    }), /*#__PURE__*/React.createElement("input", {
+      type: "password",
+      placeholder: "New Password",
+      className: "border p-2 rounded",
+      required: true
+    }), /*#__PURE__*/React.createElement("input", {
+      type: "password",
+      placeholder: "Confirm Password",
+      className: "border p-2 rounded",
+      required: true
+    }), /*#__PURE__*/React.createElement("button", {
+      type: "submit",
+      className: "bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded"
+    }, "Sign Up"))));
+  };
+  _c = SignUpPage;
+  var _c;
+  $RefreshReg$(_c, "SignUpPage");
+}.call(this, module);
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }}},"client":{"main.jsx":function module(require,exports,module){
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//                                                                                                         //
-// client/main.jsx                                                                                         //
-//                                                                                                         //
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
-                                                                                                           //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                                                                                              //
+// client/main.jsx                                                                                              //
+//                                                                                                              //
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+                                                                                                                //
 !function (module1) {
   var React;
   module1.link("react", {
@@ -200,7 +371,7 @@ var require = meteorInstall({"imports":{"ui":{"App.jsx":function module(require,
     root.render(/*#__PURE__*/React.createElement(App, null));
   });
 }.call(this, module);
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 }}},{
   "extensions": [
