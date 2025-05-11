@@ -48,7 +48,7 @@ export const Calendar = () => {
     }
   };
 
-  const handleBookingSelect = ({ type, property, tenant, notes }) => {
+  const handleBookingSelect = ({ type, property, tenant, notes, image }) => {
     const tempEvent = {
       id: Date.now(),
       start: pendingSlot.start,
@@ -58,6 +58,7 @@ export const Calendar = () => {
       property,
       tenant,
       notes,
+      image,
       allDay: false,
     };
     setNewEvents((prev) => [...prev, tempEvent]);

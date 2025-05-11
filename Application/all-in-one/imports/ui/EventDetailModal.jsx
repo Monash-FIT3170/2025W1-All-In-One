@@ -38,7 +38,7 @@ export const EventDetailModal = ({ event, onClose }) => {
           <img
             src={event.image || '/property.png'}
             alt="Property"
-            className="rounded-xl mb-2"
+            className="rounded-xl mb-2 w-full h-48 object-cover"
           />
           <div className="bg-[#CEF4F1] p-4 rounded-xl">
             <p className="text-center text-gray-700">{event.property || 'Unknown Address'}</p>

@@ -23,7 +23,8 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
 
     onSubmit({
       type: 'Open House',
-      property,
+      property: selected?.name || property,
+      image: selected?.image || '/property.png',
       tenant: '',
       notes,
     });

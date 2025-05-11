@@ -32,10 +32,10 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
 
     onSubmit({
       type: 'Inspection', // or 'Open House'
-      property,
-      tenant,
+      property: selectedProperty?.name || property,
+      image: selectedProperty?.image || '/property.png',
+      tenant: selectedTenant?.name || tenant,
       notes,
-      image,
     });
   };
 
