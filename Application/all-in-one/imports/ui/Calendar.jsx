@@ -9,7 +9,7 @@ import { InspectionAvailabilities } from '../api/InspectionAvailabilities';
 import { ClearDialog } from './ClearDialog'; 
 import { TypeDialog } from './TypeDialog';  
 import { OpenHouseDialog } from './OpenHouseDialog.jsx'; 
-import { InspectionDialog } from './InspectionDialog'; 
+// import { InspectionDialog } from './InspectionDialog'; 
 import { EventDetailModal } from './EventDetailModal'; 
 
 
@@ -21,9 +21,9 @@ export const Calendar = () => {
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showTypeDialog, setShowTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
-  const [showInspectionDialog, setShowInspectionDialog] = useState(false);
+  // const [showInspectionDialog, setShowInspectionDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null); 
 
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('inspectionAvailabilities');
@@ -44,33 +44,43 @@ export const Calendar = () => {
     if (type === 'Open House') {
       setShowOpenHouseDialog(true);
     } else if (type === 'Inspection') {
-      setShowInspectionDialog(true);
+      handleBookingSelect({
+        type,
+        property: '',
+        price: '',
+        bedrooms: '',
+        bathrooms: '',
+        parking: '',
+        image: '',
+      });
     }
   };
 
-  const handleBookingSelect = ({ type, property, price, bedrooms, bathrooms, parking, tenant, tenantAge, occupation, notes, image }) => {
+  // const handleBookingSelect = ({ type, property, price, bedrooms, bathrooms, parking, tenant, tenantAge, occupation, notes, image }) => {
+  const handleBookingSelect = ({ type, property, price, bedrooms, bathrooms, parking, image }) => {
     const tempEvent = {
       id: Date.now(),
       start: pendingSlot.start,
       end: pendingSlot.end,
       type,
-      title: `Pending: ${type}`,
+      status: 'pending',
+      title: `Pending: ${type} Availability`,
       property,
       price,
       bedrooms,
       bathrooms,
       parking,
-      tenant,
-      tenantAge,
-      occupation,
-      notes,
+      // tenant,
+      // tenantAge,
+      // occupation,
+      // notes,
       image,
       allDay: false,
     };
     setNewEvents((prev) => [...prev, tempEvent]);
     setPendingSlot(null);
-    setShowOpenHouseDialog(false);
-    setShowInspectionDialog(false);
+    setShowOpenHouseDialog(false); 
+    // setShowInspectionDialog(false);
   };
   
 
@@ -94,11 +104,12 @@ export const Calendar = () => {
         event.bedrooms,
         event.bathrooms,
         event.parking,
-        event.tenant,
-        event.notes,
+        // event.tenant,
+        // event.notes,
         event.image,
-        event.tenantAge,
-        event.occupation,
+        // event.tenantAge,
+        // event.occupation,
+        'confirmed',
         (error) => {
           if (error) {
             alert('Insert failed: ' + error.reason);
@@ -139,7 +150,7 @@ export const Calendar = () => {
 
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Book Availability</h2>
+        <h2 className="text-3xl font-bold text-gray-800">Add Availability</h2>
         <p className="text-gray-500 mt-2">Click empty timeslot to create Availability.</p>
         <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections or open house for any property.</p>
       </div>
@@ -162,26 +173,54 @@ export const Calendar = () => {
             ...availabilities.map(slot => ({
               ...slot,
               id: slot._id,
-              title: slot.type ? `Available for ${slot.type}` : 'Available',
+              title: slot.type ? `${slot.type} Availability` : 'Available',
               start: slot.start,
               end: slot.end,
               allDay: false,
+              backgroundColor:
+                slot.status === 'pending'
+                  ? '#F2F2F2'  
+                  : slot.type === 'Open House'
+                  ? '#FFF8E9' 
+                  : '#CEF4F1',
+              // backgroundColor: slot.type === 'Open House' ? '#FFF8E9' : '#CEF4F1',
+              textColor:
+                slot.status === 'pending'
+                  ? '#000000'  
+                  : slot.type === 'Open House'
+                  ? '#A98A22' 
+                  : '#24A89E',
+              // textColor: slot.type === 'Open House' ? '#A98A22' : '#24A89E',
+              borderColor:
+                slot.status === 'pending'
+                  ? '#000000'  
+                  : slot.type === 'Open House'
+                  ? '#A98A22' 
+                  : '#24A89E',
+              // borderColor: slot.type === 'Open House' ? '#A98A22' : '#24A89E',
               ...slot
             })),
-            ...newEvents,
+            ...newEvents.map(event => ({
+              ...event,
+              backgroundColor: '#F2F2F2', 
+              textColor: '#000000',
+              borderColor: '#000000',
+            })),
           ]}             
           eventClick={(info) => {
             const clicked = info.event.extendedProps;
-            setSelectedEvent({
-              title: info.event.title,
-              start: info.event.start,
-              end: info.event.end,
-              ...clicked,
-            });
+            if (clicked.type === 'Open House') {
+              setSelectedEvent({
+                title: info.event.title,
+                start: info.event.start,
+                end: info.event.end,
+                ...clicked,
+              });
+            } 
           }}          
-          eventTextColor='#24A89E'             
-          eventBackgroundColor="#CEF4F1"
-          eventBorderColor="#24A89E"
+          // eventTextColor='#24A89E'             
+          // eventBackgroundColor="#CEF4F1"
+          // eventBorderColor="#24A89E"
           headerToolbar={{
             left: 'prev today next',
             center: '',
@@ -200,7 +239,7 @@ export const Calendar = () => {
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} />
         <TypeDialog isOpen={showTypeDialog} onSelect={handleTypeSelect} onClose={() => setShowTypeDialog(false)} /> 
         <OpenHouseDialog isOpen={showOpenHouseDialog} onSubmit={handleBookingSelect} onClose={() => setShowOpenHouseDialog(false)} />
-        <InspectionDialog isOpen={showInspectionDialog} onSubmit={handleBookingSelect} onClose={() => setShowInspectionDialog(false)} />
+        {/* <InspectionDialog isOpen={showInspectionDialog} onSubmit={handleBookingSelect} onClose={() => setShowInspectionDialog(false)} /> */}
       </div>
 
       {/* Detail view modal */}

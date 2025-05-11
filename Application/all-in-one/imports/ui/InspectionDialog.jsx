@@ -4,7 +4,7 @@ import { mockProperties, mockTenants } from '../api/mockData';
 export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
   const [property, setProperty] = useState('');
   const [tenant, setTenant] = useState('');
-  const [notes, setNotes] = useState('');
+  // const [notes, setNotes] = useState('');
   const [showPropertySuggestions, setShowPropertySuggestions] = useState(false);
   const [showTenantSuggestions, setShowTenantSuggestions] = useState(false);
 
@@ -20,7 +20,7 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
     if (isOpen) {
       setProperty('');
       setTenant('');
-      setNotes('');
+      // setNotes('');
       setShowPropertySuggestions(false);
       setShowTenantSuggestions(false);
     }
@@ -41,7 +41,7 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
       tenant: selectedTenant?.name || tenant,
       tenantAge: selectedTenant?.age?.toString() || '-',
       occupation: selectedTenant?.occupation || '-',
-      notes,
+      // notes,
     });
   };
 
@@ -130,7 +130,7 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
         </div>
 
         {/* Notes Field */}
-        <div>
+        {/* <div>
           <label className="block text-black font-semibold mb-1">Notes</label>
           <textarea
             placeholder="Notes..."
@@ -139,7 +139,7 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
             className="w-full px-4 py-2 rounded-lg bg-[#FFF8E9] border border-gray-300"
             rows={3}
           ></textarea>
-        </div>
+        </div> */}
 
         <div className="text-center">
           <button

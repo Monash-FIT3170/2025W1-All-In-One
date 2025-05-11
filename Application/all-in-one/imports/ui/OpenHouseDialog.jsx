@@ -3,7 +3,7 @@ import { mockProperties } from '../api/mockData';
 
 export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
   const [property, setProperty] = useState('');
-  const [notes, setNotes] = useState('');
+  // const [notes, setNotes] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
   const filteredProperties = mockProperties.filter(p =>
@@ -13,7 +13,7 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
   useEffect(() => {
     if (isOpen) {
       setProperty('');
-      setNotes('');
+      // setNotes('');
       setShowSuggestions(false);
     }
   }, [isOpen]);
@@ -29,10 +29,10 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
       bedrooms: selected?.bedrooms || '-',
       bathrooms: selected?.bathrooms || '-',
       parking: selected?.parking || '-',
-      tenant: '',
-      tenantAge: '',
-      occupation: '',
-      notes,
+      // tenant: '',
+      // tenantAge: '',
+      // occupation: '',
+      // notes,
     });
   };
 
@@ -84,7 +84,7 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
           )}
         </div>
 
-        <div>
+        {/* <div>
           <label className="block text-black font-semibold mb-1">Notes</label>
           <textarea
             placeholder="Notes..."
@@ -93,7 +93,7 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
             className="w-full px-4 py-2 rounded-lg bg-[#FFF8E9] border border-gray-300"
             rows={3}
           ></textarea>
-        </div>
+        </div> */}
 
         <div className="text-center">
           <button

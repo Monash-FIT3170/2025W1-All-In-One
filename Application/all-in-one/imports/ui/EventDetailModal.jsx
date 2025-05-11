@@ -45,7 +45,7 @@ export const EventDetailModal = ({ event, onClose }) => {
             className="rounded-xl mb-2 w-full h-48 object-cover"
           />
           <div className="bg-[#CEF4F1] p-4 rounded-xl">
-            <p className="text-center text-gray-700">{event.property || 'Unknown Address'}</p>
+            <p className="text-center text-gray-700">{event.property || 'No property information'}</p>
             <p className="text-center text-sm text-gray-700">${event.price || '—'} per week</p>
             
             <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
@@ -88,12 +88,12 @@ export const EventDetailModal = ({ event, onClose }) => {
               No tenant information.
             </div>
           )}
-          {event.notes?.trim() && (
+          {/* {event.notes?.trim() && (
             <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
               <p className="font-semibold mb-1">Note</p>
               <p className="whitespace-pre-line">{event.notes}</p>
             </div>
-          )}
+          )} */}
         </div>
       </div>
     </div>
