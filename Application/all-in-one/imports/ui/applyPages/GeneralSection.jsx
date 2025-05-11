@@ -1,60 +1,107 @@
-// src/pages/forms/GeneralForm.jsx
-import React from 'react';
+import React, { useState } from 'react';
+import { Meteor } from 'meteor/meteor';
 
-function GeneralSection() {
+const GeneralSection = () => {
+  const [propId, setPropId] = useState('');
+  const [leaseStart, setLeaseStart] = useState('');
+  const [leaseTerm, setLeaseTerm] = useState('');
+  const [appRent, setAppRent] = useState('');
+  const [desc, setDesc] = useState('');
+  const [statusMessage, setStatusMessage] = useState('');
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const data = {
+      rental_app_id: `RA${Date.now()}`, // You can generate a more robust ID
+      prop_id: propId,
+      lease_start_date: new Date(leaseStart),
+      lease_term: leaseTerm,
+      app_rent: Number(appRent),
+      app_desc: desc,
+      rental_app_prop_inspected: false,
+      ten_id: 'T001', // Placeholder: replace with logged-in user or form input
+      leaseholder_id: 'L001', // Placeholder
+      employment_id: 'E001', // Placeholder
+      household_pets: false,
+      status: 'Pending',
+    };
+
+    Meteor.call('rentalApplications.insert', data, (err, res) => {
+      if (err) {
+        setStatusMessage(`Error: ${err.message}`);
+      } else {
+        setStatusMessage('Saved successfully!');
+        // Optionally reset form here
+      }
+    });
+  };
+
   return (
-    <div>
-      <h3 className="text-xl font-semibold mb-2">General</h3>
-      <p className="text-gray-600 text-sm mb-6">Please fill out the following details.</p>
-
-      {/* Lease Start Date */}
-      <div className="mb-4">
-        <label htmlFor="lease-start" className="block mb-1 font-medium">
-          Lease Start Date
-        </label>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div>
+        {/* should be atoumated juist placeholder for now */}
+        <label className="block font-semibold">Property ID:</label>
         <input
-          type="text"
-          id="lease-start"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
-          placeholder="Pick a date"
+          value={propId}
+          onChange={(e) => setPropId(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
+          placeholder="e.g. P001"
         />
       </div>
 
-      {/* Lease Term */}
-      <div className="mb-4">
-        <label htmlFor="lease-term" className="block mb-1 font-medium">
-          Initial Lease Term
-        </label>
-        <select
-          id="lease-term"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
-        >
-          <option value="" disabled selected>
-            Select desired lease term.
-          </option>
-          <option value="6">6 months</option>
-          <option value="12">12 months</option>
-        </select>
-      </div>
-
-      {/* Rent per Week */}
-      <div className="mb-6">
-        <label htmlFor="rent" className="block mb-1 font-medium">
-          Rent per week
-        </label>
+      <div>
+        <label className="block font-semibold">Lease Start Date:</label>
         <input
-          type="text"
-          id="rent"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
-          placeholder="e.g., 400"
+          type="date"
+          value={leaseStart}
+          onChange={(e) => setLeaseStart(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
         />
       </div>
 
-      <button className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition">
+      <div>
+        <label className="block font-semibold">Lease Term:</label>
+        <input
+          value={leaseTerm}
+          onChange={(e) => setLeaseTerm(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
+          placeholder="e.g. 6 months"
+        />
+      </div>
+
+      <div>
+        <label className="block font-semibold">Rent Per Week:</label>
+        <input
+          type="number"
+          value={appRent}
+          onChange={(e) => setAppRent(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
+        />
+      </div>
+
+      <div>
+        <label className="block font-semibold">Application Description:</label>
+        <textarea
+          value={desc}
+          onChange={(e) => setDesc(e.target.value)}
+          className="border px-3 py-2 rounded w-full"
+          placeholder="Why are you applying?"
+        />
+      </div>
+
+      <button
+        type="submit"
+        className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+      >
         Save Details
       </button>
-    </div>
+
+      {statusMessage && (
+        <p className="mt-4 text-sm text-green-600">{statusMessage}</p>
+      )}
+    </form>
   );
-}
+};
 
 export default GeneralSection;
