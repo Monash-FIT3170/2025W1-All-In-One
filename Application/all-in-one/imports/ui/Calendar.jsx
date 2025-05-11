@@ -48,7 +48,7 @@ export const Calendar = () => {
     }
   };
 
-  const handleBookingSelect = ({ type, property, tenant, notes, image }) => {
+  const handleBookingSelect = ({ type, property, price, bedrooms, bathrooms, parking, tenant, tenantAge, occupation, notes, image }) => {
     const tempEvent = {
       id: Date.now(),
       start: pendingSlot.start,
@@ -56,7 +56,13 @@ export const Calendar = () => {
       type,
       title: `Pending: ${type}`,
       property,
+      price,
+      bedrooms,
+      bathrooms,
+      parking,
       tenant,
+      tenantAge,
+      occupation,
       notes,
       image,
       allDay: false,
@@ -84,8 +90,15 @@ export const Calendar = () => {
         event.end,
         event.type,
         event.property,
+        event.price,
+        event.bedrooms,
+        event.bathrooms,
+        event.parking,
         event.tenant,
         event.notes,
+        event.image,
+        event.tenantAge,
+        event.occupation,
         (error) => {
           if (error) {
             alert('Insert failed: ' + error.reason);
@@ -147,6 +160,7 @@ export const Calendar = () => {
           select={handleSelect}      
           events={[
             ...availabilities.map(slot => ({
+              ...slot,
               id: slot._id,
               title: slot.type ? `Available for ${slot.type}` : 'Available',
               start: slot.start,

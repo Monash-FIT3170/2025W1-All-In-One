@@ -25,7 +25,13 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
       type: 'Open House',
       property: selected?.name || property,
       image: selected?.image || '/property.png',
+      price: selected?.price || '-',
+      bedrooms: selected?.bedrooms || '-',
+      bathrooms: selected?.bathrooms || '-',
+      parking: selected?.parking || '-',
       tenant: '',
+      tenantAge: '',
+      occupation: '',
       notes,
     });
   };

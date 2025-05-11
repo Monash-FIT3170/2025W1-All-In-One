@@ -34,7 +34,13 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
       type: 'Inspection', // or 'Open House'
       property: selectedProperty?.name || property,
       image: selectedProperty?.image || '/property.png',
+      price: selectedProperty?.price || '-',
+      bedrooms: selectedProperty?.bedrooms || '-',
+      bathrooms: selectedProperty?.bathrooms || '-',
+      parking: selectedProperty?.parking || '-',
       tenant: selectedTenant?.name || tenant,
+      tenantAge: selectedTenant?.age?.toString() || '-',
+      occupation: selectedTenant?.occupation || '-',
       notes,
     });
   };

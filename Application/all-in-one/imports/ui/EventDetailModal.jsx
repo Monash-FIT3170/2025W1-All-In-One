@@ -35,6 +35,10 @@ export const EventDetailModal = ({ event, onClose }) => {
         </button>
         {/* Left: Property Info */}
         <div className="flex-1">
+          <h2 className="text-3xl text-center font-semibold text-gray-800 mb-2 tracking-wide">
+            {event.type || ''}
+          </h2>
+
           <img
             src={event.image || '/property.png'}
             alt="Property"
@@ -42,6 +46,22 @@ export const EventDetailModal = ({ event, onClose }) => {
           />
           <div className="bg-[#CEF4F1] p-4 rounded-xl">
             <p className="text-center text-gray-700">{event.property || 'Unknown Address'}</p>
+            <p className="text-center text-sm text-gray-700">${event.price || '—'} per week</p>
+            
+            <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
+              <div className="flex items-center gap-1">
+                <img src="/bed-icon.png" alt="bed" className="w-4 h-4" />
+                {event.bedrooms || '—'}
+              </div>
+              <div className="flex items-center gap-1">
+                <img src="/bath-icon.png" alt="bath" className="w-4 h-4" />
+                {event.bathrooms || '—'}
+              </div>
+              <div className="flex items-center gap-1">
+                <img src="/car-icon.png" alt="car" className="w-4 h-4" />
+                {event.parking || '—'}
+              </div>
+            </div>
           </div>
         </div>
 
@@ -55,16 +75,23 @@ export const EventDetailModal = ({ event, onClose }) => {
           </p>
 
           {event.tenant ? (
-            <div className="bg-white p-4 rounded-xl space-y-2 mt-4">
-            <p className="font-semibold text-lg">{event.tenant}</p>
-            {event.notes && (
-              <p className="text-sm text-gray-600 whitespace-pre-line">{event.notes}</p>
-            )}
-          </div>
-          
+            <>
+              <div className="bg-white p-4 rounded-xl space-y-2 mt-4">
+                <p className="font-semibold text-lg">{event.tenant}</p>
+                <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
+                <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
+              </div>
+            </>
+
           ) : (
             <div className="text-sm text-gray-600 mt-4 italic">
-              This is an open house slot with no tenant info.
+              No tenant information.
+            </div>
+          )}
+          {event.notes?.trim() && (
+            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
+              <p className="font-semibold mb-1">Note</p>
+              <p className="whitespace-pre-line">{event.notes}</p>
             </div>
           )}
         </div>
