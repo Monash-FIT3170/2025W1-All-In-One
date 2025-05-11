@@ -65,6 +65,7 @@ export const Calendar = () => {
     setShowOpenHouseDialog(false);
     setShowInspectionDialog(false);
   };
+  
 
   const handleConfirmButtonClick = () => {
     setShowDialog(true); 
@@ -84,19 +85,13 @@ export const Calendar = () => {
         event.property,
         event.tenant,
         event.notes,
-        event.occupation,
-        event.tenantAge,
-        event.price,
-        event.image,
-        event.bedrooms,
-        event.bathrooms,
-        event.garages,    
         (error) => {
           if (error) {
+            alert('Insert failed: ' + error.reason);
             console.error('Failed to create availability:', error.reason);
           }
         }
-      );
+      );      
     });
     setNewEvents([]);
     setShowDialog(false);
@@ -156,6 +151,7 @@ export const Calendar = () => {
               start: slot.start,
               end: slot.end,
               allDay: false,
+              ...slot
             })),
             ...newEvents,
           ]}             

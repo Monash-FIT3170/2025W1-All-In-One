@@ -1,28 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { mockProperties } from '../api/mockData';
 
 export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
   const [property, setProperty] = useState('');
   const [notes, setNotes] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-
-  const mockProperties = [
-    {
-      name: '123 Main Street',
-      price: 750,
-      bathrooms: 2,
-      bedrooms: 3,
-      garages: 1,
-      image: '/property.png',
-    },
-    {
-      name: '456 Apple Avenue',
-      price: 850,
-      bathrooms: 3,
-      bedrooms: 4,
-      garages: 2,
-      image: '/property2.png',
-    },
-  ];
 
   const filteredProperties = mockProperties.filter(p =>
     p.name.toLowerCase().includes(property.toLowerCase())
@@ -41,13 +23,8 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
 
     onSubmit({
       type: 'Open House',
-      property: selected?.name || property,
-      price: selected?.price,
-      bathrooms: selected?.bathrooms,
-      bedrooms: selected?.bedrooms,
-      garages: selected?.garages,
-      image: selected?.image,
-      tenant: '', // placeholder
+      property,
+      tenant: '',
       notes,
     });
   };
@@ -57,7 +34,6 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
       <div className="bg-[#FFE284] p-6 rounded-xl shadow-lg w-[380px] text-left space-y-4 relative">
-        {/* X Close Button */}
         <button
           className="absolute top-4 right-4 text-xl font-bold text-black hover:text-gray-700"
           onClick={onClose}
@@ -100,6 +76,7 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
             </div>
           )}
         </div>
+
         <div>
           <label className="block text-black font-semibold mb-1">Notes</label>
           <textarea

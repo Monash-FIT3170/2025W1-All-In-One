@@ -25,7 +25,14 @@ export const EventDetailModal = ({ event, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-[#FFE284] p-6 rounded-xl w-[800px] shadow-lg flex gap-6">
+      <div className="relative bg-[#FFE284] p-6 rounded-xl w-[800px] shadow-lg flex gap-6">
+        <button
+          className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
+          onClick={onClose}
+          aria-label="Close"
+        >
+          ×
+        </button>
         {/* Left: Property Info */}
         <div className="flex-1">
           <img
@@ -33,22 +40,8 @@ export const EventDetailModal = ({ event, onClose }) => {
             alt="Property"
             className="rounded-xl mb-2"
           />
-          <div className="bg-[#D9F7F6] p-4 rounded-xl">
-            <p className="text-xl font-semibold mb-2">
-              ${event.price || 700} per week
-            </p>
-            <p className="text-gray-700">{event.property || 'Unknown Address'}</p>
-            <div className="flex gap-4 mt-2 text-sm text-gray-600">
-            <span className="flex items-center gap-1">
-              <img src="/bath-icon.png" alt="bath" className="w-4 h-4" /> {event.bathrooms || 1}
-            </span>
-            <span className="flex items-center gap-1">
-              <img src="/bed-icon.png" alt="bed" className="w-4 h-4" /> {event.bedrooms || 1}
-            </span>
-            <span className="flex items-center gap-1">
-              <img src="/car-icon.png" alt="car" className="w-4 h-4" /> {event.garages || 1}
-            </span>
-            </div>
+          <div className="bg-[#CEF4F1] p-4 rounded-xl">
+            <p className="text-center text-gray-700">{event.property || 'Unknown Address'}</p>
           </div>
         </div>
 
@@ -63,22 +56,17 @@ export const EventDetailModal = ({ event, onClose }) => {
 
           {event.tenant ? (
             <div className="bg-white p-4 rounded-xl space-y-2 mt-4">
-              <p className="font-semibold text-lg">{event.tenant}</p>
-              <p className="text-gray-500">Age: {event.tenantAge || '-'}</p>
-              <p className="text-gray-500">Occupation: {event.occupation || '-'}</p>
-            </div>
+            <p className="font-semibold text-lg">{event.tenant}</p>
+            {event.notes && (
+              <p className="text-sm text-gray-600 whitespace-pre-line">{event.notes}</p>
+            )}
+          </div>
+          
           ) : (
             <div className="text-sm text-gray-600 mt-4 italic">
               This is an open house slot with no tenant info.
             </div>
           )}
-
-          <button
-            onClick={onClose}
-            className="mt-6 bg-[#D9F7F6] px-6 py-2 rounded-xl text-black font-bold"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>
