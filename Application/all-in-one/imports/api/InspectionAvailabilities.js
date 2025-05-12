@@ -20,11 +20,12 @@ Meteor.methods({
     bedrooms,
     bathrooms,
     parking,
-    tenant,
-    notes,
+    // tenant,
+    // notes,
     image,
-    tenantAge,
-    occupation
+    // tenantAge,
+    // occupation
+    status,
   ) {
     check(start, String);
     check(end, String);
@@ -34,11 +35,13 @@ Meteor.methods({
     check(bedrooms, Match.Optional(String));
     check(bathrooms, Match.Optional(String));
     check(parking, Match.Optional(String)); 
-    check(tenant, Match.Optional(String)); 
-    check(notes,  Match.Optional(String)); 
+    // check(tenant, Match.Optional(String)); 
+    // check(notes,  Match.Optional(String)); 
     check(image, Match.Optional(String));
-    check(tenantAge, Match.Optional(String));
-    check(occupation, Match.Optional(String));
+    // check(tenantAge, Match.Optional(String));
+    // check(occupation, Match.Optional(String));
+    check(status, Match.Optional(String));
+
 
 
     return InspectionAvailabilities.insertAsync({
@@ -50,11 +53,12 @@ Meteor.methods({
       bedrooms,
       bathrooms,
       parking,
-      tenant,
-      notes,
+      // tenant,
+      // notes,
       image,
-      tenantAge,
-      occupation,
+      // tenantAge,
+      // occupation,
+      status,
       createdAt: new Date(),
     });
   },
