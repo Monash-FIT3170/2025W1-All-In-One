@@ -7,7 +7,7 @@ export default function BasicPropListing() {
   const properties = [
     {
       id: 1,
-      location: "Melton South, 344338",
+      location: "Melton South, 3338",
       price: "$800",
       image: "/images/Melton/melton_property_livingroom.png",
       beds: 3,
@@ -87,7 +87,24 @@ export default function BasicPropListing() {
         </div>
       </div>
       
-
+      {
+        
+      }
+      <div className="mt-4 w-full flex justify-center">
+        <div className="w-[1220px] px-4 py-3 flex justify-start rounded-lg">
+          <button
+            className="px-6 py-2 text-white rounded-lg focus:outline-none"
+            style={{
+              backgroundColor: '#fbe698',
+              color: '#1f2937',
+            }}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e6c86a')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fbe698')}
+          >
+            Add Property Listing
+          </button>
+        </div>
+      </div>
 
 
       {/* Property Grid */}
