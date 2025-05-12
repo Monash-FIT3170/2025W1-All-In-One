@@ -1,13 +1,13 @@
 import React from "react";
 import { FaBath,FaBed, FaCar, FaCouch} from "react-icons/fa";
 
-export default function DetailedPropListing() {
+export default function BasicPropListing() {
   // mock data- should be connected to database once its set up
 
   const properties = [
     {
       id: 1,
-      location: "Melton South, 3338",
+      location: "Melton South, 344338",
       price: "$800",
       image: "/images/Melton/melton_property_livingroom.png",
       beds: 3,
@@ -64,7 +64,7 @@ export default function DetailedPropListing() {
       {/* Page Heading */}
       <div className="max-w-7xl mx-auto w-full px-6 mt-6">
         <div className="pl-6">
-          <h1 className="text-3xl font-medium text-gray-800">View Properties (Agent view)</h1>
+          <h1 className="text-3xl font-medium text-gray-800">View Leased Properties (Tenant view)</h1>
           <p className="text-gray-600 text-base mt-1">All applications in one place!</p>
           <hr className="my-6 border-t-2 border-gray-300 w-full" 
           style={{ borderTop: '1px solid #e0e0e3', width: '1185px' }}/>
@@ -87,21 +87,7 @@ export default function DetailedPropListing() {
         </div>
       </div>
       
-      <div className="mt-4 w-full flex justify-center">
-        <div className="w-[1220px] px-4 py-3 flex justify-start rounded-lg">
-          <button
-            className="px-6 py-2 text-white rounded-lg focus:outline-none"
-            style={{
-              backgroundColor: '#fbe698',
-              color: '#1f2937',
-            }}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e6c86a')}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fbe698')}
-          >
-            Add Property Listing
-          </button>
-        </div>
-      </div>
+
 
 
       {/* Property Grid */}
