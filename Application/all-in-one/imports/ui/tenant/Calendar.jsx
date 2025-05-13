@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState , useEffect} from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -7,7 +7,10 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { InspectionAvailabilities } from '../../api/InspectionAvailabilities';
 import { ClearDialog } from './ClearDialog'; 
-
+import { TypeDialog } from './TypeDialog';  
+import { OpenHouseDialog } from './OpenHouseDialog.jsx'; 
+// import { InspectionDialog } from './InspectionDialog'; 
+import { EventDetailModal } from './EventDetailModal'; 
 
 
 
@@ -16,8 +19,11 @@ export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
-//   const [successMessage, setSuccessMessage] = useState('');
-
+  const [showTypeDialog, setShowTypeDialog] = useState(false);
+  const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
+  // const [showInspectionDialog, setShowInspectionDialog] = useState(false);
+  const [pendingSlot, setPendingSlot] = useState(null);
+  const [selectedEvent, setSelectedEvent] = useState(null); 
 
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('inspectionAvailabilities');
@@ -29,21 +35,56 @@ export const Calendar = () => {
   });
   
   const handleSelect = (info) => {
-    const tempEvent = {
-      id: Date.now(), 
-      start: info.startStr,
-      end: info.endStr,
-      title: 'Pending',
-      allDay: false
-    };
-    setNewEvents((prev) => [...prev, tempEvent]);
+    setPendingSlot({ start: info.startStr, end: info.endStr });
+    setShowTypeDialog(true);
   };
 
+  const handleTypeSelect = (type) => {
+    setShowTypeDialog(false);
+    if (type === 'Open House') {
+      setShowOpenHouseDialog(true);
+    } else if (type === 'Inspection') {
+      handleBookingSelect({
+        type,
+        property: '',
+        price: '',
+        bedrooms: '',
+        bathrooms: '',
+        parking: '',
+        image: '',
+      });
+    }
+  };
+
+  // const handleBookingSelect = ({ type, property, price, bedrooms, bathrooms, parking, tenant, tenantAge, occupation, notes, image }) => {
+  const handleBookingSelect = ({ type, property, price, bedrooms, bathrooms, parking, image }) => {
+    const tempEvent = {
+      id: Date.now(),
+      start: pendingSlot.start,
+      end: pendingSlot.end,
+      type,
+      status: 'pending',
+      title: `Pending: ${type} Availability`,
+      property,
+      price,
+      bedrooms,
+      bathrooms,
+      parking,
+      // tenant,
+      // tenantAge,
+      // occupation,
+      // notes,
+      image,
+      allDay: false,
+    };
+    setNewEvents((prev) => [...prev, tempEvent]);
+    setPendingSlot(null);
+    setShowOpenHouseDialog(false); 
+    // setShowInspectionDialog(false);
+  };
+  
+
   const handleConfirmButtonClick = () => {
-    // if (newEvents.length === 0) {
-    //   alert('Please select at least one slot before confirming!');
-    //   return;
-    // }
     setShowDialog(true); 
   };
 
@@ -53,21 +94,32 @@ export const Calendar = () => {
 
   const handleConfirm = () => {
     newEvents.forEach(event => {
-      Meteor.call('inspectionAvailabilities.insert', event.start, event.end, (error) => {
-        if (error) {
-          console.error('Failed to create availability:', error.reason);
+      Meteor.call(
+        'inspectionAvailabilities.insert',
+        event.start,
+        event.end,
+        event.type,
+        event.property,
+        event.price,
+        event.bedrooms,
+        event.bathrooms,
+        event.parking,
+        // event.tenant,
+        // event.notes,
+        event.image,
+        // event.tenantAge,
+        // event.occupation,
+        'confirmed',
+        (error) => {
+          if (error) {
+            alert('Insert failed: ' + error.reason);
+            console.error('Failed to create availability:', error.reason);
+          }
         }
-      });
+      );      
     });
-  
     setNewEvents([]);
     setShowDialog(false);
-    alert('Availabilities successfully confirmed!');
-    // setSuccessMessage('Availabilities successfully confirmed!');
-    // setTimeout(() => {
-    //     setSuccessMessage('');
-    //   }, 2000);
-    window.location.reload();
   };
   
   const handleClearConfirm = () => {
@@ -75,12 +127,7 @@ export const Calendar = () => {
       if (error) {
         console.error('Failed to clear availabilities: ' + error.reason);
       } else {
-        alert('Availabilities successfully cleared!')
-        // setSuccessMessage('Availabilities successfully cleared!');
-        // setTimeout(() => {
-        //     setSuccessMessage('');
-        // }, 2000);
-        window.location.reload();
+        // window.location.reload(); reload for clear button
       }
     });
     setNewEvents([]);
@@ -95,23 +142,17 @@ export const Calendar = () => {
   const handleClearCancel = () => {
     setShowClearDialog(false);
   };
+
   
   
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
 
-        {/* Success Message
-        {successMessage && (
-            <div className="fixed top-5 right-5 bg-green-400 text-white font-semibold px-6 py-3 rounded-lg shadow-lg animate-bounce z-50">
-                {successMessage}
-            </div>
-        )} */}
-
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Add Inspection Booking Availabilities</h2>
-        <p className="text-gray-500 mt-2">Click empty timeslot to create Inspection Availability.</p>
-        <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections for any property.</p>
+        <h2 className="text-3xl font-bold text-gray-800">Add Availability</h2>
+        <p className="text-gray-500 mt-2">Click empty timeslot to create Availability.</p>
+        <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections or open house for any property.</p>
       </div>
 
       {/* Divider */}
@@ -130,17 +171,56 @@ export const Calendar = () => {
           select={handleSelect}      
           events={[
             ...availabilities.map(slot => ({
+              ...slot,
               id: slot._id,
-              title: 'Available for Inspection',
+              title: slot.type ? `${slot.type} Availability` : 'Available',
               start: slot.start,
               end: slot.end,
-              allDay: false
+              allDay: false,
+              backgroundColor:
+                slot.status === 'pending'
+                  ? '#F2F2F2'  
+                  : slot.type === 'Open House'
+                  ? '#FFF8E9' 
+                  : '#CEF4F1',
+              // backgroundColor: slot.type === 'Open House' ? '#FFF8E9' : '#CEF4F1',
+              textColor:
+                slot.status === 'pending'
+                  ? '#000000'  
+                  : slot.type === 'Open House'
+                  ? '#A98A22' 
+                  : '#24A89E',
+              // textColor: slot.type === 'Open House' ? '#A98A22' : '#24A89E',
+              borderColor:
+                slot.status === 'pending'
+                  ? '#000000'  
+                  : slot.type === 'Open House'
+                  ? '#A98A22' 
+                  : '#24A89E',
+              // borderColor: slot.type === 'Open House' ? '#A98A22' : '#24A89E',
+              ...slot
             })),
-            ...newEvents
+            ...newEvents.map(event => ({
+              ...event,
+              backgroundColor: '#F2F2F2', 
+              textColor: '#000000',
+              borderColor: '#000000',
+            })),
           ]}             
-          eventTextColor='#24A89E'             
-          eventBackgroundColor="#CEF4F1"
-          eventBorderColor="#24A89E"
+          eventClick={(info) => {
+            const clicked = info.event.extendedProps;
+            if (clicked.type === 'Open House') {
+              setSelectedEvent({
+                title: info.event.title,
+                start: info.event.start,
+                end: info.event.end,
+                ...clicked,
+              });
+            } 
+          }}          
+          // eventTextColor='#24A89E'             
+          // eventBackgroundColor="#CEF4F1"
+          // eventBorderColor="#24A89E"
           headerToolbar={{
             left: 'prev today next',
             center: '',
@@ -154,11 +234,21 @@ export const Calendar = () => {
           }}
           height="auto"
         />
-        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel}
-        />
-        <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} 
-        />
+        {/* Dialog Component */}
+        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
+        <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} />
+        <TypeDialog isOpen={showTypeDialog} onSelect={handleTypeSelect} onClose={() => setShowTypeDialog(false)} /> 
+        <OpenHouseDialog isOpen={showOpenHouseDialog} onSubmit={handleBookingSelect} onClose={() => setShowOpenHouseDialog(false)} />
+        {/* <InspectionDialog isOpen={showInspectionDialog} onSubmit={handleBookingSelect} onClose={() => setShowInspectionDialog(false)} /> */}
       </div>
+
+      {/* Detail view modal */}
+      {selectedEvent && (
+        <EventDetailModal
+          event={selectedEvent}
+          onClose={() => setSelectedEvent(null)}
+        />
+      )}
 
       {/* Buttons */}
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
@@ -170,7 +260,7 @@ export const Calendar = () => {
 
 
         <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
-            Clear All
+            Clear
         </button>
 
       </div>

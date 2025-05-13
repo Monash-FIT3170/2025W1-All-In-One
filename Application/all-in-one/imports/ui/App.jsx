@@ -19,7 +19,7 @@ export const App = () => (
       <Link to="/book-inspection">Book Inspection Page</Link> {/* New Link */}
       <Link to="/property-listing">property listing</Link> {/* New Link */}
       <Link to="/property-booking">property inspection</Link>
-      </div>
+      </div>a
 
       <Routes>
         <Route path="/" element={<div>Welcome to the home page!</div>} />
