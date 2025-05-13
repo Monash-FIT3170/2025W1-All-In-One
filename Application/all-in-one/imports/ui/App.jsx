@@ -7,8 +7,8 @@ import {
 } from 'react-router-dom';
 
 import  About  from './About.jsx';
-import { ReviewApplication } from './ReviewApplication.jsx';
-import  Navbar  from './components/Navbar.jsx';
+import { ReviewApplication } from './agent/ReviewApplication.jsx';
+import  Navbar  from './globalComponents/Navbar.jsx';
 
 export const App = () => (
   <>

@@ -12,9 +12,9 @@ import {
   Households,
   Agents,
   Landlord
-} from '/imports/api/collections';
-import { mockData } from '/imports/api/mockData';
-import '/imports/api/rentalApplications/methods';
+} from '/imports/api/database/collections';
+import { mockData } from '/imports/api/database/mockData';
+import '/imports/api/agent/rentalApplications/methods';
 
 Meteor.startup(async () => {
   // Clear existing data 

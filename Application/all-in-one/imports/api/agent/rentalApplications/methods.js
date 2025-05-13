@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { RentalApplications } from '../collections';
+import { RentalApplications } from '../../database/collections';
 
 Meteor.methods({
   async 'rentalApplications.setStatus'(id, status) {
