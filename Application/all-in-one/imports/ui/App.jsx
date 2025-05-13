@@ -4,5 +4,5 @@ import AgentPropListing from './AgentPropListing';
 import TenantPropListing from './TenantPropListing';
 
 export default function App() {
-  return <TenantPropListing />;
+  return <AgentPropListing />;
 }

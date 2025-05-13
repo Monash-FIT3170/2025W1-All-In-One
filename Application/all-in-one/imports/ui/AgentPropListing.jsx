@@ -87,6 +87,7 @@ export default function DetailedPropListing() {
         </div>
       </div>
       
+      {/* Add Property  */}
       <div className="mt-4 w-full flex justify-center">
         <div className="w-[1220px] px-4 py-3 flex justify-start rounded-lg">
           <button
