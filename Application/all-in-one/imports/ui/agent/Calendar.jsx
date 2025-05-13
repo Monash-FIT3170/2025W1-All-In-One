@@ -2,17 +2,25 @@ import React, { useState , useEffect} from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { ConfirmDialog } from './ConfirmDialog'; 
+import { ConfirmDialog } from '../ConfirmDialog.jsx'; 
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { InspectionAvailabilities } from '../../api/InspectionAvailabilities';
-import { ClearDialog } from './ClearDialog'; 
-import { TypeDialog } from './TypeDialog';  
+import { InspectionAvailabilities } from '../../api/InspectionAvailabilities.js';
+import { ClearDialog } from '../ClearDialog.jsx'; 
+import { TypeDialog } from './TypeDialog.jsx';  
 import { OpenHouseDialog } from './OpenHouseDialog.jsx'; 
 // import { InspectionDialog } from './InspectionDialog'; 
-import { EventDetailModal } from './EventDetailModal'; 
+import { EventDetailModal } from './EventDetailModal.jsx'; 
 
 
+const callAsync = (methodName, ...args) => {
+  return new Promise((resolve, reject) => {
+    Meteor.call(methodName, ...args, (err, res) => {
+      if (err) reject(err);
+      else resolve(res);
+    });
+  });
+};
 
 
 export const Calendar = () => {
@@ -92,35 +100,32 @@ export const Calendar = () => {
     setShowClearDialog(true);   
   };
 
-  const handleConfirm = () => {
-    newEvents.forEach(event => {
-      Meteor.call(
-        'inspectionAvailabilities.insert',
-        event.start,
-        event.end,
-        event.type,
-        event.property,
-        event.price,
-        event.bedrooms,
-        event.bathrooms,
-        event.parking,
-        // event.tenant,
-        // event.notes,
-        event.image,
-        // event.tenantAge,
-        // event.occupation,
-        'confirmed',
-        (error) => {
-          if (error) {
-            alert('Insert failed: ' + error.reason);
-            console.error('Failed to create availability:', error.reason);
-          }
-        }
-      );      
-    });
-    setNewEvents([]);
-    setShowDialog(false);
+  const handleConfirm = async () => {
+    try {
+      for (const event of newEvents) {
+        await callAsync(
+          'inspectionAvailabilities.insert',
+          event.start,
+          event.end,
+          event.type,
+          event.property,
+          event.price,
+          event.bedrooms,
+          event.bathrooms,
+          event.parking,
+          event.image,
+          'confirmed'
+        );
+      }
+  
+      setNewEvents([]);
+      setShowDialog(false);
+    } catch (error) {
+      alert('Insert failed: ' + error.reason);
+      console.error('Failed to create availability:', error.reason);
+    }
   };
+  
   
   const handleClearConfirm = () => {
     Meteor.call('inspectionAvailabilities.clear', (error) => {

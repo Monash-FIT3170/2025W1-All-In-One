@@ -7,7 +7,7 @@ import {
 } from 'react-router-dom';
 
 
-import { BookInspection } from './tenant/BookInspection.jsx'; // import new page
+import { BookInspection } from './agent/BookInspection.jsx'; // import new page
 import { PropertyBooking } from './agent/PropertyBooking.jsx';
 import { PropertyListing } from './tenant/PropertyListing.jsx';
 
