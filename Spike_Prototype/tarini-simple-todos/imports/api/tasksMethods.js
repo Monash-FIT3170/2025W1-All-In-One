@@ -11,5 +11,10 @@ Meteor.methods({
       $set: { checked: setChecked },
     });
   },
+
+  'tasks.remove'(taskId) {
+    return TasksCollection.removeAsync(taskId);
+  },
 });
+
 
