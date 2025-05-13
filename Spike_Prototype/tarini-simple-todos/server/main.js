@@ -1,6 +1,8 @@
 import { Meteor } from 'meteor/meteor';
 import { TasksCollection } from '/imports/api/TasksCollection';
 import '/imports/api/Publications';
+import '/imports/api/tasksMethods';
+
 
 Meteor.startup(async () => {
   const taskCount = await TasksCollection.find().countAsync();

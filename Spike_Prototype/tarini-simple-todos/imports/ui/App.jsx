@@ -2,6 +2,7 @@ import React from 'react';
 import { useTracker, useSubscribe } from 'meteor/react-meteor-data';
 import { TasksCollection } from '../api/TasksCollection';
 import { Task } from './task';
+import { TaskForm } from './TaskForm';
 
 export const App = () => {
   const isLoading = useSubscribe('tasks');
@@ -16,6 +17,7 @@ export const App = () => {
   return (
     <div>
       <h1>Welcome to Meteor!</h1>
+      <TaskForm />
       <ul>
         {tasks.map((task) => (
           <Task key={task._id} task={task} />
