@@ -20,7 +20,7 @@ export const LoginPage = () => {
           alert("Login failed: " + (err.reason || err.message || "Unknown error"));
         }
       } else {
-        navigate("/dashboard"); // change to your desired post-login route
+        navigate("/dashboard"); // change to your desired post-login route (check role)
       }
     });
   };
