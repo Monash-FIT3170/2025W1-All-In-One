@@ -48,7 +48,6 @@ RentalApplications.schema = new SimpleSchema({
   employment_id: { type: String },
   status: { type: String, optional: true },
   household_pets: { type: Boolean },
-  address_id: { type: String },
   emergency_contact_id: { type: String },
 });
 
@@ -59,7 +58,6 @@ Tenants.schema = new SimpleSchema({
   ten_ln: { type: String },
   ten_email: { type: String },
   ten_pn: { type: String },
-  ten_password: { type: String },
   ten_pfp: { type: String },
   ten_role: { type: String },
   ten_dob: { type: Date },
