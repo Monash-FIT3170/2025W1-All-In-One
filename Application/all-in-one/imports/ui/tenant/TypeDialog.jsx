@@ -11,7 +11,7 @@ export const TypeDialog = ({ isOpen, onSelect, onClose }) => {
           className="absolute top-4 right-4 text-xl font-bold text-black hover:text-gray-700"
           onClick={onClose}
         >
-          ×
+
         </button>
 
         <h2 className="text-xl font-bold text-center mb-4 text-gray-800">Availability Type</h2>
