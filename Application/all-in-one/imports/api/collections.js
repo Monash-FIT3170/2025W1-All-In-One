@@ -66,7 +66,7 @@ Tenants.schema = new SimpleSchema({
   prop_id: { type: String },
 });
 
-export const Landlord = new Mongo.Collection('tenants');
+export const Landlord = new Mongo.Collection('landlord');
 Landlord.schema = new SimpleSchema({
   ll_id: { type: String },
   ll_fn: { type: String },
