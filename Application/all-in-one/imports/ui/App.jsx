@@ -2,23 +2,23 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 
 // importing tenant pages
-import BasicLeases from "./Tenant/BasicLeases.jsx";
-import DetailedLease from "./Tenant/DetailedLease.jsx";
-import TenantBasicPropListings from "./Tenant/TenantBasicPropListings.jsx";
-import TenDetailedPropListing from "./Tenant/TenDetailedPropListing.jsx";
+import BasicLeases from "./tenant/BasicLeases.jsx";
+import DetailedLease from "./tenant/DetailedLease.jsx";
+import TenantBasicPropListings from "./tenant/TenantBasicPropListings.jsx";
+import TenDetailedPropListing from "./tenant/TenDetailedPropListing.jsx";
 
 // importing agent pages
-import AddPropertyListing from "./Agent/AddPropertyListing.jsx";
-import AgentBasicPorpListing from "./Agent/AgentBasicPropListing.jsx";
-import AgentDetailedListing from "./Agent/AgentDetailedListing.jsx";
-import AgentDetailedPropListing from "./Agent/AgentDetailedPropListing.jsx"
-import AgentListings from "./Agent/AgentListings.jsx"
+import AddPropertyListing from "./agent/AddPropertyListing.jsx";
+import AgentBasicPorpListing from "./agent/AgentBasicPropListing.jsx";
+import AgentDetailedListing from "./agent/AgentDetailedListing.jsx";
+import AgentDetailedPropListing from "./agent/AgentDetailedPropListing.jsx"
+import AgentListings from "./agent/AgentListings.jsx"
 
 // importing landlord pages 
-import LandlordBasicPropListings from "./LandLord/LandlordBasicPropListings.jsx";
-import LandlordDetailedProp from "./LandLord/LandLordDetailedProp.jsx";
-import LandlordDetailedPropListing from "./LandLord/LandlordDetailedPropListing.jsx";
-import LandlordProperties from "./LandLord/LandlordProperties.jsx";
+import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx";
+import LandlordDetailedProp from "./landlord/LandLordDetailedProp.jsx";
+import LandlordDetailedPropListing from "./landlord/LandlordDetailedPropListing.jsx";
+import LandlordProperties from "./landlord/LandlordProperties.jsx";
 
 
 export default function App() {
