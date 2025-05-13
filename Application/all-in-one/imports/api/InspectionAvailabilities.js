@@ -20,11 +20,7 @@ Meteor.methods({
     bedrooms,
     bathrooms,
     parking,
-    // tenant,
-    // notes,
     image,
-    // tenantAge,
-    // occupation
     status,
   ) {
     check(start, String);
@@ -35,16 +31,10 @@ Meteor.methods({
     check(bedrooms, Match.Optional(String));
     check(bathrooms, Match.Optional(String));
     check(parking, Match.Optional(String)); 
-    // check(tenant, Match.Optional(String)); 
-    // check(notes,  Match.Optional(String)); 
     check(image, Match.Optional(String));
-    // check(tenantAge, Match.Optional(String));
-    // check(occupation, Match.Optional(String));
     check(status, Match.Optional(String));
 
-
-
-    return InspectionAvailabilities.insertAsync({
+    const result = await InspectionAvailabilities.insertAsync({
       start,
       end,
       type,
@@ -53,14 +43,13 @@ Meteor.methods({
       bedrooms,
       bathrooms,
       parking,
-      // tenant,
-      // notes,
       image,
-      // tenantAge,
-      // occupation,
       status,
       createdAt: new Date(),
     });
+
+    console.log(`[SERVER] Inserted availability ${result}`);
+    return result;
   },
 
   async 'inspectionAvailabilities.clear'() {
