@@ -10,6 +10,7 @@ export const SignUpPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [isSigningUp, setIsSigningUp] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -19,6 +20,8 @@ export const SignUpPage = () => {
       return;
     }
 
+    setIsSigningUp(true);
+
     Meteor.call(
       "registerUser",
       {
@@ -26,18 +29,37 @@ export const SignUpPage = () => {
         password,
         firstName,
         lastName,
-        role: "tenant",
+        role: "tenant", // or another role later
       },
       (err) => {
         if (err) {
           alert("Registration failed: " + err.reason);
+          setIsSigningUp(false);
         } else {
-          // Log in the user immediately
           Meteor.loginWithPassword(email, password, (err) => {
             if (err) {
               alert("Login failed: " + err.reason);
+              setIsSigningUp(false);
             } else {
-              navigate("/dashboard"); // Change this to your desired route
+              const checkUser = setInterval(() => {
+                const user = Meteor.user();
+                if (user && user.profile && user.profile.role) {
+                  clearInterval(checkUser);
+                  const role = user.profile.role;
+
+                  if (role === "tenant") {
+                    navigate("/PLACEHOLDER"); // CHANGE
+                  } else if (role === "landlord") {
+                    navigate("/PLACEHOLDER");
+                  } else if (role === "agent") { // CHANGE
+                    navigate("/dashboard");
+                  } else {
+                    navigate("/dashboard"); // fallback
+                  }
+
+                  setIsSigningUp(false);
+                }
+              }, 100);
             }
           });
         }
@@ -102,8 +124,9 @@ export const SignUpPage = () => {
           <button
             type="submit"
             className="bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded"
+            disabled={isSigningUp}
           >
-            Sign Up
+            {isSigningUp ? "Creating Account..." : "Sign Up"}
           </button>
         </form>
       </div>
