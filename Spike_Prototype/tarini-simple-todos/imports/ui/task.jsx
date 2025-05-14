@@ -1,10 +1,7 @@
-// ui/task.jsx
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
 
-export const Task = ({ task }) => {
-  const isOwner = task.userId === Meteor.userId();
-
+export const Task = ({ task, showPrivateButton }) => {
   const toggleChecked = () => {
     Meteor.call('tasks.setIsChecked', task._id, !task.isChecked);
   };
@@ -28,16 +25,12 @@ export const Task = ({ task }) => {
       <span style={{ textDecoration: task.isChecked ? 'line-through' : 'none' }}>
         {task.text}
       </span>
-      <span> ({task.username || 'anonymous'})</span>
-
-      {isOwner && (
-        <>
-          <button onClick={togglePrivate}>
-            {task.isPrivate ? 'Private' : 'Public'}
-          </button>
-          <button onClick={deleteTask}>❌</button>
-        </>
+      {showPrivateButton && (
+        <button onClick={togglePrivate}>
+          {task.isPrivate ? 'Private' : 'Public'}
+        </button>
       )}
+      <button onClick={deleteTask}>❌</button>
     </li>
   );
 };

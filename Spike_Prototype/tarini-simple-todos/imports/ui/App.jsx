@@ -1,26 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { TasksCollection } from '/imports/api/TasksCollection';
-import { Task } from './task'; 
+import { Task } from './task';
 import { TaskForm } from './TaskForm';
 import { LoginForm } from './LoginForm';
 
 export const App = () => {
   const user = useTracker(() => Meteor.user());
+  const [hideCompleted, setHideCompleted] = useState(false);
 
   const { tasks, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('tasks');
-
     if (!handler.ready()) {
       return { tasks: [], isLoading: true };
     }
 
-    const tasks = TasksCollection.find({}, { sort: { createdAt: -1 } }).fetch();
+    const filter = hideCompleted ? { isChecked: { $ne: true } } : {};
+    const tasks = TasksCollection.find(filter, { sort: { createdAt: -1 } }).fetch();
     return { tasks, isLoading: false };
-  }, []);
-
-  const logout = () => Meteor.logout();
+  }, [hideCompleted]);
 
   if (!user) {
     return (
@@ -31,15 +30,19 @@ export const App = () => {
     );
   }
 
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
   return (
     <div>
       <h1>Welcome to Meteor!</h1>
-      <button onClick={logout}>Log Out</button>
+      <button onClick={() => Meteor.logout()}>Log Out</button>
       <TaskForm />
+      <label>
+        <input
+          type="checkbox"
+          checked={hideCompleted}
+          onChange={() => setHideCompleted(!hideCompleted)}
+        />
+        Hide Completed Tasks
+      </label>
       <ul>
         {tasks.map((task) => (
           <Task
