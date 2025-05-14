@@ -1,22 +1,47 @@
 import React from 'react';
-import { useTracker, useSubscribe } from 'meteor/react-meteor-data';
-import { TasksCollection } from '../api/TasksCollection';
-import { Task } from './task';
+import { useTracker } from 'meteor/react-meteor-data';
+import { Meteor } from 'meteor/meteor';
+import { TasksCollection } from '/imports/api/TasksCollection';
+import { Task } from './task'; 
 import { TaskForm } from './TaskForm';
+import { LoginForm } from './LoginForm';
 
 export const App = () => {
-  const isLoading = useSubscribe('tasks');
-  const tasks = useTracker(() =>
-    TasksCollection.find({}, { sort: { createdAt: -1 } }).fetch()
-  );
+  // Track the logged-in user
+  const user = useTracker(() => Meteor.user());
 
-  if (isLoading()) {
+  // Track the list of tasks
+  const { tasks, isLoading } = useTracker(() => {
+    const handler = Meteor.subscribe('tasks');
+
+    if (!handler.ready()) {
+      return { tasks: [], isLoading: true };
+    }
+
+    const tasks = TasksCollection.find({}, { sort: { createdAt: -1 } }).fetch();
+    return { tasks, isLoading: false };
+  }, []);
+
+  // Show login form if user is not logged in
+  if (!user) {
+    return (
+      <div>
+        <h1>Welcome to Meteor!</h1>
+        <LoginForm />
+      </div>
+    );
+  }
+
+  // Show loading state while waiting for subscription
+  if (isLoading) {
     return <div>Loading...</div>;
   }
 
+  // Main UI when logged in
   return (
     <div>
       <h1>Welcome to Meteor!</h1>
+      <button onClick={() => Meteor.logout()}>Log Out</button>
       <TaskForm />
       <ul>
         {tasks.map((task) => (

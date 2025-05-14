@@ -1,6 +1,7 @@
-import { Meteor } from 'meteor/meteor';
-import { TasksCollection } from './TasksCollection';
+Meteor.publish('tasks', function publishTasks() {
+  if (!this.userId) {
+    return this.ready();
+  }
 
-Meteor.publish('tasks', function () {
-  return TasksCollection.find();
+  return TasksCollection.find({ userId: this.userId });
 });

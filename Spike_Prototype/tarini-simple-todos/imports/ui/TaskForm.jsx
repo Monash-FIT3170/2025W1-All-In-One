@@ -1,25 +1,28 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
+import { Meteor } from 'meteor/meteor';
 
 export const TaskForm = () => {
-  const [text, setText] = useState("");
+  const [text, setText] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    if (!text) return;
 
-    await Meteor.callAsync("tasks.insert", {
-      text: text.trim(),
-      createdAt: new Date(),
+    if (!text.trim()) return;
+
+    Meteor.call('tasks.insert', text, (error) => {
+      if (error) {
+        alert(error.error);
+      } else {
+        setText('');
+      }
     });
-
-    setText(""); // clear input
   };
 
   return (
     <form onSubmit={handleSubmit}>
       <input
         type="text"
-        placeholder="Add a task..."
+        placeholder="Type to add new tasks"
         value={text}
         onChange={(e) => setText(e.target.value)}
       />

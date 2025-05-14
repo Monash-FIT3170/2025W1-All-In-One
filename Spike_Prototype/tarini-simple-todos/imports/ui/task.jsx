@@ -1,26 +1,30 @@
-import React from "react";
-import { TasksCollection } from "../api/TasksCollection";
+import React from 'react';
+import { Meteor } from 'meteor/meteor';
+import { TasksCollection } from '/imports/api/TasksCollection';
 
 export const Task = ({ task }) => {
   const toggleChecked = () => {
-    Meteor.callAsync("tasks.setChecked", task._id, !task.checked);
+    Meteor.call('tasks.setIsChecked', task._id, !task.isChecked);
   };
 
   const deleteTask = () => {
-    Meteor.callAsync("tasks.remove", task._id);
+    Meteor.call('tasks.remove', task._id);
   };
 
   return (
     <li>
       <input
         type="checkbox"
-        checked={!!task.checked}
-        onChange={toggleChecked}
+        readOnly
+        checked={!!task.isChecked}
+        onClick={toggleChecked}
       />
-      <span style={{ textDecoration: task.checked ? "line-through" : "none" }}>
+      <span style={{ textDecoration: task.isChecked ? 'line-through' : 'none' }}>
         {task.text}
       </span>
-      <button onClick={deleteTask} style={{ marginLeft: '10px' }}>🗑️</button>
+      <button onClick={deleteTask} style={{ marginLeft: '10px' }}>
+        ❌
+      </button>
     </li>
   );
 };
