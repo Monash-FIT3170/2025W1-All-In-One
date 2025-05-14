@@ -1,10 +1,16 @@
+// ui/task.jsx
 import React from 'react';
 import { Meteor } from 'meteor/meteor';
-import { TasksCollection } from '/imports/api/TasksCollection';
 
 export const Task = ({ task }) => {
+  const isOwner = task.userId === Meteor.userId();
+
   const toggleChecked = () => {
     Meteor.call('tasks.setIsChecked', task._id, !task.isChecked);
+  };
+
+  const togglePrivate = () => {
+    Meteor.call('tasks.setIsPrivate', task._id, !task.isPrivate);
   };
 
   const deleteTask = () => {
@@ -22,9 +28,16 @@ export const Task = ({ task }) => {
       <span style={{ textDecoration: task.isChecked ? 'line-through' : 'none' }}>
         {task.text}
       </span>
-      <button onClick={deleteTask} style={{ marginLeft: '10px' }}>
-        ❌
-      </button>
+      <span> ({task.username || 'anonymous'})</span>
+
+      {isOwner && (
+        <>
+          <button onClick={togglePrivate}>
+            {task.isPrivate ? 'Private' : 'Public'}
+          </button>
+          <button onClick={deleteTask}>❌</button>
+        </>
+      )}
     </li>
   );
 };

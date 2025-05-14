@@ -4,7 +4,6 @@ import { TasksCollection } from '/imports/api/TasksCollection';
 import '/imports/api/Publications';
 import '/imports/startup/server/cleanupTasks';
 
-
 Meteor.startup(async () => {
   const SEED_USERNAME = 'meteorite';
   const SEED_PASSWORD = 'password';
@@ -18,14 +17,17 @@ Meteor.startup(async () => {
 
   const count = await TasksCollection.find().countAsync();
   if (count === 0) {
+    const user = await Accounts.findUserByUsername(SEED_USERNAME);
     const sampleTasks = ['Task Uno', 'Task Dos', 'Task Tres'];
+
     for (const text of sampleTasks) {
       await TasksCollection.insertAsync({
         text,
         createdAt: new Date(),
-        userId: Accounts.findUserByUsername(SEED_USERNAME)._id,
+        userId: user._id,
+        isChecked: false,
+        isPrivate: false,
       });
     }
   }
 });
-
