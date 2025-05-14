@@ -1,7 +1,7 @@
 import React from 'react';
 
-export const ActivityTypeDialog = ({ isOpen, onSelect, onClose }) => {
-  if (!isOpen) return null;
+export const AvailabilityTypeDialog = ({ isOpen, onSelect, onClose }) => {
+  if (!isOpen) return true;
 
   return ( 
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
@@ -17,16 +17,16 @@ export const ActivityTypeDialog = ({ isOpen, onSelect, onClose }) => {
         <h2 className="text-xl font-bold text-center mb-4 text-gray-800">Availability Type</h2>
         <div className="flex flex-col gap-4">
           <button
-            onClick={() => onSelect('AvailabilityType')}
+            onClick={() => onSelect('Inspection')}
             className="bg-[#FFFFFF] hover:bg-[#CEF4F1] text-black font-semibold py-2 px-4 rounded"
           >
-            Availability
+            Inspection
           </button>
           <button
-            disabled
-            className="bg-gray-300 text-gray-500 font-semibold py-2 px-4 rounded cursor-not-allowed"
+            onClick={() => onSelect('Open House')}
+            className="bg-[#FFFFFF] hover:bg-[#CEF4F1] text-black font-semibold py-2 px-4 rounded"
           >
-            Maintenance
+            Open House
           </button>
         </div>
       </div>

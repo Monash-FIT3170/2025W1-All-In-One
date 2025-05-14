@@ -7,7 +7,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { InspectionAvailabilities } from '../../api/InspectionAvailabilities.js';
 import { ClearDialog } from './ClearDialog.jsx'; 
-import { TypeDialog } from './AvailabilityTypeDialog.jsx';  
+import { AvailabilityTypeDialog, TypeDialog } from './AvailabilityTypeDialog.jsx';  
 import { OpenHouseDialog } from './OpenHouseDialog.jsx'; 
 // import { InspectionDialog } from './InspectionDialog'; 
 import { EventDetailModal } from './EventDetailModal.jsx'; 
@@ -27,7 +27,7 @@ export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [showTypeDialog, setShowTypeDialog] = useState(false);
+  const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   // const [showInspectionDialog, setShowInspectionDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
@@ -44,11 +44,11 @@ export const Calendar = () => {
   
   const handleSelect = (info) => {
     setPendingSlot({ start: info.startStr, end: info.endStr });
-    setShowTypeDialog(true);
+    setShowAvailabilityTypeDialog(true);
   };
 
-  const handleTypeSelect = (type) => {
-    setShowTypeDialog(false);
+  const handleAvailabilityTypeSelect = (type) => {
+    setShowAvailabilityTypeDialog(false);
     if (type === 'Open House') {
       setShowOpenHouseDialog(true);
     } else if (type === 'Inspection') {
@@ -242,7 +242,7 @@ export const Calendar = () => {
         {/* Dialog Component */}
         <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} />
-        <TypeDialog isOpen={showTypeDialog} onSelect={handleTypeSelect} onClose={() => setShowTypeDialog(false)} /> 
+        <AvailabilityTypeDialog isOpen={showAvailabilityTypeDialog} onSelect={handleAvailabilityTypeSelect} onClose={() => setShowAvailabilityTypeDialog(false)} /> 
         <OpenHouseDialog isOpen={showOpenHouseDialog} onSubmit={handleBookingSelect} onClose={() => setShowOpenHouseDialog(false)} />
         {/* <InspectionDialog isOpen={showInspectionDialog} onSubmit={handleBookingSelect} onClose={() => setShowInspectionDialog(false)} /> */}
       </div>
