@@ -1,14 +1,17 @@
 import { Meteor } from "meteor/meteor";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
 export const LoginPage = () => {
   const [email, setEmail] = useState(""); // using email, not "username"
   const [password, setPassword] = useState("");
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
 
   const submit = (e) => {
     e.preventDefault();
+
+    setIsLoggingIn(true); // disable multiple clicks if needed
 
     Meteor.loginWithPassword(email, password, (err) => {
       if (err) {
@@ -19,8 +22,29 @@ export const LoginPage = () => {
         } else {
           alert("Login failed: " + (err.reason || err.message || "Unknown error"));
         }
+
+        setIsLoggingIn(false);
       } else {
-        navigate("/dashboard"); // change to your desired post-login route (check role)
+        // We wait for the user to be fully loaded before redirecting
+        const checkUser = setInterval(() => {
+          const user = Meteor.user();
+          if (user && user.profile && user.profile.role) {
+            clearInterval(checkUser);
+            const role = user.profile.role;
+
+            if (role === "tenant") {
+              navigate("/PLACEHOLDER"); //change to respective page 
+            } else if (role === "landlord") {
+              navigate("/PLACEHOLDER");
+            } else if (role === "agent") {
+              navigate("/dashboard");
+            } else {
+              navigate("/dashboard"); // fallback
+            }
+
+            setIsLoggingIn(false);
+          }
+        }, 100);
       }
     });
   };
@@ -65,8 +89,9 @@ export const LoginPage = () => {
           <button
             type="submit"
             className="bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded"
+            disabled={isLoggingIn}
           >
-            Log In
+            {isLoggingIn ? "Logging in..." : "Log In"}
           </button>
         </form>
       </div>
