@@ -1,5 +1,6 @@
 import React from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
+import { mockData } from "../../api/database/mockData"; // importing mock for now
 import { Link } from "react-router-dom";
 import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
@@ -12,28 +13,21 @@ import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 export default function AgentListings() {
   // mock data- should be connected to database once its set up
 
-  const properties = [
-    {
-      id: 1,
-      location: "Melton South, 3338",
-      price: "$800",
-      image: "/images/Melton/melton_property_livingroom.png",
-      beds: 3,
-      baths: 2,
-      cars: 1,
-      living: 1
-    },
-    {
-      id: 2,
-      location: "Sydney, 2000",
-      price: "$620",
-      image: "/images/Sydney/Sydney_front.jpeg",
-      beds: 3,
-      baths: 2,
-      cars: 1,
-      living: 1
-    }
-  ];
+  const agentId= "A001" // this should be adjusted so that the logged in agent's id is taken
+
+  const properties= mockData.properties
+  .filter((p)=> p.agent_id===agentId)
+  .map((p)=>({
+    id: p.prop_id,
+    location: p.prop_address,
+    price:`$${p.prop_pricepweek}`,
+    image:
+    mockData.photos.find((photo)=> photo.prop_id===p.prop_id)?.photo_url ||
+    "/images/default.jpg",
+    beds: p.prop_numbeds,
+    baths: p.prop_numbaths,
+    cars:p.prop_numcarspots,
+  }));
 
   return (
     <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
