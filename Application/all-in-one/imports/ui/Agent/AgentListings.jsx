@@ -1,7 +1,9 @@
 import React from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
-import { mockData } from "../../api/database/mockData"; // importing mock for now
+import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
 import { Link } from "react-router-dom";
+import { Meteor } from "meteor/meteor";
+import { useTracker } from "meteor/react-meteor-data";
 import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
@@ -11,23 +13,39 @@ import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function AgentListings() {
-  // mock data- should be connected to database once its set up
-
+  
   const agentId= "A001" // this should be adjusted so that the logged in agent's id is taken
+  
+  const { isReady, properties, photos }=  useTracker(()=>{
+    const subProps= Meteor.subscribe("properties");
+    const subPhotos= Meteor.subscribe("photos");
 
-  const properties= mockData.properties
-  .filter((p)=> p.agent_id===agentId)
-  .map((p)=>({
-    id: p.prop_id,
-    location: p.prop_address,
-    price:`$${p.prop_pricepweek}`,
-    image:
-    mockData.photos.find((photo)=> photo.prop_id===p.prop_id)?.photo_url ||
-    "/images/default.jpg",
-    beds: p.prop_numbeds,
-    baths: p.prop_numbaths,
-    cars:p.prop_numcarspots,
-  }));
+    const isReady= subProps.ready() && subPhotos.ready();
+    const properties= isReady ? Properties.find({agent_id: agentId}).fetch(): [];
+    const photos= isReady ? Photos.find().fetch(): [];
+
+    return { isReady, properties, photos};
+
+  });
+
+  if (!isReady){
+    return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
+  }
+
+  const propertyCards= properties.map((p)=>{
+    const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
+    return{
+      id: p.prop_id,
+      location: p.prop_address,
+      price:`$${p.prop_pricepweek}`,
+      image:photo?.photo_url ||
+      "/images/default.jpg",
+      beds: p.prop_numbeds,
+      baths: p.prop_numbaths,
+      cars:p.prop_numcarspots,
+    };
+  });
+
 
   return (
     <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
@@ -100,7 +118,7 @@ export default function AgentListings() {
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
-          {properties.map((property) => (
+          {propertyCards.map((property) => (
             <Link key={property.id} to={`/AgentDetailedListing/${property.id}`}>
               <BasicPropertyCard property={property} />
             </Link>

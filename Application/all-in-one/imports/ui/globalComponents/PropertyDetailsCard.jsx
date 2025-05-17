@@ -35,7 +35,7 @@ export default function PropertyDetailsCard({property}){
                     <img
                       key={index}
                       src={imageUrl}
-                      alt={"Properry image"}
+                      alt={"Property image"}
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -53,7 +53,7 @@ export default function PropertyDetailsCard({property}){
                     {property.address}
                 </div>
                 <div className="text-1xl text-gray-600">
-                    Property Tyep: {property.type}
+                    Property Type: {property.type}
                 </div>
                 <div className="text-1xl text-gray-600">
                     Available Date: {property.AvailableDate.toLocaleDateString()}
@@ -63,20 +63,20 @@ export default function PropertyDetailsCard({property}){
                 </div>
             <div className="grid grid-cols-2 gap-y-6 text-gray-700 pt-4">
                 <div className="flex items-center space-x-2 text-2xl">
-                    <FaBath className="text-gray-700 text-2xl"/>
-                    <span>{property.details.baths}</span>
+                    <FaBath className="text-gray-700"/>
+                    <span className="text-xl">{property.details.baths}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-2xl">
                     <FaBed className="text-gray-700 "/>
-                    <span>{property.details.beds}</span>
+                    <span className="text-xl">{property.details.beds}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-2xl">
                     <FaCar className="text-gray-700"/>
-                    <span>{property.details.carSpots}</span>
+                    <span className="text-xl">{property.details.carSpots}</span>
                 </div>
                 <div className="flex items-center space-x-2 text-2xl">
                     <FaCouch className="text-gray-700"/>
-                    <span>{property.details.furnished}</span>
+                    <span className="text-xl">{property.details.furnished}</span>
                 </div>
             </div>
           </div>

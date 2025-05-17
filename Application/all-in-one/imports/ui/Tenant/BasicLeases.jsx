@@ -4,6 +4,9 @@ import { Link } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
+import { useTracker } from "meteor/react-meteor-data";
+import { Meteor } from "meteor/meteor";
+import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the list of properties that are leased by the particular tenant //
