@@ -14,7 +14,9 @@
     "react-dom": "^18.2.0",
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.30.0",
-    "simpl-schema": "^3.4.6"
+    "react-slick": "^0.30.3",
+    "simpl-schema": "^3.4.6",
+    "slick-carousel": "^1.8.1"
   },
   "meteor": {
     "mainModule": {
