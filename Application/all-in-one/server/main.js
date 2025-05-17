@@ -14,6 +14,7 @@ import {
   Landlord
 } from '/imports/api/database/collections';
 import { mockData } from '/imports/api/database/mockData';
+import '/imports/api/methods/account.js';
 //import '/imports/api/agent/rentalApplications/methods';
 
 Meteor.startup(async () => {
