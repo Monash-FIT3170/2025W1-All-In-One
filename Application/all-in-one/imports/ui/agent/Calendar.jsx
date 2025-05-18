@@ -164,9 +164,8 @@ export const Calendar = () => {
 
       {/* Header */}
       <div className="text-center mb-6">
-        <h2 className="text-3xl font-bold text-gray-800">Add Availability</h2>
-        <p className="text-gray-500 mt-2">Click empty timeslot to create Availability.</p>
-        <p className="text-gray-500 mt-2">These will appear as timeslots for possible tenants to book inspections or open house for any property.</p>
+        <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
+        <p className="text-gray-500 mt-2">Click empty timeslot to schedule an activity - an availability (inspection or open house) or maintenance (to be added in Milestone 3).</p>
       </div>
 
       {/* Divider */}
@@ -195,13 +194,13 @@ export const Calendar = () => {
                 slot.status === 'pending'
                   ? '#F2F2F2'  
                   : slot.type === 'Open House'
-                  ? '#FFF8E9' 
+                  ? '#DCFFCD' 
                   : '#CEF4F1',
               textColor:
                 slot.status === 'pending'
                   ? '#000000'  
                   : slot.type === 'Open House'
-                  ? '#A98A22' 
+                  ? '#68A44F' 
                   : '#24A89E',
               borderColor:
                 slot.status === 'pending'

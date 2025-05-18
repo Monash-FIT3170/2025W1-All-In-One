@@ -45,7 +45,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-      <div className="bg-[#E1C8F9] p-6 rounded-3xl shadow-lg w-[440px] text-left space-y-6 relative">
+      <div className="bg-[#CBADD8] p-6 rounded-3xl shadow-lg w-[440px] text-left space-y-6 relative">
         {/* Close Button */}
         <button
           onClick={onClose}
@@ -62,8 +62,8 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
             onClick={() => setType('Inspection')}
             className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
               type === 'Inspection'
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-300 text-black'
+                ? 'bg-[#9747FF] text-white'
+                : 'bg-[#CDCDCD] text-black'
             }`}
           >
             Inspection
@@ -72,8 +72,8 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
             onClick={() => setType('Open House')}
             className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
               type === 'Open House'
-                ? 'bg-purple-600 text-white'
-                : 'bg-gray-300 text-black'
+                ? 'bg-[#9747FF] text-white'
+                : 'bg-[#CDCDCD] text-black'
             }`}
           >
             Open House
@@ -121,7 +121,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
         <div>
           <h3 className="text-lg font-bold mb-2 text-black">Date and Time</h3>
           <p className="text-sm text-gray-800 mb-4">
-            The selected time will appear as an availability slot in the calendar.
+          The start and end time entered will appear as a timeslot for possible tenants to book inspections for any property.
           </p>
           <div className="flex justify-between gap-3">
             <div className="flex flex-col w-1/3">
@@ -158,7 +158,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
         <div className="text-center pt-2">
           <button
             onClick={handleSubmit}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-full"
+            className="w-full bg-[#9747FF] hover:bg-purple-700 text-white font-bold py-3 rounded-full"
           >
             Create Availability
           </button>
