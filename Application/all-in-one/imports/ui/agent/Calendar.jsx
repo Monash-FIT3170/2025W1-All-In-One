@@ -5,11 +5,10 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { ConfirmDialog } from './ConfirmDialog.jsx'; 
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { InspectionAvailabilities } from '../../api/InspectionAvailabilities.js';
+import { AgentAvailabilities } from '../../api/AgentAvailabilities.js';
 import { ClearDialog } from './ClearDialog.jsx'; 
-import { AvailabilityTypeDialog, TypeDialog } from './AvailabilityTypeDialog.jsx';  
-import { OpenHouseDialog } from './OpenHouseDialog.jsx'; 
-// import { InspectionDialog } from './InspectionDialog'; 
+import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
+import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
 import { EventDetailModal } from './EventDetailModal.jsx'; 
 
 
@@ -29,13 +28,24 @@ export const Calendar = () => {
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
+  const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
   // const [showInspectionDialog, setShowInspectionDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null); 
 
+  const closeDialogs = () => {
+    setShowDialog(false);
+    setShowClearDialog(false);
+    setShowActivityTypeDialog(false);
+    setShowAvailabilityTypeDialog(false);
+    setShowOpenHouseDialog(false);
+    setPendingSlot(null);
+    setSelectedEvent(null);
+  };
+  
   const { availabilities, isLoading } = useTracker(() => {
-    const handler = Meteor.subscribe('inspectionAvailabilities');
-    const data = InspectionAvailabilities.find().fetch();
+    const handler = Meteor.subscribe('agentAvailabilities');
+    const data = AgentAvailabilities.find().fetch();
     return {
       availabilities: data,
       isLoading: !handler.ready(),
@@ -43,33 +53,33 @@ export const Calendar = () => {
   });
   
   const handleSelect = (info) => {
-    setPendingSlot({ start: info.startStr, end: info.endStr });
-    setShowAvailabilityTypeDialog(true);
+    setPendingSlot({ start: info.start, end: info.end });
+    setShowActivityTypeDialog(true);
   };
 
-  const handleAvailabilityTypeSelect = (type) => {
-    setShowAvailabilityTypeDialog(false);
-    if (type === 'Open House') {
-      setShowOpenHouseDialog(true);
-    } else if (type === 'Inspection') {
-      handleBookingSelect({
-        type,
-        property: '',
-        price: '',
-        bedrooms: '',
-        bathrooms: '',
-        parking: '',
-        image: '',
-      });
+  const handleActivityTypeSelect = (activity_type) => {
+    if (activity_type === 'Availability') {
+      setShowActivityTypeDialog(false);
+      setShowAvailabilityTypeDialog(true);
     }
   };
+  
 
-  // const handleBookingSelect = ({ type, property, price, bedrooms, bathrooms, parking, tenant, tenantAge, occupation, notes, image }) => {
-  const handleBookingSelect = ({ type, property, price, bedrooms, bathrooms, parking, image }) => {
+  const handleAvailabilityTypeSelect = (type, start, end, propertyInfo) => {
+    setShowAvailabilityTypeDialog(false);
+    handleBookingSelect({
+      type,
+      start,
+      end,
+      ...propertyInfo, // includes property, image, price, etc.
+    });
+  };
+  
+  const handleBookingSelect = ({ type, start, end, property, price, bedrooms, bathrooms, parking, image }) => {
     const tempEvent = {
       id: Date.now(),
-      start: pendingSlot.start,
-      end: pendingSlot.end,
+      start,
+      end,
       type,
       status: 'pending',
       title: `Pending: ${type} Availability`,
@@ -78,19 +88,13 @@ export const Calendar = () => {
       bedrooms,
       bathrooms,
       parking,
-      // tenant,
-      // tenantAge,
-      // occupation,
-      // notes,
       image,
       allDay: false,
     };
     setNewEvents((prev) => [...prev, tempEvent]);
     setPendingSlot(null);
     setShowOpenHouseDialog(false); 
-    // setShowInspectionDialog(false);
   };
-  
 
   const handleConfirmButtonClick = () => {
     setShowDialog(true); 
@@ -104,10 +108,11 @@ export const Calendar = () => {
     try {
       for (const event of newEvents) {
         await callAsync(
-          'inspectionAvailabilities.insert',
-          event.start,
-          event.end,
-          event.type,
+          'agentAvailabilities.insert',
+          event.start.toISOString(),
+          event.end.toISOString(),
+          'Availability',             
+          event.type,                 
           event.property,
           event.price,
           event.bedrooms,
@@ -128,25 +133,29 @@ export const Calendar = () => {
   
   
   const handleClearConfirm = () => {
-    Meteor.call('inspectionAvailabilities.clear', (error) => {
+    Meteor.call('agentAvailabilities.clear', (error) => {
       if (error) {
         console.error('Failed to clear availabilities: ' + error.reason);
       } else {
-        // window.location.reload(); reload for clear button
+        console.log('All availabilities cleared!');
+        setNewEvents([]); 
+        setShowClearDialog(false);
+  
+        Meteor.subscribe('agentAvailabilities'); 
       }
     });
-    setNewEvents([]);
-    setShowClearDialog(false);
-  };
-
-  const handleCancel = () => {
-    setNewEvents([]);
-    setShowDialog(false);
   };
   
-  const handleClearCancel = () => {
-    setShowClearDialog(false);
-  };
+  
+
+  // const handleCancel = () => {
+  //   setNewEvents([]);
+  //   setShowDialog(false);
+  // };
+  
+  // const handleClearCancel = () => {
+  //   setShowClearDialog(false);
+  // };
 
   
   
@@ -188,21 +197,18 @@ export const Calendar = () => {
                   : slot.type === 'Open House'
                   ? '#FFF8E9' 
                   : '#CEF4F1',
-              // backgroundColor: slot.type === 'Open House' ? '#FFF8E9' : '#CEF4F1',
               textColor:
                 slot.status === 'pending'
                   ? '#000000'  
                   : slot.type === 'Open House'
                   ? '#A98A22' 
                   : '#24A89E',
-              // textColor: slot.type === 'Open House' ? '#A98A22' : '#24A89E',
               borderColor:
                 slot.status === 'pending'
                   ? '#000000'  
                   : slot.type === 'Open House'
                   ? '#A98A22' 
                   : '#24A89E',
-              // borderColor: slot.type === 'Open House' ? '#A98A22' : '#24A89E',
               ...slot
             })),
             ...newEvents.map(event => ({
@@ -223,9 +229,7 @@ export const Calendar = () => {
               });
             } 
           }}          
-          // eventTextColor='#24A89E'             
-          // eventBackgroundColor="#CEF4F1"
-          // eventBorderColor="#24A89E"
+        
           headerToolbar={{
             left: 'prev today next',
             center: '',
@@ -240,11 +244,16 @@ export const Calendar = () => {
           height="auto"
         />
         {/* Dialog Component */}
-        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={handleCancel} />
-        <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={handleClearCancel} />
-        <AvailabilityTypeDialog isOpen={showAvailabilityTypeDialog} onSelect={handleAvailabilityTypeSelect} onClose={() => setShowAvailabilityTypeDialog(false)} /> 
-        <OpenHouseDialog isOpen={showOpenHouseDialog} onSubmit={handleBookingSelect} onClose={() => setShowOpenHouseDialog(false)} />
-        {/* <InspectionDialog isOpen={showInspectionDialog} onSubmit={handleBookingSelect} onClose={() => setShowInspectionDialog(false)} /> */}
+        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={closeDialogs} />
+        <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={closeDialogs} />
+        <ActivityTypeDialog isOpen={showActivityTypeDialog} onSelect={handleActivityTypeSelect} onClose={closeDialogs} />
+      
+        <AvailabilityTypeDialog 
+          isOpen={showAvailabilityTypeDialog} 
+          pendingSlot={pendingSlot}
+          onSelect={handleAvailabilityTypeSelect}
+          onClose={closeDialogs} 
+        />
       </div>
 
       {/* Detail view modal */}

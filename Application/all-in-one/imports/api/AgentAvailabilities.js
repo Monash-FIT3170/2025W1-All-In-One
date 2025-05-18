@@ -2,19 +2,20 @@ import { Mongo } from 'meteor/mongo';
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 
-export const InspectionAvailabilities = new Mongo.Collection('inspectionAvailabilities');
+export const AgentAvailabilities = new Mongo.Collection('agentAvailabilities');
 
 if (Meteor.isServer) {
-  Meteor.publish('inspectionAvailabilities', function () {
-    return InspectionAvailabilities.find();
+  Meteor.publish('agentAvailabilities', function () {
+    return AgentAvailabilities.find();
   });
 }
 
 Meteor.methods({
-  async 'inspectionAvailabilities.insert'(
+  async 'agentAvailabilities.insert'(
     start,
     end,
-    type,
+    activity_type,
+    availability_type,
     property,
     price,
     bedrooms,
@@ -25,7 +26,8 @@ Meteor.methods({
   ) {
     check(start, String);
     check(end, String);
-    check(type, String);
+    check(activity_type, String);
+    check(availability_type, String);
     check(property, String);
     check(price, Match.Optional(String));
     check(bedrooms, Match.Optional(String));
@@ -34,10 +36,13 @@ Meteor.methods({
     check(image, Match.Optional(String));
     check(status, Match.Optional(String));
 
-    const result = await InspectionAvailabilities.insertAsync({
+    const result = await AgentAvailabilities.insertAsync({
       start,
       end,
-      type,
+      activity_type,
+      availability_type,
+      type: availability_type, 
+      title: `${availability_type} Availability`, 
       property,
       price,
       bedrooms,
@@ -47,13 +52,14 @@ Meteor.methods({
       status,
       createdAt: new Date(),
     });
+    
 
     console.log(`[SERVER] Inserted availability ${result}`);
     return result;
   },
 
-  async 'inspectionAvailabilities.clear'() {
+  async 'agentAvailabilities.clear'() {
     console.log('Clearing all availabilities...');
-    return await InspectionAvailabilities.removeAsync({});
+    return await AgentAvailabilities.removeAsync({});
   }
 });
