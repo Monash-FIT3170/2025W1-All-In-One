@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -14,6 +14,47 @@ import Footer from "./components/Footer";
 
 
 export default function AddPropertyListing() {
+  
+  const [photo, setPhoto] = useState("");   // URL for photo/s ??
+  const [video, setVideo] = useState("");   // Same for video ??
+
+  const [propAddress, setPropAddress] = useState("");
+  const [pricePerWeek, setPricePerWeek] = useState(0);
+  const [numBeds, setNumBeds] = useState(0);
+  const [numBaths, setNumBaths] = useState(0);
+  const [numParkSpots, setNumParkSpots] = useState(0);
+  const [propType, setPropType] = useState("");
+  const [description, setDescription] = useState("");
+  const [dateAvailable, setDateAvailable] = useState("");   // I assume it should be a string.
+  const [isFurnished, setIsFurnished] = useState(false);
+  const [petsAllowed, setPetsAllowed] = useState(false);
+  const [bond, setBond] = useState(0);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    Meteor.call(
+      "addProperty",
+      {
+        propAddress,
+        pricePerWeek,
+        numBeds,
+        numBaths,
+        numParkSpots,
+        propType,
+        description,
+        dateAvailable,
+        isFurnished,
+        petsAllowed,
+        bond,
+        status: "Available"
+      },
+      
+    )
+
+
+  }
+
 
   return (     
     <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
