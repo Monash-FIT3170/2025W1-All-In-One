@@ -1,10 +1,6 @@
-import React, {useState} from "react";
-import {
-  BrowserRouter as Router,
-  Routes,
-  Route,
-  Link
-} from 'react-router-dom';
+import { Meteor } from "meteor/meteor";
+import React, { useState } from "react";
+import { Link } from 'react-router-dom';
 import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
 
