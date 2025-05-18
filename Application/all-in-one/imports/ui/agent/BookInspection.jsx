@@ -10,7 +10,6 @@ export const BookInspection = () => {
       <div className="flex items-center justify-between px-8 py-4 bg-[#CEF4F1]"> 
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="Logo" className="h-12" />
-          <span className="text-xl font-bold">All In One</span>
         </div>
         <div className="flex gap-4">
           {['Messages', 'Applications', 'Tickets', 'Properties'].map(label => (
