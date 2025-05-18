@@ -26,8 +26,8 @@ export default function AddPropertyListing() {
   const [propType, setPropType] = useState("");
   const [description, setDescription] = useState("");
   const [dateAvailable, setDateAvailable] = useState("");   // I assume it should be a string.
-  const [isFurnished, setIsFurnished] = useState(false);
-  const [petsAllowed, setPetsAllowed] = useState(false);
+  const [isFurnished, setIsFurnished] = useState("");
+  const [petsAllowed, setPetsAllowed] = useState("");
   const [bond, setBond] = useState(0);
 
   const handleSubmit = (e) => {
@@ -49,8 +49,15 @@ export default function AddPropertyListing() {
         bond,
         status: "Available"
       },
-      
-    )
+      (err) => {
+        if (err) {
+          alert("Adding Property failed: " + err.reason);
+        }
+        else {
+          alert("Property Successfully Added!");
+        }
+      }
+    );
 
 
   }
@@ -69,7 +76,7 @@ export default function AddPropertyListing() {
           <div className="text-xl text-gray-600 mb-5"> Create a new rental property listing! </div>
 
           {/*Add Property Form*/}
-          <form className="max-w-l mx-auto">
+          <form className="max-w-l mx-auto" onSubmit={handleSubmit}>
             <label className="text-xl font-semibold text-gray-600"> Add Photo/s </label>
             <div class="flex items-center justify-center w-full mb-5">
               <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-[#CEF4F1]">
@@ -80,7 +87,7 @@ export default function AddPropertyListing() {
                   <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">Upload up to 20 photos (JPG, JPEG, PNG)</p>
                 </div>
-                <input id="dropzone-file" type="file" class="hidden" />
+                <input id="dropzone-file" type="file" class="hidden" onChange={(e) => setPhoto(e.target.baseURI)}/>
               </label>
             </div> 
 
@@ -94,7 +101,7 @@ export default function AddPropertyListing() {
                   <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
                   <p class="text-xs text-gray-500 dark:text-gray-400">Upload a video up to 200MB (MP4)</p>
                 </div>
-                <input id="dropzone-file" type="file" class="hidden" />
+                <input id="dropzone-file" type="file" class="hidden" onChange={(e) => setVideo(e.target.baseURI)}/>
               </label>
             </div> 
 
@@ -103,13 +110,13 @@ export default function AddPropertyListing() {
             <div className="text-l text-gray-600 mb-3"> Enter key information about the new property to be displayed on the search page </div>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Address </label>
-            <input type="text" placeholder="Enter property address" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:placeholder-gray-400 mb-5"/>
+            <input type="text" placeholder="Enter property address" onChange={(e) => setPropAddress(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:placeholder-gray-400 mb-5"/>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Price per Week </label>
-            <input type="decimal" placeholder="$/week" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"/>
+            <input type="decimal" placeholder="$/week" onChange={(e) => setPricePerWeek(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"/>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bedrooms </label>
-            <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
+            <select onChange={(e) => setNumBeds(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
               <option>0</option>
               <option>1</option>
               <option>2</option>
@@ -119,7 +126,7 @@ export default function AddPropertyListing() {
             </select>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bathrooms </label>
-            <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
+            <select onChange={(e) => setNumBaths(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
               <option>0</option>
               <option>1</option>
               <option>2</option>
@@ -129,7 +136,7 @@ export default function AddPropertyListing() {
             </select>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Parking Spots </label>
-            <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
+            <select onChange={(e) => setNumParkSpots(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
               <option>0</option>
               <option>1</option>
               <option>2</option>
@@ -139,7 +146,7 @@ export default function AddPropertyListing() {
             </select>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Property Type </label>
-            <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-10">
+            <select onChange={(e) => setPropType(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-10">
               <option>Townhouse</option>
               <option>Apartment</option>
               <option>House</option>
@@ -151,7 +158,7 @@ export default function AddPropertyListing() {
             <div className="text-l text-gray-600 mb-3"> Enter key information about the new property to be displayed on the search page </div>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Description </label>
-            <input type="text" placeholder="Enter a brief description of the property" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"/>
+            <input type="text" placeholder="Enter a brief description of the property" onChange={(e) => setDescription(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"/>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Available from date </label>
             <div class="relative max-w-sm">
@@ -160,25 +167,25 @@ export default function AddPropertyListing() {
                     <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
                   </svg>
               </div>
-              <input id="datepicker-autohide" datepicker datepicker-autohide type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 mb-5" placeholder="Select date"/>
+              <input id="datepicker-autohide" datepicker datepicker-autohide type="text" placeholder="YYYY-MM-DD" onChange={(e) => setDateAvailable(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 mb-5"/>
             </div>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Furnished </label>
-            <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-5">
+            <select onChange={(e) => setIsFurnished(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-5">
               <option>Yes</option>
               <option>No</option>
             </select>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Pets Allowed </label>
-            <select class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-5">
+            <select onChange={(e) => setPetsAllowed(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-5">
               <option>Yes</option>
               <option>No</option>
             </select>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Bond </label>
-            <input type="number" placeholder="$0.00" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-10"/>
+            <input type="number" placeholder="$0.00" onChange={(e) => setBond(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-10"/>
 
-            <button className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg w-xl p-2.5 text-center mb-5"> Add Property </button>
+            <button type="submit" className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg w-xl p-2.5 text-center mb-5"> Add Property </button>
           </form>
         </div>
       </body>
