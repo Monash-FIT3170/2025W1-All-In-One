@@ -1,52 +1,80 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
+import { Properties, RentalApplications } from '/imports/api/collections';
 
 const GeneralSection = () => {
-  const [propId, setPropId] = useState('');
+  const [propId, setPropId] = useState('P002');
+  const tenantId = 'T001'; // hardcoded tenant for now, you can make this dynamic later
+
+  // Form state
   const [leaseStart, setLeaseStart] = useState('');
   const [leaseTerm, setLeaseTerm] = useState('');
   const [appRent, setAppRent] = useState('');
-  const [desc, setDesc] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
+  
+  // Track existing rental application for this property and tenant
+  const rentalApplication = useTracker(() => {
+    Meteor.subscribe('rentalApplications');
+    return RentalApplications.findOne({ prop_id: propId, ten_id: tenantId });
+  }, [propId, tenantId]);
+
+  // Track property data
+  const property = useTracker(() => {
+    Meteor.subscribe('properties');
+    return Properties.findOne({ prop_id: propId });
+  }, [propId]);
+
+  // Prefill form fields if rentalApplication exists
+  useEffect(() => {
+    if (rentalApplication) {
+      setLeaseStart(rentalApplication.lease_start_date ? new Date(rentalApplication.lease_start_date).toISOString().slice(0, 10) : '');
+      setLeaseTerm(rentalApplication.lease_term || '');
+      setAppRent(rentalApplication.app_rent ? rentalApplication.app_rent.toString() : '');
+    } else if (property && !appRent) {
+      // If no application exists, set rent from property price
+      setAppRent(property.prop_pricepweek.toString());
+    }
+  }, [rentalApplication, property]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
 
     const data = {
-      rental_app_id: `RA${Date.now()}`, // You can generate a more robust ID
       prop_id: propId,
       lease_start_date: new Date(leaseStart),
       lease_term: leaseTerm,
       app_rent: Number(appRent),
-      app_desc: desc,
       rental_app_prop_inspected: false,
-      ten_id: 'T001', // Placeholder: replace with logged-in user or form input
-      leaseholder_id: 'L001', // Placeholder
-      employment_id: 'E001', // Placeholder
+      ten_id: tenantId,
+      leaseholder_id: 'L001',      // keep your defaults or logic here
+      employment_id: 'E001',
       household_pets: false,
       status: 'Pending',
     };
 
-    Meteor.call('rentalApplications.insert', data, (err, res) => {
-      if (err) {
-        setStatusMessage(`Error: ${err.message}`);
-      } else {
-        setStatusMessage('Saved successfully!');
-        // Optionally reset form here
-      }
-    });
+    if (rentalApplication) {
+      // Update existing rental application
+      Meteor.call('rentalApplications.update', rentalApplication._id, data, (err) => {
+        setStatusMessage(err ? `Error: ${err.message}` : 'Updated successfully!');
+      });
+    } else {
+      // Insert new rental application with new id
+      data.rental_app_id = `RA${Date.now()}`;
+      Meteor.call('rentalApplications.insert', data, (err) => {
+        setStatusMessage(err ? `Error: ${err.message}` : 'Saved successfully!');
+      });
+    }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        {/* should be atoumated juist placeholder for now */}
         <label className="block font-semibold">Property ID:</label>
         <input
           value={propId}
           onChange={(e) => setPropId(e.target.value)}
           className="border px-3 py-2 rounded w-full"
-          placeholder="e.g. P001"
         />
       </div>
 
@@ -77,16 +105,7 @@ const GeneralSection = () => {
           value={appRent}
           onChange={(e) => setAppRent(e.target.value)}
           className="border px-3 py-2 rounded w-full"
-        />
-      </div>
-
-      <div>
-        <label className="block font-semibold">Application Description:</label>
-        <textarea
-          value={desc}
-          onChange={(e) => setDesc(e.target.value)}
-          className="border px-3 py-2 rounded w-full"
-          placeholder="Why are you applying?"
+          placeholder={property ? `$${property.prop_pricepweek}` : 'Loading...'}
         />
       </div>
 

@@ -15,4 +15,15 @@ Meteor.methods({
     check(status, String);
     await RentalApplications.updateAsync(id, { $set: { status } });
   },
+
+  async 'rentalApplications.update'(id, updateData) {
+    check(id, String);
+    check(updateData, Object);
+
+    console.log(`[METHOD] rentalApplications.update called for id: ${id}`, updateData);
+
+    return await RentalApplications.updateAsync(id, {
+      $set: updateData,
+    });
+  },
 });
