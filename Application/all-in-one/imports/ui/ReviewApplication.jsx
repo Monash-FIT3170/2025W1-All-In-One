@@ -3,7 +3,7 @@ import React from 'react';
 import { Meteor } from 'meteor/meteor';
 import { ApplicantCard } from './components/ApplicantCard';
 import { useTracker } from 'meteor/react-meteor-data';
-import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/collections';
+import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
 
 
 export const ReviewApplication = () => {

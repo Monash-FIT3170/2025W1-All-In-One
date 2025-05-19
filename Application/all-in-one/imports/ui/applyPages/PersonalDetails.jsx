@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { Tenants, RentalApplications } from '/imports/api/collections';
+import { Tenants, RentalApplications } from '/imports/api/database/collections';
 
 const PersonalDetails = ({ propId = 'P002', tenId = 'T001' }) => {
   const [firstName, setFirstName] = useState('');

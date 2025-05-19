@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { Properties, RentalApplications } from '/imports/api/collections';
+import { Properties, RentalApplications } from '/imports/api/database/collections';
 
 const GeneralSection = () => {
   const [propId, setPropId] = useState('P002');
