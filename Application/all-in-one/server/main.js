@@ -65,7 +65,7 @@ Meteor.startup(async () => {
   const existingAgentUser = await Meteor.users.findOneAsync({ 'emails.address': agentEmail });
 
   if (!existingAgentUser) {
-    const agentUserId = Accounts.createUser({
+    const agentUserId = await Accounts.createUser({
       email: agentEmail,
       password: 'securepassword123',
       profile: {
@@ -93,7 +93,7 @@ Meteor.startup(async () => {
   const existingLandlordUser = await Meteor.users.findOneAsync({ 'emails.address': landlordEmail });
 
   if (!existingLandlordUser) {
-    const landlordUserId = Accounts.createUser({
+    const landlordUserId = await Accounts.createUser({
       email: landlordEmail,
       password: 'securepassword123',
       profile: {
