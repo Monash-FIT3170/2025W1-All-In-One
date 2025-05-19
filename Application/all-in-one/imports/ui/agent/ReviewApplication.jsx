@@ -88,21 +88,34 @@ export const ReviewApplication = () => {
                         const employment = employments.find(e => e.employment_id === app.employment_id);
 
                         return (
-                            <div key={app._id} className="flex bg-white rounded-lg shadow overflow-hidden">
+                            <div key={app._id} className="flex overflow-hidden gap-8">
                                 {/* Left: Property Image + Info */}
-                                <div className="w-1/4 p-4 bg-[#D6F2F2]">
-                                    <img src="/images/property.png" alt="Property" className="rounded mb-2" />
-                                    <p className="text-lg font-semibold">${app.app_rent} per week</p>
-                                    <p className="text-sm text-gray-700">{property?.prop_address || 'Unknown address'}</p>
-                                    <div className="flex gap-4 mt-2 text-sm text-gray-600">
-                                        <span>🛏 {property?.prop_numbeds || 0}</span>
-                                        <span>🛁 {property?.prop_numbaths || 0}</span>
-                                        <span>🚗 {property?.prop_numcarspots || 0}</span>
+                                <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden ">
+                                    {/* Property Image as Background */}
+                                    <img
+                                        src="/images/property.png"
+                                        alt="Property"
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                    />
+
+                                    {/* White Overlay Box */}
+                                    <div className="absolute bottom-0 left-0 w-full" style={{ height: '35%' }}>
+                                        <div className="bg-white bg-opacity-95 h-full flex flex-col justify-center px-6 py-2 shadow-lg">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-bold text-gray-900">${app.app_rent} per week</span>
+                                                <span className="text-sm font-semibold text-gray-700 truncate">{property?.prop_address || 'Unknown address'}</span>
+                                            </div>
+                                            <div className="flex gap-4 mt-1 text-gray-700 text-md">
+                                                <span className="flex items-center gap-1">🛏 {property?.prop_numbeds || 0}</span>
+                                                <span className="flex items-center gap-1">🛁 {property?.prop_numbaths || 0}</span>
+                                                <span className="flex items-center gap-1">🚗 {property?.prop_numcarspots || 0}</span>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
                                 {/* Right: Applicant Info */}
-                                <div className="w-3/4 p-8 bg-[#CBADD8] flex flex-col justify-between">
+                                <div className="w-3/4 p-8 bg-[#CBADD8] rounded-2xl flex flex-col justify-between">
                                     <ApplicantCard
                                         name={`${tenant?.ten_fn || 'Unknown'} ${tenant?.ten_ln || ''}`}
                                         age={'N/A'}
@@ -115,8 +128,7 @@ export const ReviewApplication = () => {
                                                 onChange={(e) => {
                                                     const newStatus = e.target.value;
                                                     Meteor.call('rentalApplications.setStatus', app._id, newStatus);
-                                                }}
-                                            >
+                                                }}>
                                                 <option value="Pending">⏳</option>
                                                 <option value="Approved">✅</option>
                                                 <option value="Rejected">❌</option>
