@@ -11,7 +11,7 @@ export const ApplicantCard = ({ name, age, occupation, status, statusIcon, ll_st
             </div>
             <div className="text-center">
                 <div className="text-3xl">{statusIcon}</div>
-                <p className="text-sm text-gray-600">{status}</p>
+                <p className="text-2xl text-gray-600">{status}</p>
             </div>
         </div>
     );

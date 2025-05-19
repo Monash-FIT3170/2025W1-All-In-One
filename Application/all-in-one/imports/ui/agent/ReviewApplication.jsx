@@ -5,10 +5,12 @@ import { ApplicantCard } from './components/ApplicantCard';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
 import FilterMenu from './components/FilterMenu';
+import StatusMenu from './components/StatusMenu';
 
 export const ReviewApplication = () => {
     const [allSearch, setAllSearch] = useState('');
     const [showFilterMenu, setShowFilterMenu] = useState(false);
+    const [statusMenuAppId, setStatusMenuAppId] = useState(null);
 
     const { isReady, applications, tenants, properties, employments } = useTracker(() => {
         const sub1 = Meteor.subscribe('rentalApplications');
@@ -122,17 +124,27 @@ export const ReviewApplication = () => {
                                         occupation={employment?.emp_job_title || 'N/A'}
                                         status={app.status || 'Pending'}
                                         statusIcon={
-                                            <select
-                                                className="px-2 py-1 rounded border bg-white text-sm"
-                                                value={app.status || 'Pending'}
-                                                onChange={(e) => {
-                                                    const newStatus = e.target.value;
-                                                    Meteor.call('rentalApplications.setStatus', app._id, newStatus);
-                                                }}>
-                                                <option value="Pending">⏳</option>
-                                                <option value="Approved">✅</option>
-                                                <option value="Rejected">❌</option>
-                                            </select>
+                                            <div className="relative">
+                                                <button
+                                                    className="px-2 py-1 rounded bg-white text-sm"
+                                                    onClick={() => setStatusMenuAppId(app._id)}
+                                                >
+                                                    {app.status === 'Approved' ? '✅' : app.status === 'Rejected' ? '❌' : '⏳'}
+                                                </button>
+                                                <StatusMenu
+                                                    show={statusMenuAppId === app._id}
+                                                    onClose={() => setStatusMenuAppId(null)}
+                                                    onAccept={() => {
+                                                        Meteor.call('rentalApplications.setStatus', app._id, 'Approved');
+                                                        setStatusMenuAppId(null);
+                                                    }}
+                                                    onReject={() => {
+                                                        Meteor.call('rentalApplications.setStatus', app._id, 'Rejected');
+                                                        setStatusMenuAppId(null);
+                                                    }}
+                                                    status={app.status}
+                                                />
+                                            </div>
                                         }
                                     />
                                 </div>
