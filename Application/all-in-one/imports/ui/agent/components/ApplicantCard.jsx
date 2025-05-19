@@ -1,17 +1,17 @@
 // ApplicantCard.jsx
 import React from 'react';
 
-export const ApplicantCard = ({ name, age, occupation, status, statusIcon }) => {
+export const ApplicantCard = ({ name, age, occupation, status, statusIcon, ll_status }) => {
     return (
-        <div className="w-full h-full rounded p-4 bg-white flex flex-col justify-between">
+        <div className="bg-white rounded-lg shadow w-full h-full flex items-center justify-between px-10 py-4">
             <div>
-                <h3 className="font-semibold text-lg">{name}</h3>
-                <p className="text-sm">Age: {age}</p>
-                <p className="text-sm">Occupation: {occupation}</p>
+                <p className="font-semibold text-lg">{name}</p>
+                <p className="text-sm text-gray-600">Age: {age}</p>
+                <p className="text-sm text-gray-600">Occupation: {occupation}</p>
             </div>
-            <div className="flex items-center justify-between mt-4">
-                <span className="text-sm font-medium">{status}</span>
-                <span className="text-xl">{statusIcon}</span>
+            <div className="text-center">
+                <div className="text-3xl">{statusIcon}</div>
+                <p className="text-sm text-gray-600">{status}</p>
             </div>
         </div>
     );

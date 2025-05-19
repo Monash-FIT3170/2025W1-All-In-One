@@ -4,10 +4,11 @@ import { Meteor } from 'meteor/meteor';
 import { ApplicantCard } from './components/ApplicantCard';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
+import FilterMenu from './components/FilterMenu';
 
 export const ReviewApplication = () => {
-    const [applicantSearch, setApplicantSearch] = useState('');
-    const [propertySearch, setPropertySearch] = useState('');
+    const [allSearch, setAllSearch] = useState('');
+    const [showFilterMenu, setShowFilterMenu] = useState(false);
 
     const { isReady, applications, tenants, properties, employments } = useTracker(() => {
         const sub1 = Meteor.subscribe('rentalApplications');
@@ -37,11 +38,10 @@ export const ReviewApplication = () => {
         
         const tenantName = `${tenant?.ten_fn || ''} ${tenant?.ten_ln || ''}`.toLowerCase();
         const propertyAddress = (property?.prop_address || '').toLowerCase();
+        const searchTerm = allSearch.toLowerCase();
         
-        const matchesApplicant = tenantName.includes(applicantSearch.toLowerCase());
-        const matchesProperty = propertyAddress.includes(propertySearch.toLowerCase());
-        
-        return matchesApplicant && matchesProperty;
+        // Return true if either the tenant name or property address matches the search term
+        return tenantName.includes(searchTerm) || propertyAddress.includes(searchTerm);
     });
 
     return (
@@ -58,30 +58,30 @@ export const ReviewApplication = () => {
                 }} className="my-4" />
 
                 {/* Search + Filters */}
-                <div className="mt-4 bg-[#D6F2F2] p-4 rounded-lg flex gap-4">
+                <div className="mt-4 bg-[#CBADD8] px-6 py-4 rounded-lg flex gap-4 relative">
                     <input
                         type="text"
                         placeholder="Search Applicant..."
                         className="flex-1 px-4 py-2 rounded-md"
                         style={{ backgroundColor: '#FFF8E9' }}
-                        value={applicantSearch}
-                        onChange={(e) => setApplicantSearch(e.target.value)}
+                        value={allSearch}
+                        onChange={(e) => setAllSearch(e.target.value)}
                     />
-                    <input
-                        type="text"
-                        placeholder="Search Property..."
-                        className="flex-1 px-4 py-2 rounded-md"
-                        style={{ backgroundColor: '#FFF8E9' }}
-                        value={propertySearch}
-                        onChange={(e) => setPropertySearch(e.target.value)}
+                    <button
+                        className="w-1/5 px-4 py-2 rounded-md text-white"
+                        style={{ backgroundColor: '#9747FF' }}
+                        onClick={() => setShowFilterMenu(!showFilterMenu)}
+                    >
+                        Filter
+                    </button>
+                    <FilterMenu
+                        show={showFilterMenu}
+                        onClose={() => setShowFilterMenu(false)}
                     />
-                    <select className="dropdown-arrow flex-1">
-                        <option>Filter</option>
-                    </select>
                 </div>
 
                 {/* Applications Grid */}
-                <div className="grid grid-cols-2 gap-6 mt-6 ">
+                <div className="grid grid-cols-1 gap-6 mt-6 ">
                     {filteredApplications.map(app => {
                         const tenant = tenants.find(t => t.ten_id === app.ten_id);
                         const property = properties.find(p => p.prop_id === app.prop_id);
@@ -90,7 +90,7 @@ export const ReviewApplication = () => {
                         return (
                             <div key={app._id} className="flex bg-white rounded-lg shadow overflow-hidden">
                                 {/* Left: Property Image + Info */}
-                                <div className="w-1/2 p-4 bg-[#D6F2F2]">
+                                <div className="w-1/4 p-4 bg-[#D6F2F2]">
                                     <img src="/images/property.png" alt="Property" className="rounded mb-2" />
                                     <p className="text-lg font-semibold">${app.app_rent} per week</p>
                                     <p className="text-sm text-gray-700">{property?.prop_address || 'Unknown address'}</p>
@@ -102,7 +102,7 @@ export const ReviewApplication = () => {
                                 </div>
 
                                 {/* Right: Applicant Info */}
-                                <div className="w-1/2 p-4 bg-[#EBFAFA] flex flex-col justify-between">
+                                <div className="w-3/4 p-8 bg-[#CBADD8] flex flex-col justify-between">
                                     <ApplicantCard
                                         name={`${tenant?.ten_fn || 'Unknown'} ${tenant?.ten_ln || ''}`}
                                         age={'N/A'}
