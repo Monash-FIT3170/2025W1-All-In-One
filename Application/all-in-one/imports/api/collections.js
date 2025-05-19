@@ -123,6 +123,16 @@ Agents.schema = new SimpleSchema({
   agent_fname: { type: String },
   agent_lname: { type: String },
   agent_ph: { type: String },
-  agent_email: { type: String },
-  agent_password: { type: String },
+  agent_email: { type: String }
+});
+
+export const Landlords = new Mongo.Collection('landlords');
+Landlords.schema = new SimpleSchema({
+  ll_id: { type: String },
+  ll_fn: { type: String },
+  ll_ln: { type: String },
+  ll_email: { type: String },
+  ll_pn: { type: String },
+  ll_pfp: { type: String },
+  prop_id: { type: String },
 });

@@ -39,7 +39,7 @@ export const LoginPage = () => {
             } else if (role === "agent") {
               navigate("/dashboard");
             } else {
-              navigate("/dashboard"); // fallback
+              navigate("/error"); // fallback
             }
 
             setIsLoggingIn(false);

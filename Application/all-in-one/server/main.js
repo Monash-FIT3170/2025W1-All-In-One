@@ -2,7 +2,9 @@ import { Meteor } from 'meteor/meteor';
 import {
   Properties,
   Tenants,
-  RentalApplications
+  RentalApplications,
+  Agents,
+  Landlords
 } from '/imports/api/collections';
 import { Employment } from '../imports/api/collections';
 import '/imports/api/methods/account.js';
@@ -56,19 +58,64 @@ Meteor.startup(async () => {
     });
   }
 
-  if (!await Tenants.findOneAsync({ ten_id: 'T002' })) {
-    await Tenants.insertAsync({
-      ten_id: 'T002',
-      ten_fn: 'Bob',
-      ten_ln: 'Lee',
-      ten_email: 'bob@example.com',
-      ten_pn: '0412340000',
-      ten_password: 'hashedpassword',
-      ten_pfp: '/images/bob.png',
-      ten_add: '789 Ocean Rd, NSW',
-      ten_role: 'Tenant',
+  //Backend creation of agent accounts (not to be removed)
+  //TODO: send an email to reset password for security
+  // AGENT: Amy Jones
+  const agentEmail = 'agent1@example.com';
+  const existingAgentUser = await Meteor.users.findOneAsync({ 'emails.address': agentEmail });
+
+  if (!existingAgentUser) {
+    const agentUserId = Accounts.createUser({
+      email: agentEmail,
+      password: 'securepassword123',
+      profile: {
+        firstName: 'Amy',
+        lastName: 'Jones',
+        role: 'agent'
+      }
     });
+
+    await Agents.insertAsync({
+      agent_id: agentUserId,
+      agent_fname: 'Amy',
+      agent_lname: 'Jones',
+      agent_ph: '0400000000',
+      agent_email: agentEmail,
+    });
+
+    console.log('✅ Agent created and added to Agents collection');
   }
+
+  //Backend creation of landlord accounts (not to be removed)
+  //TODO: send an email to reset password for security
+  //LANDLORD: John Doe
+  const landlordEmail = 'landlord1@example.com';
+  const existingLandlordUser = await Meteor.users.findOneAsync({ 'emails.address': landlordEmail });
+
+  if (!existingLandlordUser) {
+    const landlordUserId = Accounts.createUser({
+      email: landlordEmail,
+      password: 'securepassword123',
+      profile: {
+        firstName: 'John',
+        lastName: 'Doe',
+        role: 'landlord'
+      }
+    });
+
+    await Landlords.insertAsync({
+      ll_id: landlordUserId,
+      ll_fn: 'John',
+      ll_ln: 'Doe',
+      ll_email: landlordEmail,
+      ll_pn: '0499999999',
+      ll_pfp: '',
+      prop_id: 'P001', // or whichever property they own
+    });
+
+    console.log('✅ Landlord created and added to Landlords collection');
+  }
+
 
   if (!await RentalApplications.findOneAsync({ rental_app_id: 'RA001' })) {
     await RentalApplications.insertAsync({
@@ -142,5 +189,13 @@ Meteor.startup(async () => {
 
   Meteor.publish('employment', function () {
     return Employment.find();
+  });
+
+  Meteor.publish('agents', function () {
+    return Agents.find(); 
+  });
+
+  Meteor.publish('landlords', function () {
+    return Landlords.find(); 
   });
 });

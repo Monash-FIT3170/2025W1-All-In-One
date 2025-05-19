@@ -54,7 +54,7 @@ export const SignUpPage = () => {
                   } else if (role === "agent") { // CHANGE
                     navigate("/dashboard");
                   } else {
-                    navigate("/dashboard"); // fallback
+                    navigate("/error"); // fallback
                   }
 
                   setIsSigningUp(false);
