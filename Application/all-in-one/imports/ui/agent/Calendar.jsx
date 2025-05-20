@@ -104,15 +104,17 @@ export const Calendar = () => {
     setShowClearDialog(true);   
   };
 
-  const handleConfirm = async () => {
-    try {
-      for (const event of newEvents) {
+const handleConfirm = async () => {
+  console.log('newEvents before confirm:', newEvents);
+  try {
+    for (const event of newEvents) {
+      try {
         await callAsync(
           'agentAvailabilities.insert',
           event.start.toISOString(),
           event.end.toISOString(),
-          'Availability',             
-          event.type,                 
+          'Availability',
+          event.type,
           event.property,
           event.price,
           event.bedrooms,
@@ -121,7 +123,13 @@ export const Calendar = () => {
           event.image,
           'confirmed'
         );
+        console.log('Successfully saved:', event); // Log successful saves
+      } catch (individualError) {
+        console.error('Error saving event:', event, individualError.reason);
+        alert('Failed to save one of the availabilities: ' + individualError.reason);
+        // Decide if you want to continue saving other events or break the loop here
       }
+    }
   
       setNewEvents([]);
       setShowDialog(false);

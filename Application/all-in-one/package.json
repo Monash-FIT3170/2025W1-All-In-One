@@ -12,6 +12,7 @@
     "@fullcalendar/interaction": "^6.1.17",
     "@fullcalendar/react": "^6.1.17",
     "@fullcalendar/timegrid": "^6.1.17",
+    "dayjs": "^1.11.13",
     "lucide-react": "^0.510.0",
     "meteor-node-stubs": "^1.2.5",
     "react": "^18.2.0",
