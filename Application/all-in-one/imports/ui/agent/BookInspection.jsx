@@ -12,7 +12,7 @@ export const BookInspection = () => {
           <img src="/logo.png" alt="Logo" className="h-12" />
         </div>
         <div className="flex gap-4">
-          {['Messages', 'Applications', 'Tickets', 'Properties'].map(label => (
+          {['Dashboard', 'Applications', 'Properties'].map(label => (
             <button key={label} className="bg-[#FFE284] hover:bg-yellow-200 px-4 py-2 rounded-full font-semibold">
               {label}
             </button>

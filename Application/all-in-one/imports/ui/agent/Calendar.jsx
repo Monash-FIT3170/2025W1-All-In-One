@@ -267,7 +267,7 @@ export const Calendar = () => {
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
 
         {/* Confirm */}
-        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0}className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0? 'bg-gray-300 cursor-not-allowed': 'bg-[#FFE284] hover:bg-yellow-200 text-black'}`}>
+        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0}className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0? 'bg-gray-300 cursor-not-allowed': 'bg-[#9747FF] hover:bg-purple-200 text-white'}`}>
             Confirm 
         </button>
 

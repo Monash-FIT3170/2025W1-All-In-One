@@ -25,7 +25,7 @@ export const EventDetailModal = ({ event, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="relative bg-[#FFE284] p-6 rounded-xl w-[800px] shadow-lg flex gap-6">
+      <div className="relative bg-[#CBADD8] p-6 rounded-xl w-[800px] shadow-lg flex gap-6">
         <button
           className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
           onClick={onClose}
@@ -44,7 +44,7 @@ export const EventDetailModal = ({ event, onClose }) => {
             alt="Property"
             className="rounded-xl mb-2 w-full h-48 object-cover"
           />
-          <div className="bg-[#CEF4F1] p-4 rounded-xl">
+          <div className="bg-[#FFF8E9] p-4 rounded-xl">
             <p className="text-center text-gray-700">{event.property || 'No property information'}</p>
             <p className="text-center text-sm text-gray-700">${event.price || '—'} per week</p>
             

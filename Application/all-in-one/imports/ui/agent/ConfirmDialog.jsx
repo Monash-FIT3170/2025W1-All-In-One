@@ -17,7 +17,7 @@ export const ConfirmDialog = ({ isOpen, onConfirm, onCancel }) => {
           </button>
           <button
             onClick={onConfirm}
-            className="bg-[#FFE284] hover:bg-yellow-200 text-black font-semibold py-2 px-4 rounded"
+            className="bg-[#9747FF] hover:bg-purpler-200 text-white font-semibold py-2 px-4 rounded"
           >
             Confirm
           </button>
