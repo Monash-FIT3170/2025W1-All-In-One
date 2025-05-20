@@ -3,10 +3,9 @@ import { Link } from 'react-router-dom';
 
 function Navbar() {
   return (
-    <div className="flex items-center justify-between px-8 py-4 bg-[#D6F2F2]">
-      <Link to="/" className="flex items-center gap-2">
+    <div className="flex items-center justify-between px-6 h-[63px] bg-[#CBADD8]">
+      <Link to="/" className="flex items-center gap-2 h-full">
         <img src="/images/logo.png" alt="Logo" className="h-12" />
-        <span className="text-xl font-bold">All In One</span>
       </Link> 
       <div className="flex items-center gap-4">
         {['Inspections', 'Applications','Tickets', 'Properties'].map((label) => (
@@ -14,20 +13,20 @@ function Navbar() {
             <Link
               key={label}
               to="/BasicLeases"
-              className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition flex items-center justify-center"
+              className="bg-[#9747FF] text-white px-4 py-1.5 rounded-full font-base hover:bg-violet-900 transition"
             >
               {label}
             </Link>
           ) : (
             <button
               key={label}
-              className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+              className="bg-[#9747FF] text-white px-4 py-1.5 rounded-full font-base hover:bg-violet-900 transition"
             >
               {label}
             </button>
           )
         ))}
-        <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition">
+        <button className="bg-[#9747FF] text-white px-4 py-1.5 rounded-full font-base hover:bg-violet-900 transition">
           Log out
         </button>
         <img src="/images/user-avatar.png" alt="User Avatar" className="w-10 h-10 rounded-full" />
