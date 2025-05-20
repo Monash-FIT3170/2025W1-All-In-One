@@ -26,6 +26,7 @@ Meteor.methods({
       'lease_start_date',
       'lease_term',
       'app_rent',
+      'app_desc',
       'rental_app_prop_inspected',
       'ten_id',
       'employment_id',
@@ -85,5 +86,30 @@ Meteor.methods({
   async 'identities.remove'(identityId) {
     check(identityId, String);
     return await Identities.removeAsync({ identity_id: identityId });
+  },
+
+  async 'tenants.update'(tenId, updateData) {
+    check(tenId, String);
+    check(updateData, Object);
+
+    // Optional: whitelist allowed tenant fields
+    const allowedFields = ['ten_fn', 'ten_ln', 'ten_pn', 'ten_dob'];
+
+    const sanitizedUpdate = Object.fromEntries(
+      Object.entries(updateData).filter(([key]) => allowedFields.includes(key))
+    );
+
+    console.log(`[METHOD] tenants.update called for tenId: ${tenId}`, sanitizedUpdate);
+
+    const result = await Tenants.updateAsync(
+      { ten_id: tenId },
+      { $set: sanitizedUpdate }
+    );
+
+    if (result === 0) {
+      throw new Meteor.Error('tenant-not-found', 'Tenant not found');
+    }
+
+    return result;
   },
 });

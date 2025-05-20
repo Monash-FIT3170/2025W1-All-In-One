@@ -11,6 +11,7 @@ const GeneralSection = () => {
   const [leaseStart, setLeaseStart] = useState('');
   const [leaseTerm, setLeaseTerm] = useState('');
   const [appRent, setAppRent] = useState('');
+  const [propertyInspected, setPropertyInspected] = useState(false); // NEW STATE
   const [statusMessage, setStatusMessage] = useState('');
   
   // Track existing rental application for this property and tenant
@@ -28,12 +29,18 @@ const GeneralSection = () => {
   // Prefill form fields if rentalApplication exists
   useEffect(() => {
     if (rentalApplication) {
-      setLeaseStart(rentalApplication.lease_start_date ? new Date(rentalApplication.lease_start_date).toISOString().slice(0, 10) : '');
+      setLeaseStart(
+        rentalApplication.lease_start_date 
+          ? new Date(rentalApplication.lease_start_date).toISOString().slice(0, 10) 
+          : ''
+      );
       setLeaseTerm(rentalApplication.lease_term || '');
       setAppRent(rentalApplication.app_rent ? rentalApplication.app_rent.toString() : '');
+      setPropertyInspected(!!rentalApplication.rental_app_prop_inspected); // PREFILL checkbox state
     } else if (property && !appRent) {
       // If no application exists, set rent from property price
       setAppRent(property.prop_pricepweek.toString());
+      setPropertyInspected(false); // default unchecked
     }
   }, [rentalApplication, property]);
 
@@ -45,7 +52,7 @@ const GeneralSection = () => {
       lease_start_date: new Date(leaseStart),
       lease_term: leaseTerm,
       app_rent: Number(appRent),
-      rental_app_prop_inspected: false,
+      rental_app_prop_inspected: propertyInspected, // use checkbox state here
       ten_id: tenantId,
       leaseholder_id: 'L001',      // keep your defaults or logic here
       employment_id: 'E001',
@@ -107,6 +114,20 @@ const GeneralSection = () => {
           className="border px-3 py-2 rounded w-full"
           placeholder={property ? `$${property.prop_pricepweek}` : 'Loading...'}
         />
+      </div>
+
+      {/* New checkbox for rental inspection */}
+      <div className="flex items-center space-x-2">
+        <input
+          type="checkbox"
+          id="rental-inspected"
+          checked={propertyInspected}
+          onChange={(e) => setPropertyInspected(e.target.checked)}
+          className="form-checkbox h-5 w-5 text-yellow-400"
+        />
+        <label htmlFor="rental-inspected" className="font-semibold">
+          I have inspected the property
+        </label>
       </div>
 
       <button

@@ -28,11 +28,24 @@ const PersonalDetails = ({ propId = 'P002', tenId = 'T001' }) => {
       setFirstName((prev) => prev || tenant.ten_fn || '');
       setLastName((prev) => prev || tenant.ten_ln || '');
       setPhone((prev) => prev || tenant.ten_pn || '');
+
+      // Prefill DOB from tenant.ten_dob if exists, else rentalApp.dob fallback
+      setDob(
+        (prev) =>
+          prev ||
+          (tenant.ten_dob
+            ? new Date(tenant.ten_dob).toISOString().substr(0, 10)
+            : rentalApp && rentalApp.dob
+            ? new Date(rentalApp.dob).toISOString().substr(0, 10)
+            : '')
+      );
+    } else if (rentalApp) {
+      // fallback if tenant not loaded yet but rentalApp exists
+      setDob((prev) => prev || (rentalApp.dob ? new Date(rentalApp.dob).toISOString().substr(0, 10) : ''));
     }
 
     if (rentalApp) {
       setRentalAppId(rentalApp._id);
-      setDob((prev) => prev || (rentalApp.dob ? new Date(rentalApp.dob).toISOString().substr(0, 10) : ''));
     }
   }, [tenant, rentalApp]);
 
@@ -43,6 +56,7 @@ const PersonalDetails = ({ propId = 'P002', tenId = 'T001' }) => {
       ten_fn: firstName,
       ten_ln: lastName,
       ten_pn: phone,
+      ten_dob: dob ? new Date(dob) : null,
     };
 
     Meteor.call('tenants.update', tenId, tenantUpdateData, (err) => {
@@ -53,21 +67,8 @@ const PersonalDetails = ({ propId = 'P002', tenId = 'T001' }) => {
       }
     });
 
-    const rentalAppUpdateData = {
-      dob: dob ? new Date(dob) : null,
-    };
-
-    if (rentalAppId) {
-      Meteor.call('rentalApplications.update', rentalAppId, rentalAppUpdateData, (err) => {
-        if (err) {
-          setStatusMessage(`Error updating rental application: ${err.message}`);
-        } else {
-          setStatusMessage('Rental application updated successfully!');
-        }
-      });
-    } else {
-      setStatusMessage('Please save the general section first.');
-    }
+    // If you want to keep rentalApp DOB in sync, you can add an update here
+    // But usually DOB belongs to tenant, so skipping rentalApp update here
   };
 
   return (
