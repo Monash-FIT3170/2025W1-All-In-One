@@ -4,6 +4,9 @@ import { useParams } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
+import { useTracker } from "meteor/react-meteor-data";
+import { Meteor } from "meteor/meteor";
+import { Properties, Photos, RentalApplications } from "../../api/database/collections"; // importing mock for now
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a particular property leased by a Tenant (accessed through BasicLeases) //
@@ -11,33 +14,60 @@ import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 
 export default function DetailedLease() {
   const { id } = useParams();
-  // mock data- should be connected to database once its set up
-  const mockProperties = [
-    {
-      id: "1",
-      price: 800,
-      address: "Melton South, 3338",
-      type: "Town house",
-      AvailableDate: new Date("2025-05-01"),
-      Pets: "True",
-      imageUrls: [
-        "/images/melton_property_kitchen.jpg",
-        "/images/melton_property_livingroom.png",
-        "/images/melton_property_outside.jpg",
-        "/images/melton_property_pantry.jpg"
-      ],
-      details: {
-        baths: 5,
-        beds: 8,
-        carSpots: 4,
-        furnished: "Yes"
-      },
-      description:
-        "Discover this expansive and elegant residence featuring 8 spacious rooms, 5 modern bathrooms, and ample parking for up to 4 vehicles. Designed with both functionality and luxury in mind, the home offers multiple living and entertainment zones, ideal for growing families or those who love to host. Each bathroom is thoughtfully appointed with contemporary fixtures and sleek finishes, while the generous floor plan provides flexibility for home offices, guest suites, or hobby spaces. Set on a sizable block in a desirable location, this property is the perfect blend of space, style, and convenience."
-    }
-  ];
 
-  const property = mockProperties.find((p) => p.id === id);
+  const { loading, property }= useTracker(()=>{
+    const propertyHandle= Meteor.subscribe("properties");
+    const photoHandle= Meteor.subscribe("photos");
+    const rentalAppHandle= Meteor.subscribe("rentalApplications")
+
+    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !rentalAppHandle.ready();
+    console.log("Subscriptions ready:", {
+    properties: propertyHandle.ready(),
+    photos: photoHandle.ready(),
+    rentalApps: rentalAppHandle.ready()
+  });
+    
+    if (isLoading) return {loading: true, property: null};
+
+    const selectedProperty= Properties.findOne({ prop_id: id });
+    if (!selectedProperty) return { loading: false, property: null};
+
+    const photos= Photos.find({ prop_id: id}).fetch();
+    const sortedUrls= photos
+    .sort((a,b)=> a.photo_order-b.photo_order)
+    .map((p) => p.photo_url);
+
+    // find macthing rental applications to get lease start date if leased
+    const isLeased= selectedProperty.prop_status === "Leased";
+
+    const leaseStartDate= isLeased ? RentalApplications.findOne({ prop_id: id, status: "Approved"})?.lease_start_date||null
+    :null;
+
+    
+
+    return{
+      loading: false,
+      property:{
+        id: selectedProperty.prop_id,
+        price: selectedProperty.prop_pricepweek,
+        address: selectedProperty.prop_address,
+        type: selectedProperty.prop_type,
+        AvailableDate: selectedProperty.prop_available_date,
+        leaseStartDate: leaseStartDate,
+        status: selectedProperty.prop_status,
+        Pets: selectedProperty.prop_pets?"Yes":"No",
+        imageUrls: sortedUrls.length>0? sortedUrls:["/images/default.jpg"],
+        description: selectedProperty.prop_desc,
+        details:{
+          baths: selectedProperty.prop_numbaths,
+          beds: selectedProperty.prop_numbeds,
+          carSpots: selectedProperty.prop_numcarspots,
+          furnished: selectedProperty.prop_furnish? "Yes":"No",
+        },
+      },
+    };
+  })
+  
 
   if (!property) {
     return (

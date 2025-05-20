@@ -42,12 +42,15 @@ export default function PropertyDetailsCard({property}){
 
     if (!property){
         return (
-            <div classname="text-xl text-red-600">
+            <div className="text-xl text-red-600">
                 Property Not Found!
             </div>
         );
     }
 
+    console.log('Property status:', property.status);
+  console.log('Lease start date:', property.leaseStartDate);
+  console.log('Available date:', property.AvailableDate);
     const openModal=()=> setIsModalOpen(true);
     const closeModal=()=> setIsModalOpen(false);
 
@@ -136,7 +139,19 @@ export default function PropertyDetailsCard({property}){
                     Property Type: {property.type}
                 </div>
                 <div className="text-1xl text-gray-600">
-                    Available Date: {property.AvailableDate.toLocaleDateString()}
+                  {property.status==='Leased'?(
+                    <>
+                    Leased On: {' '}
+                    {property.leaseStartDate
+                      ? new Date(property.leaseStartDate).toLocaleDateString()
+                      :'N/A'}
+                      </>
+                  ):(
+                    <>
+                    Available From: {new Date(property.AvailableDate).toLocaleDateString()}
+                    </>
+                  )}
+                    
                 </div>
                 <div className="text-1xl text-gray-600">
                     Pets Allowed: {property.Pets}

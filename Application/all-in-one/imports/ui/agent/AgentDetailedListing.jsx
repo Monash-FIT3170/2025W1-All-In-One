@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, RentalApplications } from "../../api/database/collections"; // importing mock for now
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,22 +16,35 @@ import { Properties, Photos } from "../../api/database/collections"; // importin
 export default function AgentDetailedListing() {
   const { id } = useParams();
   
-     const { isReady, property, photos }=  useTracker(()=>{
+const { isReady, property, photos, approvedLeaseStart }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
+        const subApps= Meteor.subscribe("rentalApplications");
     
-        const isReady= subProps.ready() && subPhotos.ready();
+        const isReady= subProps.ready() && subPhotos.ready() && subApps.ready();
   
         let property= null;
         let photos= [];
+        let approvedLeaseStart=null;
   
         
         if (isReady){
           property= Properties.findOne({prop_id: id});
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
         }
+
+        if (property && property.prop_status==="Leased"){
+          const approvedApp= RentalApplications.findOne({
+            prop_id: id,
+            status: "Approved",
+          });
+
+          if (approvedApp && approvedApp.lease_start_date){
+            approvedLeaseStart= approvedApp.lease_start_date;
+          }
+        }
   
-        return {isReady, property, photos};
+        return {isReady, property, photos, approvedLeaseStart};
   
     
       }, [id]);
@@ -43,12 +56,16 @@ export default function AgentDetailedListing() {
       if (!property){
         return (<div className="min-h-screen flex items-center justify-center text-xl text-red-600">Property Not Found!</div>);
       }
+
+
     
       const propertyData= {
           id: property.prop_id,
           address: property.prop_address,
           price:property.prop_pricepweek,
           type:property.prop_type,
+          status: property.prop_status,
+          leaseStartDate: approvedLeaseStart,
           AvailableDate: property.prop_available_date,
           Pets: property.prop_pets ? "True":"False",
           imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
@@ -61,6 +78,7 @@ export default function AgentDetailedListing() {
           description: property.prop_desc,
           
         };
+
 
   return (
     <div className="min-h-screen bg-[#FFF8EB] flex flex-col">

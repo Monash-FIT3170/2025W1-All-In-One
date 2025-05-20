@@ -29,7 +29,11 @@ const { isReady, properties, photos }=  useTracker(()=>{
     return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
   }
 
-  const propertyCards= properties.map((p)=>{
+  const availableProperties= properties.filter(
+    (p)=> p.prop_status==="Available"
+  );
+
+  const propertyCards= availableProperties.map((p)=>{
     const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
     return{
       id: p.prop_id,

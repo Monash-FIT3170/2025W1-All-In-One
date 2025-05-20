@@ -6,77 +6,52 @@ import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, RentalApplications } from "../../api/database/collections"; // importing mock for now
 
 ////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the list of properties that are leased by the particular tenant //
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function BasicLeases() {
-  // mock data- should be connected to database once its set up
+  //const userId= Meteor.userId();
+  const userId= "T002"
 
-  const properties = [
-    {
-      id: 1,
-      location: "Melton South, 3338",
-      price: "$800",
-      image: "/images/Melton/melton_property_livingroom.png",
-      beds: 3,
-      baths: 2,
-      cars: 1,
-      living: 1
-    },
-    {
-      id: 2,
-      location: "Sydney, 2000",
-      price: "$620",
-      image: "/images/Sydney/Sydney_front.jpeg",
-      beds: 3,
-      baths: 2,
-      cars: 1,
-      living: 1
-    },
-    {
-      id: 3,
-      location: "Gold Coast, 4207",
-      price: "$1200",
-      image: "/images/GoldCoast/GoldCoast_front.jpeg",
-      beds: 3,
-      baths: 2,
-      cars: 1,
-      living: 1
-    },
-    {
-      id: 4,
-      location: "Byron Bay, 2481",
-      price: "$980",
-      image: "/images/Byron_Bay/Byron_Bay_front.jpeg",
-      beds: 3,
-      baths: 2,
-      cars: 1,
-      living: 1
-    },
-    {
-      id: 5,
-      location: "Brisbane, 4000",
-      price: "$480",
-      image: "/images/Brisbane/brisbane_living_area.jpeg",
-      beds: 3,
-      baths: 2,
-      cars: 1,
-      living: 1
-    },
-    {
-      id: 6,
-      location: "Adelaide, 5000",
-      price: "$740",
-      image: "/images/Adelaide/Adelaide_ dining.jpeg",
-      beds: 3,
-      baths: 2,
-      cars: 1,
-      living: 1
-    }
-  ];
+  const leasedProperties= useTracker(()=>{
+    if (!userId) return [];
+
+  const applicationsHandle = Meteor.subscribe('rentalApplications');
+  const propertiesHandle = Meteor.subscribe('properties');
+  const photosHandle = Meteor.subscribe('photos');
+
+  const isLoading = !applicationsHandle.ready() || !propertiesHandle.ready() || !photosHandle.ready();
+  if (isLoading) return [];
+
+    const finalisedApplications= RentalApplications.find({
+      ten_id: userId,
+      status: "Approved",
+    }).fetch();
+
+    // exract unique property IDs
+    const approvedPropIds= finalisedApplications.map((app)=>app.prop_id);
+
+    const properties= Properties.find({prop_id:{$in: approvedPropIds}}).fetch();
+
+    const allPhotos= Photos.find({prop_id:{$in: approvedPropIds}}).fetch();
+
+    return properties.map((property)=>{
+      const photo= allPhotos.find((p)=> p.prop_id===property.prop_id && p.photo_order ===1);
+      return {
+        id: property.prop_id,
+        location: property.prop_address,
+        price: `$${property.prop_pricepweek}`,
+        image: photo?photo.photo_url: "/default.jpg",
+        beds: property.prop_numbeds,
+        baths: property.prop_numbaths,
+        cars: property.prop_numcarspots
+      };
+    });
+  },[]);
+  
 
   return (
     <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
@@ -102,11 +77,13 @@ export default function BasicLeases() {
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
-          {properties.map((property) => (
+          {leasedProperties.length ===0?(
+            <p className="text-gray-700 text-center col-span-2">No Approved leases found</p>
+          ):(leasedProperties.map((property) => (
             <Link key={property.id} to={`/DetailedLease/${property.id}`}>
               <BasicPropertyCard property={property} />
             </Link>
-          ))}
+          )))}
         </div>
       </div>
       {/* Blank space before footer */}

@@ -24,8 +24,12 @@ export default function TenantBasicPropListings() {
     if (!isReady){
       return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
     }
+
+    const availableProperties= properties.filter(
+    (p)=> p.prop_status==="Available"
+  );
   
-    const propertyCards= properties.map((p)=>{
+    const propertyCards= availableProperties.map((p)=>{
       const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
       return{
         id: p.prop_id,
