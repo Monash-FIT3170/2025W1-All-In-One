@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { RentalApplications, Incomes } from '/imports/api/database/collections';
+import { RentalApplications, Incomes, Identities } from '/imports/api/database/collections';
 
 Meteor.methods({
   // Rental Applications
@@ -19,8 +19,29 @@ Meteor.methods({
   async 'rentalApplications.update'(id, updateData) {
     check(id, String);
     check(updateData, Object);
-    console.log(`[METHOD] rentalApplications.update called for id: ${id}`, updateData);
-    return await RentalApplications.updateAsync(id, { $set: updateData });
+
+    // Optional: restrict updates to known fields only
+    const allowedFields = [
+      'prop_id',
+      'lease_start_date',
+      'lease_term',
+      'app_rent',
+      'rental_app_prop_inspected',
+      'ten_id',
+      'employment_id',
+      'status',
+      'household_pets',
+      'pet_description',
+      'emergency_contact_id',
+      'rental_app_id',
+    ];
+
+    const sanitizedUpdate = Object.fromEntries(
+      Object.entries(updateData).filter(([key]) => allowedFields.includes(key))
+    );
+
+    console.log(`[METHOD] rentalApplications.update called for id: ${id}`, sanitizedUpdate);
+    return await RentalApplications.updateAsync(id, { $set: sanitizedUpdate });
   },
 
   // Incomes
@@ -47,5 +68,22 @@ Meteor.methods({
     check(incId, String);
     console.log(`[METHOD] incomes.remove called for inc_id: ${incId}`);
     return await Incomes.removeAsync({ inc_id: incId });
+  },
+
+  // Identities
+  async 'identities.insert'(identityDoc) {
+    check(identityDoc, {
+      identity_id: String,
+      rental_app_id: String,
+      identity_type: String,
+      identity_scan: String,
+    });
+
+    return await Identities.insertAsync(identityDoc);
+  },
+
+  async 'identities.remove'(identityId) {
+    check(identityId, String);
+    return await Identities.removeAsync({ identity_id: identityId });
   },
 });

@@ -11,3 +11,7 @@ Meteor.publish('incomes', function () {
   // Return all income documents (again, add filtering if needed)
   return Incomes.find();
 });
+
+Meteor.publish('identities', function () {
+  return Identities.find();
+});
