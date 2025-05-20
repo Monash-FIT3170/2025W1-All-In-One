@@ -13,11 +13,11 @@ export const BookInspection = () => {
         </div>
         <div className="flex gap-4">
           {['Dashboard', 'Applications', 'Properties'].map(label => (
-            <button key={label} className="bg-[#FFE284] hover:bg-yellow-200 px-4 py-2 rounded-full font-semibold">
+            <button key={label} className="bg-[#FFE284] hover:bg-purple-200 px-4 py-2 rounded-full font-semibold">
               {label}
             </button>
           ))}
-          <button className="bg-[#FFE284] hover:bg-yellow-200 px-4 py-2 rounded-full font-semibold">Log out</button>
+          <button className="bg-[#FFE284] hover:bg-purple-200 px-4 py-2 rounded-full font-semibold">Log out</button>
           <img src="/user-avatar.png" alt="User" className="w-10 h-10 rounded-full" />
         </div>
       </div>

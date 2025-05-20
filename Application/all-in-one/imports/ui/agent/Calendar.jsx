@@ -272,7 +272,7 @@ export const Calendar = () => {
         </button>
 
 
-        <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
+        <button onClick={handleClearButtonClick} disabled={newEvents.length === 0 && availabilities.length === 0} className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0 && availabilities.length === 0? 'bg-gray-300 cursor-not-allowed': 'bg-red-500 hover:bg-red-400 text-white'}`}>
             Clear
         </button>
 
