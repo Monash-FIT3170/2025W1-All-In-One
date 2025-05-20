@@ -1,3 +1,4 @@
+//REAPLACE THIS PAGE, KEEPING THE LOGOUT BUTTON AND RESPECTIVE FUNCTIONS
 
 import { Link, useNavigate } from "react-router-dom";
 import React from "react";
