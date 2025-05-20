@@ -8,7 +8,6 @@ import {
 
 
 import { CalendarBooking } from './agent/CalendarBooking.jsx'; // import new page
-import { PropertyBooking } from './agent/PropertyBooking.jsx';
 import { PropertyListing } from './tenant/PropertyListing.jsx';
 
 export const App = () => (
@@ -24,7 +23,6 @@ export const App = () => (
       <Routes>
         <Route path="/" element={<div>Welcome to the home page!</div>} />
         <Route path="/calendar-booking" element={<CalendarBooking />} /> {/* New Route */}
-        <Route path="/property-booking" element={<PropertyBooking />} />
         <Route path="/property-listing" element={<PropertyListing />} />
       </Routes>
     </div>
