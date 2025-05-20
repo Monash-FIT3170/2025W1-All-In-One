@@ -69,11 +69,11 @@ export default function TenDetailedPropListing() {
       {/*Main content and butons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
         <PropertyDetailsCard property={propertyData} />
-        <div className="w-full flex flex-row space-x-4 mb-6">
-          <button className="w-1/2 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-3 rounded-lg">
+        <div className="w-full flex flex-row gap-4 mb-8 pt-10">
+          <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base py-2 rounded-md shadow-md transition duration-200">
             Book Inspection
           </button>
-          <button className="w-1/2 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-3 rounded-lg">
+          <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base py-2 rounded-md shadow-md transition duration-200">
             Apply
           </button>
         </div>

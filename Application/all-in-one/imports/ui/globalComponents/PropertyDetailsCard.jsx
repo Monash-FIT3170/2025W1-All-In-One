@@ -42,15 +42,12 @@ export default function PropertyDetailsCard({property}){
 
     if (!property){
         return (
-            <div className="text-xl text-red-600">
+            <div className="text-lg text-red-600">
                 Property Not Found!
             </div>
         );
     }
 
-    console.log('Property status:', property.status);
-  console.log('Lease start date:', property.leaseStartDate);
-  console.log('Available date:', property.AvailableDate);
     const openModal=()=> setIsModalOpen(true);
     const closeModal=()=> setIsModalOpen(false);
 
@@ -58,12 +55,12 @@ export default function PropertyDetailsCard({property}){
       <>
       {/*Image Carousel*/}
       {isModalOpen && property.imageUrls?.length > 0 &&(
-        <div className="fixed inset-0 bg-black/80 z-50 flex justify-center items-center p-4">
-          <div className="bg-black p-6 rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto shadow-lg">
+        <div className="fixed inset-0 bg-black/90 z-50 flex justify-center items-center p-4">
+          <div className="bg-black p-4 rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="w-full text-right mb-2">
             <button
             onClick={closeModal}
-            className="absolute top-2 right-4 text-gray-500 hover:text-black text-xl">
+            className="text-gray-600 hover:text-black text-xl">
             x
             </button>
             </div>
@@ -73,13 +70,13 @@ export default function PropertyDetailsCard({property}){
           <img
             src={property.imageUrls[0]}
             alt="Property Default"
-            className="max-h-[60vh] max-w-full object-contain"
+            className="max-h-[70vh] max-w-full object-contain"
           />
         </div>
       ) :(<Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1} arrows={true} nextArrow={<SampleNextArrow/>} prevArrow={<SamplePrevArrow/>}>
               {property.imageUrls.map((url, index)=>(
                 <div key={index} className="flex justify-center items-center">
-                  <img src={url} alt={`Property ${index}`} className="max-h-[60vh] max-w-full object-contain"/>
+                  <img src={url} alt={`Property ${index}`} className="max-h-[70vh] max-w-full object-contain"/>
                 </div>
               ))}
             </Slider>
@@ -88,11 +85,11 @@ export default function PropertyDetailsCard({property}){
         </div>
       )}
     
-        <div className="flex flex-col lg:flex-row p-6">
+        <div className="flex flex-col lg:flex-row p-4 gap-10 pt-16">
           {/*Images*/}
-          <div className="w-full lg:w-2/3">
-            <div className="flex space-x-2">
-              <div className="w-[100%] h-[30rem] overflow-hidden rounded-lg">
+          <div className="w-full lg:w-1/2">
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="w-full sm:w-2/3 h-96 overflow-hidden rounded-lg relative">
                 <img
                   src={property.imageUrls[0] || defaultImage}
                   alt="Property Image"
@@ -101,17 +98,17 @@ export default function PropertyDetailsCard({property}){
                 {/*View all images button*/}
                 <button 
                 onClick={openModal}
-                className="absolute bottom-4 right-4 bg-white text-gray-700 px-4 py-2 rounded-lg shadow hover:bg-gray-100">
+                className="absolute bottom-4 right-4 bg-white text-gray-800 px-3 py-1.5 rounded-md shadow-md hover:bg-gray-100 text-sm font-medium">
                   View All Images
                 </button>
               </div>
-              <div className="flex flex-col space-y-2 w-[50%]">
+              <div className="hidden sm:flex flex-col gap-2 w-1/3 h-96">
                 {[...Array(3)].map((_, index)=>{
                   const imageUrl= property.imageUrls[index+1]|| defaultImage;
                   return(
                     <div
                     key={index}
-                    className="w-full h-[9.6rem] overflow-hidden rounded-lg"
+                    className="flex-1 overflow-hidden rounded-lg"
                   >
                     <img
                       key={index}
@@ -128,49 +125,54 @@ export default function PropertyDetailsCard({property}){
           </div>
 
           {/* Right hand side- property infor*/}
-          <div className="flex-1 flex flex-col p-6 space-y-4">
-            <div className="text-4xl font-semibold text-gray-800">
-                ${property.price} per Week
+          <div className="w-full lg:w-1/2 p-2 space-y-3">
+            <div className="text-2xl md:text-3xl font-semibold text-gray-800">
+                ${property.price} <span className="text-lg font-medium">per Week </span>
             </div>
-                <div className="text-2xl text-gray-600">
+                <div className="text-3xl text-gray-800">
                     {property.address}
                 </div>
                 <div className="text-1xl text-gray-600">
-                    Property Type: {property.type}
+                    Property Type: <span className="text-gray-700">{property.type}</span>
                 </div>
                 <div className="text-1xl text-gray-600">
                   {property.status==='Leased'?(
                     <>
                     Leased On: {' '}
+                    <span className="text-gray-700">
                     {property.leaseStartDate
                       ? new Date(property.leaseStartDate).toLocaleDateString()
                       :'N/A'}
+                      </span>
                       </>
                   ):(
                     <>
-                    Available From: {new Date(property.AvailableDate).toLocaleDateString()}
+                    Available From:  
+                    <span className="text-gray-700">{new Date(property.AvailableDate).toLocaleDateString()}
+                    </span>
                     </>
                   )}
                     
                 </div>
                 <div className="text-1xl text-gray-600">
-                    Pets Allowed: {property.Pets}
+                    Pets Allowed: <span className="text-gray-700">{property.Pets}</span>
                 </div>
-            <div className="grid grid-cols-2 gap-y-6 text-gray-700 pt-4">
-                <div className="flex items-center space-x-2 text-2xl">
-                    <FaBath className="text-gray-700"/>
+
+            <div className="grid grid-cols-2 gap-4 pt-4 text-gray-700">
+                <div className="flex items-center gap-2">
+                    <FaBath className="text-gray-600 text-lg"/>
                     <span className="text-xl">{property.details.baths}</span>
                 </div>
-                <div className="flex items-center space-x-2 text-2xl">
-                    <FaBed className="text-gray-700 "/>
+                <div className="flex items-center gap-2">
+                    <FaBed className="text-gray-600 text-lg"/>
                     <span className="text-xl">{property.details.beds}</span>
                 </div>
-                <div className="flex items-center space-x-2 text-2xl">
-                    <FaCar className="text-gray-700"/>
+                <div className="flex items-center gap-2">
+                    <FaCar className="text-gray-600 text-lg"/>
                     <span className="text-xl">{property.details.carSpots}</span>
                 </div>
-                <div className="flex items-center space-x-2 text-2xl">
-                    <FaCouch className="text-gray-700"/>
+                <div className="flex items-center gap-2">
+                    <FaCouch className="text-gray-600 text-lg"/>
                     <span className="text-xl">{property.details.furnished}</span>
                 </div>
             </div>

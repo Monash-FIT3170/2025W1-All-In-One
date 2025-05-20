@@ -8,7 +8,7 @@ function Navbar() {
         <img src="/images/logo.png" alt="Logo" className="h-12" />
       </Link> 
       <div className="flex items-center gap-4">
-        {['Inspections', 'Applications','Tickets', 'Properties'].map((label) => (
+        {['Inspections', 'Applications', 'Properties'].map((label) => (
           label === 'Properties' ? (
             <Link
               key={label}
