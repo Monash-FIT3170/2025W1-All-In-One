@@ -17,7 +17,6 @@ export const App = () => (
       <div className="flex gap-4">
       <Link to="/calendar-booking">Calendar Booking Page</Link> {/* New Link */}
       <Link to="/property-listing">property listing</Link> {/* New Link */}
-      <Link to="/property-booking">property inspection</Link>
       </div>a
 
       <Routes>
