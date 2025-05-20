@@ -39,13 +39,12 @@ export const Calendar = () => {
     setShowActivityTypeDialog(false);
     setShowAvailabilityTypeDialog(false);
     setShowOpenHouseDialog(false);
-    setPendingSlot(null);
     setSelectedEvent(null);
   };
   
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('agentAvailabilities');
-    const data = AgentAvailabilities.find().fetch();
+    const data = AgentAvailabilities.find({}, { sort: { start: 1 } }).fetch();
     return {
       availabilities: data,
       isLoading: !handler.ready(),
@@ -92,7 +91,7 @@ export const Calendar = () => {
       allDay: false,
     };
     setNewEvents((prev) => [...prev, tempEvent]);
-    setPendingSlot(null);
+    console.log('[DEBUG] Booking selected:', { type, start, end, property });
     setShowOpenHouseDialog(false); 
   };
 
@@ -106,13 +105,17 @@ export const Calendar = () => {
 
   const handleConfirm = async () => {
     try {
+      console.log('[DEBUG] Confirming events:', newEvents);
+  
       for (const event of newEvents) {
+        console.log('[DEBUG] Inserting event:', event);
+  
         await callAsync(
           'agentAvailabilities.insert',
           event.start.toISOString(),
           event.end.toISOString(),
-          'Availability',             
-          event.type,                 
+          'Availability',
+          event.type,
           event.property,
           event.price,
           event.bedrooms,
@@ -141,7 +144,7 @@ export const Calendar = () => {
         setNewEvents([]); 
         setShowClearDialog(false);
   
-        Meteor.subscribe('agentAvailabilities'); 
+        Meteor.subscribe('agentAvailabilities');  
       }
     });
   };
