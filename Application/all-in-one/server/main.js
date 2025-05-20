@@ -5,9 +5,9 @@ import {
   RentalApplications,
   Agents,
   Landlords
-} from '/imports/api/collections';
-import { Employment } from '../imports/api/collections';
-import '/imports/api/methods/account.js';
+} from '/imports/api/databases/collections';
+import { Employment } from '../imports/api/databases/collections';
+import '/imports/api/databases/account.js';
 
 Meteor.startup(async () => {
   if (!await Properties.findOneAsync({ prop_id: 'P001' })) {

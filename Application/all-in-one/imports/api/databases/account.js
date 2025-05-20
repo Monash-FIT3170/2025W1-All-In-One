@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
-import { Tenants } from ' ../collections.js'; 
+import { Tenants } from ' .databases/collections.js'; 
 
 Meteor.methods({
   async registerUser({ email, password, firstName, lastName, role }) {
