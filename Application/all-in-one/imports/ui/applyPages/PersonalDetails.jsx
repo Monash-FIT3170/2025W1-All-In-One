@@ -11,38 +11,34 @@ const PersonalDetails = ({ propId = 'P002', tenId = 'T001' }) => {
   const [statusMessage, setStatusMessage] = useState('');
   const [rentalAppId, setRentalAppId] = useState(null);
 
-  // Subscribe and get tenant data
+  // Subscribe and fetch tenant and rental application
   const tenant = useTracker(() => {
     Meteor.subscribe('tenants');
     return Tenants.findOne({ ten_id: tenId });
   }, [tenId]);
 
-  // Subscribe and get rental application for this tenant & property
   const rentalApp = useTracker(() => {
     Meteor.subscribe('rentalApplications');
     return RentalApplications.findOne({ prop_id: propId, ten_id: tenId });
   }, [propId, tenId]);
 
-  // Prefill form with tenant and rental application data
+  // Prefill form when data is ready
   useEffect(() => {
     if (tenant) {
-      setFirstName(tenant.ten_fn || '');
-      setLastName(tenant.ten_ln || '');
-      setPhone(tenant.ten_pn || '');
+      setFirstName((prev) => prev || tenant.ten_fn || '');
+      setLastName((prev) => prev || tenant.ten_ln || '');
+      setPhone((prev) => prev || tenant.ten_pn || '');
     }
 
     if (rentalApp) {
       setRentalAppId(rentalApp._id);
-      // Assuming DOB is stored in rental application? If you want DOB from tenant, adjust accordingly
-      setDob(rentalApp.dob ? new Date(rentalApp.dob).toISOString().substr(0, 10) : '');
+      setDob((prev) => prev || (rentalApp.dob ? new Date(rentalApp.dob).toISOString().substr(0, 10) : ''));
     }
   }, [tenant, rentalApp]);
 
-  // Save button handler
   const handleSave = (e) => {
     e.preventDefault();
 
-    // Data to update tenant (firstName, lastName, phone)
     const tenantUpdateData = {
       ten_fn: firstName,
       ten_ln: lastName,
@@ -57,7 +53,6 @@ const PersonalDetails = ({ propId = 'P002', tenId = 'T001' }) => {
       }
     });
 
-    // DOB stored in rental application (or optionally in tenant if you want)
     const rentalAppUpdateData = {
       dob: dob ? new Date(dob) : null,
     };
@@ -71,7 +66,6 @@ const PersonalDetails = ({ propId = 'P002', tenId = 'T001' }) => {
         }
       });
     } else {
-      // No rental application exists yet — optionally create one here or prompt user to save general section first
       setStatusMessage('Please save the general section first.');
     }
   };

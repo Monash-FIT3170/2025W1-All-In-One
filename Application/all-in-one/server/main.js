@@ -15,6 +15,7 @@ import {
 } from '/imports/api/database/collections';
 import { mockData } from '/imports/api/database/mockData';
 import '/imports/api/rentalApplications/methods';
+import '/imports/api/rentalApplications/publications';
 
 Meteor.startup(async () => {
   // Clear existing data 
