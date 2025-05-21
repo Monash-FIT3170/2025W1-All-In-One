@@ -1,5 +1,5 @@
 import React from "react";
-import { FaBath,FaBed, FaCar, FaCouch} from "react-icons/fa";
+import { FaBath,FaBed, FaCar, FaCouch, FaFilter, FaSearch} from "react-icons/fa";
 
 export default function BasicPropListing() {
   // mock data- should be connected to database once its set up
@@ -28,28 +28,27 @@ export default function BasicPropListing() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
+    <div className="min-h-screen bg-[#FFFFFF] flex flex-col">
       {/*Header*/}
-      <div className="flex items-center justify-between px-8 py-4 bg-[#CEF4F1]">
+      <div className="flex items-center justify-between px-8 py-4 bg-[#CBADD8]">
         <div className="flex items-center gap-2">
           <img src="/images/logo.png" alt="Logo" className="h-12" />
-          <span className="text-xl font-bold">All In One</span>
         </div>
         <div className="flex gap-4">
-          {["Messages", "Applications", "Tickets", "Properties"].map(
+          {["Inspections", "Applications", "Properties"].map(
             (label) => (
               <button
                 key={label}
-                className="px-4 py-2 rounded-full font-semibold"
-                style={{ backgroundColor: "#fbe698" }}
+                className="px-4 py-2 rounded-full font-semibold  text-white"
+                style={{ backgroundColor: "#9747FF" }}
               >
                 {label}
               </button>
             )
           )}
           <button 
-          className="px-4 py-2 rounded-full font-semibold"
-          style={{ backgroundColor: "#fbe698" }}
+          className="px-4 py-2 rounded-full font-semibold  text-white"
+          style={{ backgroundColor: "#9747FF" }}
           >
             Log out
           </button>
@@ -73,15 +72,15 @@ export default function BasicPropListing() {
       
       {/* Search + Filters */}
       <div className="mt-4 flex justify-center">
-        <div className="bg-[#CEF4F1] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
+        <div className="bg-[#CBADD8] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
           <input
             type="text"
             placeholder="Search Postcode..."
             className="flex-1 px-4 py-2 rounded-md"
-            style={{ backgroundColor: '#fffcf7' }}
+            style={{ backgroundColor: '#FFFFFF' }}
           />
 
-          <select className="dropdown-arrow ml-auto rounded-lg" style={{ width: '200px',backgroundColor: '#FFFCF7', color: '#9da3ae' }}>
+          <select className="dropdown-arrow ml-auto rounded-lg" style={{ width: '200px',backgroundColor: '#FFFFFF', color: '#9da3ae' }}>
             <option>Filter</option>
           </select>
         </div>
@@ -94,29 +93,38 @@ export default function BasicPropListing() {
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {properties.map((property) => (
-            <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden"
-            style={{ backgroundColor: '#CEF4F1' }}>
-              <img src={property.image} alt={property.location} className="w-full h-[250px] object-cover" />
-              <div className="p-4">
-                <div className="mt-2 flex justify-between items-center">
-                  <h2 className="text-3xl font-medium text-gray-500">
-                    {property.price} <span className="text-3xl font-medium text-gray-500">per week</span>
+            <div key={property.id} className="relative h-[320px] rounded-lg overflow-hidden shadow-md">
+              {/* Availability badge */}
+              <div className="absolute top-2 right-2 bg-[#EADAFF] text-black text-lg font-semibold px-3 py-1 rounded-md z-20">
+                {property.avalibility}
+              </div>
+              
+              {/* Background image */}
+              <img
+                src={property.image}
+                alt={property.location}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              {/* Semi-transparent overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-white/70 p-4 z-10">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-3xl font-bold text-gray-700">
+                    {property.price} <span className="text-3xl font-bold">per week</span>
                   </h2>
-                  <p className="text-gray-600 text-right">{property.location}</p>
+                  <p className="text-gray-700">{property.location}</p>
                 </div>
-                  <div className="px-4 pb-4 mt-4 flex justify-between text-gray-600 text-sm">
-                    <div className="flex items-center gap-2">
-                      <FaBath size={24} />
-                      <span className="text-xl">{property.beds}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaBed size={24} />
-                      <span className="text-xl">{property.beds}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <FaCar size={24} />
-                      <span className="text-xl">{property.beds}</span>
+                <div className="flex justify-between mt-4 text-gray-700 text-sm">
+                  <div className="flex items-center gap-2">
+                    <FaBath size={24} />
+                    <span className="text-xl">{property.beds}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaBed size={24} />
+                    <span className="text-xl">{property.beds}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaCar size={24} />
+                    <span className="text-xl">{property.beds}</span>
                     </div>
                   </div>
               </div>
@@ -130,7 +138,7 @@ export default function BasicPropListing() {
 
 
       {/*Footer*/}
-      <footer className="bg-[#CEF4F1] text-white h-[500px] py-4 mt-auto"></footer>  {/* Fixed height with padding */}
+      <footer className="bg-[#CBADD8] text-white h-[500px] py-4 mt-auto"></footer>  {/* Fixed height with padding */}
 
 
     </div>
