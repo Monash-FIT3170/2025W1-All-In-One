@@ -73,16 +73,32 @@ export default function BasicPropListing() {
       {/* Search + Filters */}
       <div className="mt-4 flex justify-center">
         <div className="bg-[#CBADD8] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
-          <input
-            type="text"
-            placeholder="Search Postcode..."
-            className="flex-1 px-4 py-2 rounded-md"
-            style={{ backgroundColor: '#FFFFFF' }}
-          />
 
-          <select className="dropdown-arrow ml-auto rounded-lg" style={{ width: '200px',backgroundColor: '#FFFFFF', color: '#9da3ae' }}>
-            <option>Filter</option>
-          </select>
+          {/* Search field */}
+          <div className="flex items-center bg-white px-3 py-2 rounded-md w-full">
+            <FaSearch className="text-gray-500 mr-2" />
+            <input
+              type="text"
+              placeholder="Search Postcode..."
+              className="flex-1 outline-none bg-transparent"
+            />
+          </div>
+
+          {/* Search button with icon */}
+          <button
+            className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+          >
+            <FaSearch className="mr-2" />
+            Search
+          </button>
+
+          {/* Filter button with icon */}
+          <button
+            className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+          >
+            <FaFilter className="mr-2" />
+            Filter
+          </button>
         </div>
       </div>
       
