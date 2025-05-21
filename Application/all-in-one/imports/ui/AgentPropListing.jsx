@@ -28,28 +28,28 @@ export default function DetailedPropListing() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
+    <div className="min-h-screen bg-[#FFFFFF] flex flex-col">
       {/*Header*/}
-      <div className="flex items-center justify-between px-8 py-4 bg-[#CEF4F1]">
+      <div className="flex items-center justify-between px-8 py-4 bg-[#CBADD8]">
         <div className="flex items-center gap-2">
-          <img src="/images/logo.png" alt="Logo" className="h-12" />
-          <span className="text-xl font-bold">All In One</span>
+          <img src="/images/logo.png" alt="Logo" className="h-16" />
+        
         </div>
         <div className="flex gap-4">
           {["Messages", "Applications", "Tickets", "Properties"].map(
             (label) => (
               <button
                 key={label}
-                className="px-4 py-2 rounded-full font-semibold"
-                style={{ backgroundColor: "#fbe698" }}
+                className="px-4 py-2 rounded-full font-semibold text-white"
+                style={{ backgroundColor: "#9747FF" }}
               >
                 {label}
               </button>
             )
           )}
           <button 
-          className="px-4 py-2 rounded-full font-semibold"
-          style={{ backgroundColor: "#fbe698" }}
+          className="px-4 py-2 rounded-full font-semibold text-white"
+          style={{ backgroundColor: "#9747FF" }}
           >
             Log out
           </button>
@@ -73,7 +73,7 @@ export default function DetailedPropListing() {
       
       {/* Search + Filters */}
       <div className="mt-4 flex justify-center">
-        <div className="bg-[#CEF4F1] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
+        <div className="bg-[#CBADD8] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
           <input
             type="text"
             placeholder="Search Property..."
@@ -93,11 +93,11 @@ export default function DetailedPropListing() {
           <button
             className="px-6 py-2 text-white rounded-lg focus:outline-none"
             style={{
-              backgroundColor: '#fbe698',
-              color: '#1f2937',
+              backgroundColor: '#9747FF',
+              color: '#FFFFFF',
             }}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#e6c86a')}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#fbe698')}
+            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#7d3dd1')}
+            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#9747FF')}
           >
             Add Property Listing
           </button>
@@ -109,29 +109,33 @@ export default function DetailedPropListing() {
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {properties.map((property) => (
-            <div key={property.id} className="bg-white rounded-lg shadow-md overflow-hidden"
-            style={{ backgroundColor: '#CEF4F1' }}>
-              <img src={property.image} alt={property.location} className="w-full h-[250px] object-cover" />
-              <div className="p-4">
-                <div className="mt-2 flex justify-between items-center">
-                  <h2 className="text-3xl font-medium text-gray-500">
-                    {property.price} <span className="text-3xl font-medium text-gray-500">per week</span>
+            <div key={property.id} className="relative h-[320px] rounded-lg overflow-hidden shadow-md">
+              {/* Background image */}
+              <img
+                src={property.image}
+                alt={property.location}
+                className="absolute inset-0 w-full h-full object-cover"
+              />
+              {/* Semi-transparent overlay */}
+              <div className="absolute bottom-0 left-0 right-0 bg-white/70 p-4 z-10">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-3xl font-bold text-gray-700">
+                    {property.price} <span className="text-3xl font-bold">per week</span>
                   </h2>
-                  <p className="text-gray-600 text-right">{property.location}</p>
+                  <p className="text-gray-700">{property.location}</p>
                 </div>
-                  <div className="px-4 pb-4 mt-4 flex justify-between text-gray-600 text-sm">
-                    <div className="flex items-center gap-2">
-                      <FaBath size={24} />
-                      <span className="text-xl">{property.beds}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <FaBed size={24} />
-                      <span className="text-xl">{property.beds}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <FaCar size={24} />
-                      <span className="text-xl">{property.beds}</span>
+                <div className="flex justify-between mt-4 text-gray-700 text-sm">
+                  <div className="flex items-center gap-2">
+                    <FaBath size={24} />
+                    <span className="text-xl">{property.beds}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaBed size={24} />
+                    <span className="text-xl">{property.beds}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FaCar size={24} />
+                    <span className="text-xl">{property.beds}</span>
                     </div>
                   </div>
               </div>
@@ -145,7 +149,7 @@ export default function DetailedPropListing() {
 
 
       {/*Footer*/}
-      <footer className="bg-[#CEF4F1] text-white h-[500px] py-4 mt-auto"></footer>  {/* Fixed height with padding */}
+      <footer className="bg-[#CBADD8] text-white h-[500px] py-4 mt-auto"></footer>  {/* Fixed height with padding */}
 
 
     </div>
