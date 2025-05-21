@@ -33,16 +33,21 @@ const { isReady, property, photos, approvedLeaseStart }=  useTracker(()=>{
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
         }
 
-        if (property && property.prop_status==="Leased"){
-          const approvedApp= RentalApplications.findOne({
-            prop_id: id,
-            status: "Approved",
-          });
+        // if (property && property.prop_status==="Leased"){
+        //   const approvedApp= RentalApplications.findOne({
+        //     prop_id: id,
+        //     status: "Approved",
+        //   });
 
-          if (approvedApp && approvedApp.lease_start_date){
-            approvedLeaseStart= approvedApp.lease_start_date;
-          }
-        }
+        //   if (approvedApp && approvedApp.lease_start_date){
+        //     approvedLeaseStart= approvedApp.lease_start_date;
+        //   }
+        // }
+
+        approvedLeaseStart = RentalApplications.findOne({ 
+          prop_id: id, 
+          status: "Approved" 
+        })?.lease_start_date || null;
   
         return {isReady, property, photos, approvedLeaseStart};
   

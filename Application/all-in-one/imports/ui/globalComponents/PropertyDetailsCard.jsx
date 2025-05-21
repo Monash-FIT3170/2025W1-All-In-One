@@ -136,6 +136,7 @@ export default function PropertyDetailsCard({property}){
                     Property Type: <span className="text-gray-700">{property.type}</span>
                 </div>
                 <div className="text-1xl text-gray-600">
+                  {/*
                   {property.status==='Leased'?(
                     <>
                     Leased On: {' '}
@@ -152,6 +153,25 @@ export default function PropertyDetailsCard({property}){
                     </span>
                     </>
                   )}
+                    */}
+
+                  <div className="text-1xl text-gray-600">
+  {property.leaseStartDate ? (
+    <>
+      Lease Start Date: {' '}
+      <span className="text-gray-700">
+        {new Date(property.leaseStartDate).toLocaleDateString()}
+      </span>
+    </>
+  ) : (
+    <>
+      Available From: {' '}
+      <span className="text-gray-700">
+        {property.AvailableDate ? new Date(property.AvailableDate).toLocaleDateString() : 'N/A'}
+      </span>
+    </>
+  )}
+</div>
                     
                 </div>
                 <div className="text-1xl text-gray-600">

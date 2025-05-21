@@ -38,10 +38,16 @@ export default function DetailedLease() {
     .map((p) => p.photo_url);
 
     // find macthing rental applications to get lease start date if leased
-    const isLeased= selectedProperty.prop_status === "Leased";
+    //const isLeased= selectedProperty.prop_status === "Leased";
 
-    const leaseStartDate= isLeased ? RentalApplications.findOne({ prop_id: id, status: "Approved"})?.lease_start_date||null
-    :null;
+    //const leaseStartDate= isLeased ? RentalApplications.findOne({ prop_id: id, status: "Approved"})?.lease_start_date||null
+    //:null;
+
+    const leaseStartDate = RentalApplications.findOne({ 
+  prop_id: id, 
+  status: "Approved" 
+})?.lease_start_date || null;
+
 
     
 
