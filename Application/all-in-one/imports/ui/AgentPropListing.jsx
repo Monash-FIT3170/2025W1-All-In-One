@@ -38,7 +38,7 @@ export default function DetailedPropListing() {
         
         </div>
         <div className="flex gap-4">
-          {["Messages", "Applications", "Tickets", "Properties"].map(
+          {["Dashboard", "Applications", "Properties"].map(
             (label) => (
               <button
                 key={label}
