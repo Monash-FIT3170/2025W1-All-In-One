@@ -7,6 +7,7 @@ export default function DetailedPropListing() {
   const properties = [
     {
       id: 1,
+      avalibility: "Avalible",
       location: "Melton South, 3338",
       price: "$800",
       image: "/images/Melton/melton_property_livingroom.png",
@@ -17,6 +18,7 @@ export default function DetailedPropListing() {
     },
     {
       id: 2,
+      avalibility: "Leased",
       location: "Sydney, 2000",
       price: "$620",
       image: "/images/Sydney/Sydney_front.jpeg",
@@ -110,6 +112,11 @@ export default function DetailedPropListing() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {properties.map((property) => (
             <div key={property.id} className="relative h-[320px] rounded-lg overflow-hidden shadow-md">
+              {/* Availability badge */}
+              <div className="absolute top-2 right-2 bg-[#EADAFF] text-black text-lg font-semibold px-3 py-1 rounded-md z-20">
+                {property.avalibility}
+              </div>
+              
               {/* Background image */}
               <img
                 src={property.image}
