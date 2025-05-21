@@ -57,7 +57,7 @@ export const LoginPage = () => {
         <h2 className="text-2xl font-semibold mb-4">Don't have an account?</h2>
         <Link
           to="/signup"
-          className="bg-[#9747FF] hover:bg-yellow-400 text-white font-bold py-2 px-6 rounded flex items-center gap-2 mb-6 no-underline"
+          className="bg-[#9747FF] hover:bg-[#7E35D4] text-white font-bold py-2 px-6 rounded flex items-center gap-2 mb-6 no-underline"
         >
           <span>Sign Up</span>
         </Link>
@@ -88,7 +88,7 @@ export const LoginPage = () => {
           </div>
           <button
             type="submit"
-            className="bg-[#9747FF] hover:bg-yellow-400 text-white font-bold py-2 px-6 rounded"
+            className="bg-[#9747FF] hover:bg-[#7E35D4] text-white font-bold py-2 px-6 rounded"
             disabled={isLoggingIn}
           >
             {isLoggingIn ? "Logging in..." : "Log In"}
