@@ -52,12 +52,12 @@ export const LoginPage = () => {
   return (
     <div className="flex min-h-screen">
       {/* Left Side */}
-      <div className="w-1/2 bg-[#FFF7E6] flex flex-col items-center justify-center p-10">
+      <div className="w-1/2 bg-[#ffffff] flex flex-col items-center justify-center p-10">
         <img src="/images/logo.png" alt="All In One Logo" className="mb-8" />
         <h2 className="text-2xl font-semibold mb-4">Don't have an account?</h2>
         <Link
           to="/signup"
-          className="bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded flex items-center gap-2 mb-6 no-underline"
+          className="bg-[#9747FF] hover:bg-yellow-400 text-white font-bold py-2 px-6 rounded flex items-center gap-2 mb-6 no-underline"
         >
           <span>Sign Up</span>
         </Link>
@@ -65,7 +65,7 @@ export const LoginPage = () => {
       </div>
 
       {/* Right Side */}
-      <div className="w-1/2 bg-[#CEF4F1] flex flex-col items-center justify-center p-10">
+      <div className="w-1/2 bg-[#CBADD8] flex flex-col items-center justify-center p-10">
         <h1 className="text-3xl font-bold mb-8">Log In to Account</h1>
         <form className="w-3/4 flex flex-col gap-4" onSubmit={submit}>
           <input
@@ -88,7 +88,7 @@ export const LoginPage = () => {
           </div>
           <button
             type="submit"
-            className="bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-6 rounded"
+            className="bg-[#9747FF] hover:bg-yellow-400 text-white font-bold py-2 px-6 rounded"
             disabled={isLoggingIn}
           >
             {isLoggingIn ? "Logging in..." : "Log In"}
