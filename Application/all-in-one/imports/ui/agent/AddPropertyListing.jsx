@@ -26,6 +26,7 @@ export default function AddPropertyListing() {
   const [isFurnished, setIsFurnished] = useState(true);
   const [petsAllowed, setPetsAllowed] = useState(true);
   const [bond, setBond] = useState(0);
+  const [landlordId, setLandlordId] = useState("");
 
   const navigate = useNavigate();
 
@@ -46,6 +47,7 @@ export default function AddPropertyListing() {
         isFurnished,
         petsAllowed,
         bond,
+        landlordId,
         status: "Available",
       },
       (err) => {
@@ -125,7 +127,14 @@ export default function AddPropertyListing() {
             />
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bedrooms </label>
-            <select 
+            <input 
+              type="number" 
+              required
+              placeholder="No. of Bedrooms" 
+              onChange={(e) => setNumBeds(Number(e.target.value))} 
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
+            />
+            {/*<select 
               onChange={(e) => setNumBeds(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
                 <option>0</option>
@@ -134,10 +143,17 @@ export default function AddPropertyListing() {
                 <option>3</option>
                 <option>4</option>
                 <option>5</option>
-            </select>
+            </select>*/}
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bathrooms </label>
-            <select 
+            <input 
+              type="number" 
+              required
+              placeholder="No. of Bathrooms" 
+              onChange={(e) => setNumBaths(Number(e.target.value))} 
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
+            />
+            {/*<select 
               onChange={(e) => setNumBaths(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
                 <option>0</option>
@@ -146,9 +162,17 @@ export default function AddPropertyListing() {
                 <option>3</option>
                 <option>4</option>
                 <option>5</option>
-            </select>
+            </select>*/}
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Parking Spots </label>
+            <input 
+              type="number" 
+              required
+              placeholder="No. of Parking Spots" 
+              onChange={(e) => setNumParkSpots(Number(e.target.value))} 
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
+            />
+            {/* 
             <select onChange={(e) => setNumParkSpots(Number(e.target.value))} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
               <option>0</option>
               <option>1</option>
@@ -157,6 +181,7 @@ export default function AddPropertyListing() {
               <option>4</option>
               <option>5</option>
             </select>
+            */}
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Property Type </label>
             <select 
@@ -176,21 +201,13 @@ export default function AddPropertyListing() {
             <input type="text" placeholder="Enter a brief description of the property" onChange={(e) => setDescription(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"/>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Available from date </label>
-            <div class="relative max-w-sm">
-              <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z"/>
-                  </svg>
-              </div>
               <input 
-                id="datepicker-autohide" 
-                datepicker datepicker-autohide 
-                type="text" 
-                placeholder="YYYY-MM-DD" 
+                type="date" 
+                required
+                placeholder="DD/MM/YYYY"
                 onChange={(e) => setDateAvailable(e.target.value)} 
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 mb-5"
+                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-2.5 mb-5 w-lg"
               />
-            </div>
 
             <label className="text-l font-semibold text-gray-600 mb-5"> Furnished </label>
             <select 
@@ -213,6 +230,14 @@ export default function AddPropertyListing() {
               type="decimal" 
               placeholder="$0.00" 
               onChange={(e) => setBond(Number(e.target.value))} 
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
+            />
+
+            <label className="text-l font-semibold text-gray-600 mb-5"> Landlord ID </label>
+            <input 
+              type="text" 
+              placeholder="L###" 
+              onChange={(e) => setLandlordId(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-10"
             />
 

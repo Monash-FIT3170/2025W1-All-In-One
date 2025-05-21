@@ -35,7 +35,7 @@ Meteor.methods({
     }
   },
 
-  async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, status}) {
+  async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordId, status}) {
     try {
       {/* Creating Property Id */}
       const collectionSize = await Properties.find({}, {fields: {prop_id: 1}}).countAsync() + 1;
@@ -59,7 +59,7 @@ Meteor.methods({
         prop_bond: bond,
         prop_status: status,
         agent_id: 'A001',   // to be changed
-        landlord_id: 'L001' // to be changed
+        landlord_id: landlordId // to be changed
       });
   
       return propID;
@@ -68,5 +68,5 @@ Meteor.methods({
       throw new Meteor.Error("add-property-failed", error.message || "Something went wrong.");
     }
   },
-  
+
 });
