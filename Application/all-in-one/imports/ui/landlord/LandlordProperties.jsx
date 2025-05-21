@@ -1,5 +1,5 @@
 import React from "react";
-import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./components/LandlordNavbar";
 import Footer from "./components/Footer";
@@ -63,36 +63,41 @@ export default function LandlordProperties() {
           </p>
           <hr
             className="my-6 border-t-2 border-gray-300 w-full"
-            style={{ borderTop: "1px solid #e0e0e3", width: "1185px" }}
           />
         </div>
       </div>
 
        {/* Search + Filters */}
-      <div className="mt-4 flex justify-center">
-        <div
-          className="bg-[#CEF4F1] p-4 rounded-lg flex gap-4 w-full"
-          style={{ maxWidth: "1185px" }}
-        >
-          <input
-            type="text"
-            placeholder="Search Property..."
-            className="flex-1 px-4 py-2 rounded-md"
-            style={{ backgroundColor: "#fffcf7" }}
-          />
-
-          <select
-            className="dropdown-arrow ml-auto rounded-lg"
-            style={{
-              width: "200px",
-              backgroundColor: "#FFFCF7",
-              color: "#9da3ae"
-            }}
-          >
-            <option>Filter</option>
-          </select>
-        </div>
-      </div>
+            <div className="mt-4 flex justify-center">
+              <div className="bg-[#CBADD8] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
+      
+                {/* Search field */}
+                <div className="flex items-center bg-white px-3 py-2 rounded-md w-full">
+                  <FaSearch className="text-gray-500 mr-2" />
+                  <input
+                    type="text"
+                    placeholder="Search Postcode..."
+                    className="flex-1 outline-none bg-transparent"
+                  />
+                </div>
+      
+                {/* Search button with icon */}
+                <button
+                  className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+                >
+                  <FaSearch className="mr-2" />
+                  Search
+                </button>
+      
+                {/* Filter button with icon */}
+                <button
+                  className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+                >
+                  <FaFilter className="mr-2" />
+                  Filter
+                </button>
+              </div>
+            </div>
 
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">

@@ -72,8 +72,8 @@ export default function AddPropertyListing() {
       <body className="flex-1 flex flex-col p-6 space-y-4">
         <div className="max-w-7xl mx-auto w-full px-6">
 
-          <div className="text-3xl font-bold text-gray-800"> Add Property Listing </div>
-          <div className="text-xl text-gray-600 mb-5"> Create a new rental property listing! </div>
+          <div className="text-3xl font-medium text-gray-800"> Add Property Listing </div>
+          <div className="text-gray-600 text-base mt-1 mb-5"> Create a new rental property listing! </div>
 
           {/*Add Property Form*/}
           <form className="max-w-l mx-auto" onSubmit={handleSubmit}>
@@ -244,7 +244,7 @@ export default function AddPropertyListing() {
             {/*Submit Button*/}
             <button 
               type="submit" 
-              className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg w-xl p-2.5 text-center mb-5"> 
+              className="flex-1 bg-[#9747FF] hover:bg-violet-900 text-white font-base py-1.5 rounded-lg w-xl p-2.5 text-center mb-5"> 
               Add Property 
             </button>
 
