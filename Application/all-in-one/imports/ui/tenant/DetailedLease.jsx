@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, RentalApplications } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections"; // importing mock for now
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a particular property leased by a Tenant (accessed through BasicLeases) //
@@ -18,14 +18,11 @@ export default function DetailedLease() {
   const { loading, property }= useTracker(()=>{
     const propertyHandle= Meteor.subscribe("properties");
     const photoHandle= Meteor.subscribe("photos");
+    const videoHandle = Meteor.subscribe("videos")
     const rentalAppHandle= Meteor.subscribe("rentalApplications")
 
-    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !rentalAppHandle.ready();
-    console.log("Subscriptions ready:", {
-    properties: propertyHandle.ready(),
-    photos: photoHandle.ready(),
-    rentalApps: rentalAppHandle.ready()
-  });
+    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !videoHandle.ready()|| !rentalAppHandle.ready();
+    
     
     if (isLoading) return {loading: true, property: null};
 
@@ -36,6 +33,10 @@ export default function DetailedLease() {
     const sortedUrls= photos
     .sort((a,b)=> a.photo_order-b.photo_order)
     .map((p) => p.photo_url);
+
+    // get video of the property
+    const videos = Videos.find({ prop_id: id }).fetch();
+    const videoUrls = videos.map(v => v.video_url);
 
     // find macthing rental applications to get lease start date if leased
     //const isLeased= selectedProperty.prop_status === "Leased";
@@ -63,6 +64,7 @@ export default function DetailedLease() {
         status: selectedProperty.prop_status,
         Pets: selectedProperty.prop_pets?"Yes":"No",
         imageUrls: sortedUrls.length>0? sortedUrls:["/images/default.jpg"],
+        videoUrls: videoUrls.length > 0 ? videoUrls : null, 
         description: selectedProperty.prop_desc,
         details:{
           baths: selectedProperty.prop_numbaths,

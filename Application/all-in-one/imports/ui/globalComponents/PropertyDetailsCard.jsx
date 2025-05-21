@@ -38,6 +38,8 @@ export default function PropertyDetailsCard({property}){
 
   const defaultImage= "/images/default.jpg"
 
+  const [activeMediaType, setActiveMediaType]= useState('images')
+
   const [isModalOpen, setIsModalOpen]= useState(false);
 
     if (!property){
@@ -48,13 +50,23 @@ export default function PropertyDetailsCard({property}){
         );
     }
 
-    const openModal=()=> setIsModalOpen(true);
+    const openModal = () => {
+    // If there are videos, default to showing images first
+    setActiveMediaType('images');
+    setIsModalOpen(true);
+  };
     const closeModal=()=> setIsModalOpen(false);
+
+    // Combine all media for carousel (images first, then videos)
+  const allMedia = [
+    ...(property.imageUrls?.map(url => ({ type: 'image', url })) || []),
+    ...(property.videoUrls?.map(url => ({ type: 'video', url })) || [])
+  ];
 
     return(
       <>
       {/*Image Carousel*/}
-      {isModalOpen && property.imageUrls?.length > 0 &&(
+      {isModalOpen && allMedia.length > 0 &&(
         <div className="fixed inset-0 bg-black/90 z-50 flex justify-center items-center p-4">
           <div className="bg-black p-4 rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="w-full text-right mb-2">
@@ -64,20 +76,39 @@ export default function PropertyDetailsCard({property}){
             x
             </button>
             </div>
-             {property.imageUrls.length === 1 ? (
-        // Show single image without Slider
-        <div className="flex justify-center items-center">
-          <img
-            src={property.imageUrls[0]}
-            alt="Property Default"
-            className="max-h-[70vh] max-w-full object-contain"
-          />
-        </div>
-      ) :(<Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1} arrows={true} nextArrow={<SampleNextArrow/>} prevArrow={<SamplePrevArrow/>}>
-              {property.imageUrls.map((url, index)=>(
-                <div key={index} className="flex justify-center items-center">
-                  <img src={url} alt={`Property ${index}`} className="max-h-[70vh] max-w-full object-contain"/>
+             {allMedia.length === 1 ? (
+              allMedia[0].type === 'image' ? (
+                <div className="flex justify-center items-center">
+                  <img
+                    src={allMedia[0].url}
+                    alt="Property"
+                    className="max-h-[70vh] max-w-full object-contain"
+                  />
                 </div>
+              ) : (
+                <div className="flex justify-center items-center">
+                  <video controls className="max-h-[70vh] max-w-full">
+                    <source src={allMedia[0].url} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+              )
+      ) :(<Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1} arrows={true} nextArrow={<SampleNextArrow/>} prevArrow={<SamplePrevArrow/>}>
+              {allMedia.map((media, index) => (
+                  <div key={index} className="flex justify-center items-center">
+                    {media.type === 'image' ? (
+                      <img 
+                        src={media.url} 
+                        alt={`Property ${index}`} 
+                        className="max-h-[70vh] max-w-full object-contain" 
+                      />
+                    ) : (
+                      <video controls className="max-h-[70vh] max-w-full">
+                        <source src={media.url} type="video/mp4" />
+                        Your browser does not support the video tag.
+                      </video>
+                    )}
+                  </div>
               ))}
             </Slider>
       )}
@@ -95,12 +126,15 @@ export default function PropertyDetailsCard({property}){
                   alt="Property Image"
                   className="w-full h-full object-cover"
                 />
-                {/*View all images button*/}
+                {/* View all media button */}
+              {(property.imageUrls?.length > 1 || property.videoUrls?.length > 0) && (
                 <button 
-                onClick={openModal}
-                className="absolute bottom-4 right-4 bg-white text-gray-800 px-3 py-1.5 rounded-md shadow-md hover:bg-gray-100 text-sm font-medium">
-                  View All Images
+                  onClick={openModal}
+                  className="absolute bottom-4 right-4 bg-white text-gray-800 px-3 py-1.5 rounded-md shadow-md hover:bg-gray-100 text-sm font-medium"
+                >
+                  View All Media
                 </button>
+              )}
               </div>
               <div className="hidden sm:flex flex-col gap-2 w-1/3 h-96">
                 {[...Array(3)].map((_, index)=>{

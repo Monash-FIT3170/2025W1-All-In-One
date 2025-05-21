@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos } from "../../api/database/collections"; // importing mock for now
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a listed property (accessed through TenantBasicPropListing) //
@@ -15,23 +15,25 @@ import { Properties, Photos } from "../../api/database/collections"; // importin
 export default function TenDetailedPropListing() {
   const { id } = useParams();
   
-     const { isReady, property, photos }=  useTracker(()=>{
+     const { isReady, property, photos, videos }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
+        const subVideos= Meteor.subscribe("videos");
     
-        const isReady= subProps.ready() && subPhotos.ready();
+        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready();
   
         let property= null;
         let photos= [];
+        let videos=[];
   
         
         if (isReady){
           property= Properties.findOne({prop_id: id});
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
+          videos= Videos.find({prop_id: id}).fetch();
         }
   
-        return {isReady, property, photos};
-  
+        return {isReady, property, photos, videos};
     
       }, [id]);
     
@@ -51,6 +53,7 @@ export default function TenDetailedPropListing() {
           AvailableDate: property.prop_available_date,
           Pets: property.prop_pets ? "True":"False",
           imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
+          videoUrls: videos.length ? videos.map((video) => video.video_url) : [],
           details:{
           beds: property.prop_numbeds ?? "N/A",
           baths: property.prop_numbaths ?? "N/A",

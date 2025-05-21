@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, RentalApplications } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections"; // importing mock for now
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,21 +16,24 @@ import { Properties, Photos, RentalApplications } from "../../api/database/colle
 export default function AgentDetailedListing() {
   const { id } = useParams();
   
-const { isReady, property, photos, approvedLeaseStart }=  useTracker(()=>{
+const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
         const subApps= Meteor.subscribe("rentalApplications");
+        const subVideos = Meteor.subscribe("videos");
     
-        const isReady= subProps.ready() && subPhotos.ready() && subApps.ready();
+        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready();
   
         let property= null;
         let photos= [];
+        let videos = [];
         let approvedLeaseStart=null;
   
         
         if (isReady){
           property= Properties.findOne({prop_id: id});
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
+          videos = Videos.find({ prop_id: id }).fetch();
         }
 
         // if (property && property.prop_status==="Leased"){
@@ -49,7 +52,7 @@ const { isReady, property, photos, approvedLeaseStart }=  useTracker(()=>{
           status: "Approved" 
         })?.lease_start_date || null;
   
-        return {isReady, property, photos, approvedLeaseStart};
+        return {isReady, property, photos, videos, approvedLeaseStart};
   
     
       }, [id]);
@@ -74,6 +77,8 @@ const { isReady, property, photos, approvedLeaseStart }=  useTracker(()=>{
           AvailableDate: property.prop_available_date,
           Pets: property.prop_pets ? "True":"False",
           imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
+          videoUrls: videos.length ? videos.map((video) => video.video_url) : null,
+   
           details:{
           beds: property.prop_numbeds ?? "N/A",
           baths: property.prop_numbaths ?? "N/A",
