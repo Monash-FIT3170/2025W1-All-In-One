@@ -14,6 +14,7 @@ export default function AddPropertyListing() {
   
   const [photo, setPhoto] = useState("");   // URL for photo/s ??
   const [video, setVideo] = useState("");   // Same for video ??
+  {/* ^^ Saving Photos and Videos to Database has not been implemented yet (Milestone 3 issue heh) */}
 
   const [propAddress, setPropAddress] = useState("");
   const [pricePerWeek, setPricePerWeek] = useState(0);
@@ -22,7 +23,7 @@ export default function AddPropertyListing() {
   const [numParkSpots, setNumParkSpots] = useState(0);
   const [propType, setPropType] = useState("Townhouse");
   const [description, setDescription] = useState("");
-  const [dateAvailable, setDateAvailable] = useState("");   // I assume it should be a string.
+  const [dateAvailable, setDateAvailable] = useState("");
   const [isFurnished, setIsFurnished] = useState(true);
   const [petsAllowed, setPetsAllowed] = useState(true);
   const [bond, setBond] = useState(0);
@@ -34,7 +35,7 @@ export default function AddPropertyListing() {
     e.preventDefault();
 
     Meteor.call(
-      "addProperty",
+      "addProperty",    // See 'imports/api/methods/account.js' for method
       {
         propAddress,
         pricePerWeek,
@@ -48,7 +49,7 @@ export default function AddPropertyListing() {
         petsAllowed,
         bond,
         landlordId,
-        status: "Available",
+        status: "Available",  // I assume if you are putting a new property, it would be available right??
       },
       (err) => {
         if (err) {
@@ -56,7 +57,7 @@ export default function AddPropertyListing() {
         }
         else {
           alert("Property Successfully Added!");
-          navigate("/AgentBasicPropListing")
+          navigate("/AgentBasicPropListing")  // Can change this based on where we should go after the form has been submitted
         }
       }
     );
@@ -76,6 +77,8 @@ export default function AddPropertyListing() {
 
           {/*Add Property Form*/}
           <form className="max-w-l mx-auto" onSubmit={handleSubmit}>
+
+            {/*Photo Dropbox*/}
             <label className="text-xl font-semibold text-gray-600"> Add Photo/s </label>
             <div class="flex items-center justify-center w-full mb-5">
               <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-[#CEF4F1]">
@@ -90,6 +93,7 @@ export default function AddPropertyListing() {
               </label>
             </div> 
 
+            {/*Video Dropbox*/}
             <label className="text-xl font-semibold text-gray-600"> Add Video/s </label>
             <div class="flex items-center justify-center w-full mb-10">
               <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-[#CEF4F1]">
@@ -104,10 +108,12 @@ export default function AddPropertyListing() {
               </label>
             </div> 
 
+
             {/*Key Information*/}
             <div className="text-xl font-semibold text-gray-800"> Add Key Information </div>
             <div className="text-l text-gray-600 mb-3"> Enter key information about the new property to be displayed on the search page </div>
 
+            {/*Address Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Address </label>
             <input 
               type="text" 
@@ -117,72 +123,51 @@ export default function AddPropertyListing() {
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
+            {/*Price per Week Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Price per Week </label>
             <input 
               type="decimal" 
               required
-              placeholder="$/week" 
+              placeholder="$/week"
+              min={0}
               onChange={(e) => setPricePerWeek(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
+            {/*Bedrooms Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bedrooms </label>
             <input 
               type="number" 
               required
-              placeholder="No. of Bedrooms" 
+              placeholder="No. of Bedrooms"
+              min={0}
               onChange={(e) => setNumBeds(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
-            {/*<select 
-              onChange={(e) => setNumBeds(Number(e.target.value))} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
-                <option>0</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-            </select>*/}
 
+            {/*Bathrooms Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bathrooms </label>
             <input 
               type="number" 
               required
-              placeholder="No. of Bathrooms" 
+              placeholder="No. of Bathrooms"
+              min={0}
               onChange={(e) => setNumBaths(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
-            {/*<select 
-              onChange={(e) => setNumBaths(Number(e.target.value))} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
-                <option>0</option>
-                <option>1</option>
-                <option>2</option>
-                <option>3</option>
-                <option>4</option>
-                <option>5</option>
-            </select>*/}
 
+            {/*Parking Spot Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Parking Spots </label>
             <input 
               type="number" 
               required
-              placeholder="No. of Parking Spots" 
+              placeholder="No. of Parking Spots"
+              min={0}
               onChange={(e) => setNumParkSpots(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
-            {/* 
-            <select onChange={(e) => setNumParkSpots(Number(e.target.value))} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5">
-              <option>0</option>
-              <option>1</option>
-              <option>2</option>
-              <option>3</option>
-              <option>4</option>
-              <option>5</option>
-            </select>
-            */}
 
+            {/*Property Type Dropdown*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Property Type </label>
             <select 
               onChange={(e) => setPropType(e.target.value)}
@@ -193,13 +178,22 @@ export default function AddPropertyListing() {
                 <option>Condo</option>
             </select>
 
+
             {/*Detailed Information*/}
             <div className="text-xl font-semibold text-gray-800"> Add Detailed Information </div>
             <div className="text-l text-gray-600 mb-3"> Enter key information about the new property to be displayed on the search page </div>
 
+            {/*Description Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Description </label>
-            <input type="text" placeholder="Enter a brief description of the property" onChange={(e) => setDescription(e.target.value)} class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"/>
+            <input 
+              type="text"
+              required
+              placeholder="Enter a brief description of the property" 
+              onChange={(e) => setDescription(e.target.value)} 
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"
+            />
 
+            {/*Available Date Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Available from date </label>
               <input 
                 type="date" 
@@ -209,7 +203,8 @@ export default function AddPropertyListing() {
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-2.5 mb-5 w-lg"
               />
 
-            <label className="text-l font-semibold text-gray-600 mb-5"> Furnished </label>
+            {/*Furnished Dropdown*/}
+            <label className="text-l font-semibold text-gray-600 mb-5"> Furnished? </label>
             <select 
               onChange={(e) => setIsFurnished(e.target.value == "Yes")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-5">
@@ -217,7 +212,8 @@ export default function AddPropertyListing() {
                 <option>No</option>
             </select>
 
-            <label className="text-l font-semibold text-gray-600 mb-5"> Pets Allowed </label>
+            {/*Pets Allowed Dropdown*/}
+            <label className="text-l font-semibold text-gray-600 mb-5"> Pets Allowed? </label>
             <select 
               onChange={(e) => setPetsAllowed(e.target.value == "Yes")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-5">
@@ -225,14 +221,18 @@ export default function AddPropertyListing() {
                 <option>No</option>
             </select>
 
+            {/*Bond Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Bond </label>
             <input 
-              type="decimal" 
-              placeholder="$0.00" 
+              type="decimal"
+              required
+              placeholder="$0.00"
+              min={0}
               onChange={(e) => setBond(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
+            {/*Landlord ID Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Landlord ID </label>
             <input 
               type="text" 
@@ -241,11 +241,14 @@ export default function AddPropertyListing() {
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-10"
             />
 
+            {/*Submit Button*/}
             <button 
               type="submit" 
               className="flex-1 bg-yellow-300 hover:bg-yellow-400 text-black font-bold py-2 rounded-lg w-xl p-2.5 text-center mb-5"> 
               Add Property 
             </button>
+
+
           </form>
         </div>
       </body>

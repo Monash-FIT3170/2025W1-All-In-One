@@ -37,10 +37,19 @@ Meteor.methods({
 
   async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordId, status}) {
     try {
+      //The following 3 lines can be used to make IDs for any collection, given you replace the following aspects:
+        // Properties --> {name of collection}
+        // prop_id --> {name of id attribute in collection}
+        // 3 (in padStart) --> {number of digits you want excluding the letter}
+        // "P" --> {letter to represent the collection's data}
+
+
       {/* Creating Property Id */}
-      const collectionSize = await Properties.find({}, {fields: {prop_id: 1}}).countAsync() + 1;
-      const idNum = String(collectionSize).padStart(3, '0');
-      const propID = "P" + idNum;
+      const collectionSize = await Properties.find({}, {fields: {prop_id: 1}}).countAsync() + 1;  // Counts the number of items in the collection, then adds 1 
+      const idNum = String(collectionSize).padStart(3, '0');  // Pads out the number with leading zeros to make sure the ID has 3 digits. Can be changed to have more or less.
+      const propID = "P" + idNum;   // Concatenates the number with a leading P for Properties. 
+      
+
       const date = new Date(dateAvailable);
    
       {/* Adding Property to 'Properties' Database */}
@@ -59,7 +68,7 @@ Meteor.methods({
         prop_bond: bond,
         prop_status: status,
         agent_id: 'A001',   // to be changed
-        landlord_id: landlordId // to be changed
+        landlord_id: landlordId
       });
   
       return propID;
