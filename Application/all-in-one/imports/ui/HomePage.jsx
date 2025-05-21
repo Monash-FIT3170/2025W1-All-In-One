@@ -4,18 +4,18 @@ import { Link } from "react-router-dom";
 
 export const HomePage = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#CEF4F1] via-[#FFF7E6] to-[#F3D673] relative">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#efe3ff] via-[#f2defa] to-[#ab79ed] relative">
 
 
       {/* Top right buttons */}
       <div className="absolute top-6 right-6 flex gap-4">
         <Link to="/login">
-          <button className="bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-5 rounded-full">
+          <button className="bg-[#9747FF] hover:bg-[#7E35D4] text-white font-bold py-2 px-5 rounded-full">
             Log In
           </button>
         </Link>
         <Link to="/signup">
-          <button className="bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-5 rounded-full">
+          <button className="bg-[#9747FF] hover:bg-[#7E35D4] text-white font-bold py-2 px-5 rounded-full">
             Sign Up
           </button>
         </Link>
@@ -29,7 +29,7 @@ export const HomePage = () => {
       
 
       {/* Main Title */}
-      <h1 className="text-7xl font-extrabold text-[#368C87] uppercase tracking-wide">
+      <h1 className="text-7xl font-extrabold text-[#424242] uppercase tracking-wide">
         All In One
       </h1>
 

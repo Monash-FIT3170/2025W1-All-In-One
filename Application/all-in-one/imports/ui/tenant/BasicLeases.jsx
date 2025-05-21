@@ -54,7 +54,7 @@ export default function BasicLeases() {
   
 
   return (
-    <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
+    <div className="min-h-screen bg-[#ffffff] flex flex-col">
       {/*Header*/}
       <Navbar />
 
