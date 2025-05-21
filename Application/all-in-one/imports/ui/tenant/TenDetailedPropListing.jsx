@@ -65,7 +65,7 @@ export default function TenDetailedPropListing() {
         };
 
   return (
-    <div className="min-h-screen bg-[#ffffff] flex flex-col">
+    <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
       <Navbar />
 

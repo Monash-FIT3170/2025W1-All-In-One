@@ -9,7 +9,7 @@ import { Link } from 'react-router-dom';
 
 export default function PropertyCard ({property}){
     return (
-        <div className="relative bg-white rounded-lg shadow-md overflow-hidden">
+        <div className="relative bg-[#FFF8E9] rounded-lg shadow-md overflow-hidden">
           {/* Background Image */}
           <img
             src={property.image}
@@ -18,7 +18,7 @@ export default function PropertyCard ({property}){
           />
 
           {/* Overlay Content */}
-          <div className="absolute bottom-0 left-0 right-0 bg-white/70 p-4">
+          <div className="absolute bottom-0 left-0 right-0 bg-white/85 p-4">
             <div className="mt-2 flex justify-between items-center">
               <h2 className="text-3xl font-medium text-gray-500">
                 {property.price} <span className="text-3xl font-medium text-gray-500">per week</span>

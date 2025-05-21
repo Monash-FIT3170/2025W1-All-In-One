@@ -48,7 +48,7 @@ const { isReady, properties, photos }=  useTracker(()=>{
   });
 
   return (
-    <div className="min-h-screen bg-[#FFF8EB] flex flex-col">
+    <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
       <Navbar />
 
