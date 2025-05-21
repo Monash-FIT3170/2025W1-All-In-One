@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { RentalApplications, Incomes } from '/imports/api/database/collections';
+import { RentalApplications, Incomes, Identities } from '/imports/api/database/collections';
 import '/imports/api/rentalApplications/methods';
 
 Meteor.publish('rentalApplications', function () {
@@ -13,5 +13,6 @@ Meteor.publish('incomes', function () {
 });
 
 Meteor.publish('identities', function () {
+  // Publish all identity documents
   return Identities.find();
 });

@@ -10,6 +10,7 @@ function Income({ propId = 'P002', tenId = 'T001' }) {
   const [incomeSources, setIncomeSources] = useState([]);
   const [rentalAppId, setRentalAppId] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');
+  const [editingIncome, setEditingIncome] = useState(null);
 
   // Subscribe to rental application
   const rentalApp = useTracker(() => {
@@ -48,31 +49,66 @@ function Income({ propId = 'P002', tenId = 'T001' }) {
     }
   }, [incomes]);
 
-  // Handle saving new income to DB
-  const handleAddIncome = (newIncome) => {
+  // Open modal for adding new income
+  const handleAddIncome = () => {
+    setEditingIncome(null);
+    setOpenModal(true);
+  };
+
+  // Open modal for editing income
+  const handleEditIncome = (income) => {
+    setEditingIncome(income);
+    setOpenModal(true);
+  };
+
+  // Save (add or update) income
+  const handleSaveIncome = (incomeData) => {
     if (!rentalAppId) {
       setStatusMessage('Please complete the general section first.');
       return;
     }
 
-    const incomeDoc = {
-      inc_id: Random.id(),
-      rental_app_id: rentalAppId,
-      inc_type: newIncome.type,
-      inc_amt: parseFloat(newIncome.amount),
-      inc_supporting_doc: newIncome.documents || '',
-    };
+    if (editingIncome) {
+      // Update existing income
+      const updatedIncome = {
+        inc_id: editingIncome.id,
+        rental_app_id: rentalAppId,
+        inc_type: incomeData.type,
+        inc_amt: parseFloat(incomeData.amount),
+        inc_supporting_doc: incomeData.documents || '',
+      };
 
-    Meteor.call('incomes.insert', incomeDoc, (err) => {
-      if (err) {
-        setStatusMessage(`Error adding income: ${err.message}`);
-      } else {
-        setStatusMessage('Income source added successfully.');
-      }
-    });
+      Meteor.call('incomes.update', updatedIncome, (err) => {
+        if (err) {
+          setStatusMessage(`Error updating income: ${err.message}`);
+        } else {
+          setStatusMessage('Income source updated successfully.');
+          setEditingIncome(null);
+        }
+      });
+    } else {
+      // Insert new income
+      const newIncome = {
+        inc_id: Random.id(),
+        rental_app_id: rentalAppId,
+        inc_type: incomeData.type,
+        inc_amt: parseFloat(incomeData.amount),
+        inc_supporting_doc: incomeData.documents || '',
+      };
+
+      Meteor.call('incomes.insert', newIncome, (err) => {
+        if (err) {
+          setStatusMessage(`Error adding income: ${err.message}`);
+        } else {
+          setStatusMessage('Income source added successfully.');
+        }
+      });
+    }
+
+    setOpenModal(false);
   };
 
-  // Handle deleting income
+  // Delete income source
   const handleDeleteIncome = (incId) => {
     const confirmDelete = window.confirm('Are you sure you want to delete this income source?');
     if (!confirmDelete) return;
@@ -100,7 +136,7 @@ function Income({ propId = 'P002', tenId = 'T001' }) {
           Income
         </label>
         <button
-          onClick={() => setOpenModal(true)}
+          onClick={handleAddIncome}
           className="bg-yellow-100 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
         >
           Add Source
@@ -109,19 +145,32 @@ function Income({ propId = 'P002', tenId = 'T001' }) {
 
       {/* Display Saved Income Sources */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-        {incomeSources.map((source, index) => (
-          <div key={index} className="bg-white border rounded-lg p-4 shadow-sm relative">
-            <button
-              onClick={() => handleDeleteIncome(source.id)}
-              className="absolute top-2 right-2 text-red-500 hover:text-red-700 font-bold text-xl"
-              title="Delete income source"
-            >
-              ×
-            </button>
-            <p className="font-semibold">{source.type}</p>
-            <p className="text-sm text-gray-600">Amount: ${source.amount}</p>
+        {incomeSources.map((source) => (
+          <div
+            key={source.id}
+            className="bg-white p-5 rounded-lg shadow-md relative border border-gray-200 hover:shadow-lg transition-shadow duration-300"
+          >
+            <div className="absolute top-3 right-3 flex space-x-2">
+              <button
+                onClick={() => handleEditIncome(source)}
+                className="text-blue-600 hover:text-blue-800 text-sm font-semibold underline"
+                aria-label="Edit income source"
+              >
+                Edit
+              </button>
+              <button
+                onClick={() => handleDeleteIncome(source.id)}
+                className="text-red-500 hover:text-red-700 font-bold text-lg"
+                aria-label="Delete income source"
+              >
+                ×
+              </button>
+            </div>
+
+            <p className="font-semibold text-lg mb-2 truncate">{source.type}</p>
+            <p className="text-gray-700 text-sm">Amount: ${source.amount}</p>
             {source.documents && (
-              <p className="text-sm text-gray-500 mt-1">Docs: {source.documents}</p>
+              <p className="text-gray-500 text-sm mt-1 truncate">Docs: {source.documents}</p>
             )}
           </div>
         ))}
@@ -138,11 +187,15 @@ function Income({ propId = 'P002', tenId = 'T001' }) {
       {/* Feedback */}
       {statusMessage && <p className="mt-4 text-green-600 text-sm">{statusMessage}</p>}
 
-      {/* Modal */}
+      {/* Income Modal */}
       <IncomeModal
         open={openModal}
-        onClose={() => setOpenModal(false)}
-        onSave={handleAddIncome}
+        onClose={() => {
+          setOpenModal(false);
+          setEditingIncome(null);
+        }}
+        onSave={handleSaveIncome}
+        income={editingIncome} // Pass income data for editing
       />
     </div>
   );

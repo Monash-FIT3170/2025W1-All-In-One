@@ -1,24 +1,36 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-function IncomeModal({ open, onClose, onSave }) {
+function IncomeModal({ open, onClose, onSave, income }) {
   const [type, setType] = useState('');
   const [amount, setAmount] = useState('');
   const [documents, setDocuments] = useState('');
 
+  // When the modal opens or income changes, prefill the form if editing
+  useEffect(() => {
+    if (income) {
+      setType(income.type || '');
+      setAmount(income.amount || '');
+      setDocuments(income.documents || '');
+    } else {
+      // Reset when no income (adding new)
+      setType('');
+      setAmount('');
+      setDocuments('');
+    }
+  }, [income, open]);
+
   const handleSave = () => {
-    if (!type || !amount) return alert("Please fill in the required fields.");
+    if (!type || !amount) {
+      return alert("Please fill in the required fields.");
+    }
 
     onSave({
       type,
       amount,
-      documents
+      documents,
     });
 
-    // Reset fields and close
-    setType('');
-    setAmount('');
-    setDocuments('');
-    onClose();
+    // No need to reset here because useEffect handles it on modal close/open
   };
 
   if (!open) return null;
@@ -31,13 +43,18 @@ function IncomeModal({ open, onClose, onSave }) {
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-600 hover:text-black text-xl font-bold focus:outline-none"
+          aria-label="Close modal"
         >
           &times;
         </button>
 
         {/* Title */}
-        <h2 className="text-2xl font-bold mb-1">Add Income Source</h2>
-        <p className="text-gray-600 mb-6 text-sm">Please fill out the following to add income source.</p>
+        <h2 className="text-2xl font-bold mb-1">
+          {income ? 'Edit Income Source' : 'Add Income Source'}
+        </h2>
+        <p className="text-gray-600 mb-6 text-sm">
+          Please fill out the following to {income ? 'edit' : 'add'} income source.
+        </p>
 
         <div className="border-t border-gray-300 mb-6"></div>
 
