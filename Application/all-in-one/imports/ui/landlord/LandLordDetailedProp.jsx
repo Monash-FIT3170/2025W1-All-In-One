@@ -28,13 +28,14 @@ const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=
         let videos = [];
         let approvedLeaseStart=null;
   
-        
+        // find property, photos and videos corresponding to the property ID passed.
         if (isReady){
           property= Properties.findOne({prop_id: id});
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
           videos = Videos.find({ prop_id: id }).fetch();
         }
 
+        // code for next milestone: display lease date of properties whhich are maked as Leased in Property
         // if (property && property.prop_status==="Leased"){
         //   const approvedApp= RentalApplications.findOne({
         //     prop_id: id,
@@ -46,6 +47,7 @@ const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=
         //   }
         // }
         
+        // get lease date of properties with approved tenant
         approvedLeaseStart = RentalApplications.findOne({ 
   prop_id: id, 
   status: "Approved" 
@@ -65,7 +67,7 @@ const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=
       }
 
 
-    
+     // data passed on to propertyDetailsCard
       const propertyData= {
           id: property.prop_id,
           address: property.prop_address,

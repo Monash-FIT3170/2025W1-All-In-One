@@ -26,7 +26,7 @@ export default function TenDetailedPropListing() {
         let photos= [];
         let videos=[];
   
-        
+        // find property, photos and videos corresponding to the property ID passed.
         if (isReady){
           property= Properties.findOne({prop_id: id});
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
@@ -45,6 +45,7 @@ export default function TenDetailedPropListing() {
         return (<div className="min-h-screen flex items-center justify-center text-xl text-red-600">Property Not Found!</div>);
       }
     
+      // data passed on to propertyDetailsCard
       const propertyData= {
           id: property.prop_id,
           address: property.prop_address,
