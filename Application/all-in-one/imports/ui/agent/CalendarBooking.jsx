@@ -38,12 +38,12 @@ export const CalendarBooking = () => {
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20">
       {/* Header */}
-        <div className="flex items-center justify-between px-8 py-4 bg-[#CBADD8]"> 
+      <div className="flex items-center justify-between px-8 py-4 bg-[#CBADD8]"> 
         <div className="flex items-center gap-2">
           <img src="/logo.png" alt="Logo" className="h-20 w-auto" />
         </div>
         <div className="flex gap-4">
-          {['Inspections', 'Applications', 'Properties'].map(label => (
+          {['Dashboard', 'Applications', 'Properties'].map(label => (
             <button key={label} className="bg-[#9747FF] hover:bg-purple-200 text-white px-4 py-2 rounded-full font-semibold">
               {label}
             </button>
@@ -64,6 +64,9 @@ export const CalendarBooking = () => {
           <h2 className="text-3xl font-bold text-gray-800 mb-2">Tenant Inspection Due in a Month</h2>
           <p className="text-gray-600">All inspections due in one place!</p>
         </div>
+
+        {/* Divider line */}
+        <div className="border-t border-gray-300 mb-8"></div>
 
         <div className="space-y-6">
           {mockTenants.map((tenant) => (
