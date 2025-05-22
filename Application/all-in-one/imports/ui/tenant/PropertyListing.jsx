@@ -41,7 +41,7 @@ const groupEventsByDate = (events) => {
   return grouped;
 };
 
-export default function PropertyListing() {
+export const PropertyListing = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedAgents, setSelectedAgents] = useState(['All Agents']);
@@ -224,7 +224,7 @@ export default function PropertyListing() {
               </div>
               
               {eventsByDate[date].map(event => (
-                <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#CBADD8'}}>
+                <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
                   <div className="w-48 h-32">
                     <img src={event.image} alt="Property" className="w-full h-full object-cover" />
                   </div>
@@ -242,7 +242,8 @@ export default function PropertyListing() {
             </div>
           ))}
         </div>
-      </main>
+      </main> 
+      <div className="h-16 bg-[#CBADD8]" />
     </div>
   );
 }
