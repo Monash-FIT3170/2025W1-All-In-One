@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { Search, Calendar, Filter, ChevronDown, Home, MessageSquare, Ticket, LogOut, User } from 'lucide-react';
-
+import { Search, Filter, ChevronDown, X } from 'lucide-react';
 
 // Mock data for events
 const mockEvents = [
@@ -42,15 +41,33 @@ const groupEventsByDate = (events) => {
   return grouped;
 };
 
-export const PropertyListing = () => {
+export default function PropertyListing() {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedAgents, setSelectedAgents] = useState(['All Agents']);
   const [selectedProperties, setSelectedProperties] = useState(['All Properties']);
   const [selectedDates, setSelectedDates] = useState(['All Dates']);
   
-  // Group events by date
-  const eventsByDate = groupEventsByDate(mockEvents);
+  // Filter events based on selected filters
+  const filteredEvents = mockEvents.filter(event => {
+    const agentMatch = selectedAgents.includes('All Agents') || selectedAgents.includes(event.agent);
+    const propertyMatch = selectedProperties.includes('All Properties') || 
+      selectedProperties.some(prop => event.property.includes(prop.split(',')[0]));
+    const dateMatch = selectedDates.includes('All Dates') || 
+      selectedDates.some(date => {
+        if (date === '25/04/25') return event.date === 'April 25th';
+        if (date === '29/04/25') return event.date === 'April 29th';
+        return false;
+      });
+    const searchMatch = searchTerm === '' || 
+      event.agent.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.property.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return agentMatch && propertyMatch && dateMatch && searchMatch;
+  });
+  
+  // Group filtered events by date
+  const eventsByDate = groupEventsByDate(filteredEvents);
   
   const agents = ['All Agents', 'Michael Scott', 'Dwight Schrute', 'Pam Beesly'];
   const properties = ['All Properties', '123 Main Street, Melton South, VIC, Australia', '456 Sesame Street, Caulfield, VIC, Australia', '789 Hello Road, Clayton North, VIC, Australia'];
@@ -75,43 +92,44 @@ export const PropertyListing = () => {
   };
   
   return (
-     <div className="bg-[#FFF8E9] min-h-screen pb-20"> 
+    <div className="bg-[#FFF8E9] min-h-screen pb-20"> 
       {/* Header */}
-      <div className="flex items-center justify-between px-8 py-4 bg-[#CEF4F1]"> 
+      <div className="flex items-center justify-between px-8 py-4 bg-[#CBADD8]"> 
         <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="Logo" className="h-12" />
-          <span className="text-xl font-bold">All In One</span>
+          <img src="/logo.png" alt="Logo" className="h-20 w-auto" />
         </div>
         <div className="flex gap-4">
-          {['Inspections', 'Applications', 'Tickets', 'Properties'].map(label => (
-            <button key={label} className="bg-[#FFE284] hover:bg-yellow-200 px-4 py-2 rounded-full font-semibold">
+          {['Inspections', 'Applications', 'Properties'].map(label => (
+            <button key={label} className="bg-[#9747FF] hover:bg-purple-200 text-white px-4 py-2 rounded-full font-semibold">
               {label}
             </button>
           ))}
-          <button className="bg-[#FFE284] hover:bg-yellow-200 px-4 py-2 rounded-full font-semibold">Log out</button>
+          <button className="bg-[#9747FF] hover:bg-purple-200 text-white px-4 py-2 rounded-full font-semibold">Log out</button>
           <img src="/user-avatar.png" alt="User" className="w-10 h-10 rounded-full" />
         </div>
       </div>
       
       {/* Main Content */}
-      <main className="flex-1 container mx-auto p-4">
-        <div className="bg-orange-50 p-6 rounded-lg">
-          <h2 className="text-2xl font-bold text-gray-800">View Inspections</h2>
-          <p className="text-gray-600">All upcoming events in one place!</p>
+      <main className="flex-1 container mx-auto p-8">
+        <div className="mb-8">
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">View Inspections</h2>
+          <p className="text-gray-600">All upcoming inspections in one place!</p>
+        </div>
+        
+        {/* Search and Filter */}
+        <div className="p-6 rounded-xl mb-8 flex gap-4 relative" style={{backgroundColor: '#CBADD8'}}>
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-3 text-gray-500" size={18} />
+            <input
+              type="text"
+              placeholder="Search agent or property address..."
+              className="pl-10 p-3 rounded-md w-full border-0 focus:ring-2 focus:ring-purple-500"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+          </div>
           
-          {/* Search and Filter */}
-          <div className="bg-[#CEF4F1] p-4 rounded-xl mt-6 flex flex-wrap gap-4">
-            <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 text-gray-500" size={18} />
-              <input
-                type="text"
-                placeholder="Search Agent or property address..."
-                className="pl-10 p-3 rounded-md w-full border-0 focus:ring-2 focus:ring-purple-500"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
-            </div>
-            <button
+          <button
             onClick={() => setShowFilters(!showFilters)}
             className="bg-white hover:bg-gray-50 px-6 py-3 rounded-md font-semibold flex items-center gap-2 text-purple-600"
           >
@@ -121,7 +139,7 @@ export const PropertyListing = () => {
           
           {/* Filter Modal */}
           {showFilters && (
-            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border p-6 z-10">
+            <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-lg shadow-lg border p-6 z-50">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold">Filter by:</h3>
                 <button onClick={() => setShowFilters(false)}>
@@ -194,42 +212,37 @@ export const PropertyListing = () => {
             </div>
           )}
         </div>
-          
-          
-          {/* Events List */}
-          <div className="mt-6">
-            {Object.keys(eventsByDate).map(date => (
-              <div key={date} className="mb-8">
-                <div className="flex items-center">
-                  <div className="border-t border-gray-400 flex-grow"></div>
-                  <h3 className="text-xl text-gray-600 font-medium px-4">{date}</h3>
-                  <div className="border-t border-gray-400 flex-grow"></div>
-                </div>
-                
-                {eventsByDate[date].map(event => (
-                  <div key={event.id} className="bg-[#CEF4F1] rounded-lg mt-4 flex overflow-hidden">
-                    <div className="w-48 h-32">
-                      <img src={event.image} alt="Property" className="w-full h-full object-cover" />
-                    </div>
-                    
-                    <div className="p-4 flex-grow bg-[#CEF4F1]">
-                      <h4 className="text-lg font-medium text-gray-700">{event.property}</h4>
-                      <p className="text-gray-600">{event.time}</p>
-                    </div>
-                    
-                    <div className="bg-white rounded-lg m-4 p-6 w-64">
-                    <h5 className="font-semibold text-gray-600 mb-1">Agent Name: {event.agent}</h5>
-                  
-                    </div>
-                  </div>
-                ))}
+        
+        {/* Events List */}
+        <div className="space-y-8">
+          {Object.keys(eventsByDate).map(date => (
+            <div key={date}>
+              <div className="flex items-center mb-6">
+                <div className="border-t border-gray-400 flex-grow"></div>
+                <h3 className="text-xl text-gray-600 font-medium px-4">{date}</h3>
+                <div className="border-t border-gray-400 flex-grow"></div>
               </div>
-            ))}
-          </div>
+              
+              {eventsByDate[date].map(event => (
+                <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#CBADD8'}}>
+                  <div className="w-48 h-32">
+                    <img src={event.image} alt="Property" className="w-full h-full object-cover" />
+                  </div>
+                  
+                  <div className="p-6 flex-grow">
+                    <h4 className="text-lg font-semibold text-gray-800 mb-2">{event.property}</h4>
+                    <p className="text-gray-700 font-medium">{event.time}</p>
+                  </div>
+                  
+                  <div className="bg-white rounded-lg m-4 p-6 w-64">
+                    <h5 className="font-semibold text-gray-600 mb-1">Agent Name: {event.agent}</h5>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
         </div>
       </main>
     </div>
   );
 }
-
-
