@@ -1,7 +1,7 @@
-import React from 'react';
-import { Link } from 'react-router-dom'; 
-import { FaBath,FaBed, FaCar, FaCouch} from "react-icons/fa";
-import {useState} from "react";
+import React from "react";
+import { Link } from "react-router-dom";
+import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
+import { useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -10,6 +10,8 @@ import { FaChevronRight, FaChevronLeft } from "react-icons/fa";
 //////////////////////////////////////////////////////////////////////////////////
 // Component used to display the Property details in the detailed property view //
 //////////////////////////////////////////////////////////////////////////////////
+
+// Next arrow used for modal
 function SampleNextArrow(props) {
   const { onClick } = props;
   return (
@@ -22,6 +24,7 @@ function SampleNextArrow(props) {
   );
 }
 
+// previous arrow used for modal
 function SamplePrevArrow(props) {
   const { onClick } = props;
   return (
@@ -34,50 +37,47 @@ function SamplePrevArrow(props) {
   );
 }
 
-export default function PropertyDetailsCard({property}){
+export default function PropertyDetailsCard({ property }) {
+  // image disaplayed if there are no images
+  const defaultImage = "/images/default.jpg";
 
-  const defaultImage= "/images/default.jpg"
+  const [activeMediaType, setActiveMediaType] = useState("images");
 
-  const [activeMediaType, setActiveMediaType]= useState('images')
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const [isModalOpen, setIsModalOpen]= useState(false);
+  if (!property) {
+    return <div className="text-lg text-red-600">Property Not Found!</div>;
+  }
 
-    if (!property){
-        return (
-            <div className="text-lg text-red-600">
-                Property Not Found!
-            </div>
-        );
-    }
-
-    const openModal = () => {
+  const openModal = () => {
     // If there are videos, default to showing images first
-    setActiveMediaType('images');
+    setActiveMediaType("images");
     setIsModalOpen(true);
   };
-    const closeModal=()=> setIsModalOpen(false);
+  const closeModal = () => setIsModalOpen(false);
 
-    // Combine all media for carousel (images first, then videos)
+  // Combine all media for carousel (images first, then videos)
   const allMedia = [
-    ...(property.imageUrls?.map(url => ({ type: 'image', url })) || []),
-    ...(property.videoUrls?.map(url => ({ type: 'video', url })) || [])
+    ...(property.imageUrls?.map((url) => ({ type: "image", url })) || []),
+    ...(property.videoUrls?.map((url) => ({ type: "video", url })) || [])
   ];
 
-    return(
-      <>
+  return (
+    <>
       {/*Image Carousel*/}
-      {isModalOpen && allMedia.length > 0 &&(
+      {isModalOpen && allMedia.length > 0 && (
         <div className="fixed inset-0 bg-black/90 z-50 flex justify-center items-center p-4">
           <div className="bg-black p-4 rounded-lg max-w-5xl w-full max-h-[90vh] overflow-y-auto shadow-xl">
             <div className="w-full text-right mb-2">
-            <button
-            onClick={closeModal}
-            className="text-gray-600 hover:text-black text-xl">
-            x
-            </button>
+              <button
+                onClick={closeModal}
+                className="text-gray-600 hover:text-black text-xl"
+              >
+                x
+              </button>
             </div>
-             {allMedia.length === 1 ? (
-              allMedia[0].type === 'image' ? (
+            {allMedia.length === 1 ? (
+              allMedia[0].type === "image" ? (
                 <div className="flex justify-center items-center">
                   <img
                     src={allMedia[0].url}
@@ -93,14 +93,24 @@ export default function PropertyDetailsCard({property}){
                   </video>
                 </div>
               )
-      ) :(<Slider dots={true} infinite={true} speed={500} slidesToShow={1} slidesToScroll={1} arrows={true} nextArrow={<SampleNextArrow/>} prevArrow={<SamplePrevArrow/>}>
-              {allMedia.map((media, index) => (
+            ) : (
+              <Slider
+                dots={true}
+                infinite={true}
+                speed={500}
+                slidesToShow={1}
+                slidesToScroll={1}
+                arrows={true}
+                nextArrow={<SampleNextArrow />}
+                prevArrow={<SamplePrevArrow />}
+              >
+                {allMedia.map((media, index) => (
                   <div key={index} className="flex justify-center items-center">
-                    {media.type === 'image' ? (
-                      <img 
-                        src={media.url} 
-                        alt={`Property ${index}`} 
-                        className="max-h-[70vh] max-w-full object-contain" 
+                    {media.type === "image" ? (
+                      <img
+                        src={media.url}
+                        alt={`Property ${index}`}
+                        className="max-h-[70vh] max-w-full object-contain"
                       />
                     ) : (
                       <video controls className="max-h-[70vh] max-w-full">
@@ -109,38 +119,43 @@ export default function PropertyDetailsCard({property}){
                       </video>
                     )}
                   </div>
-              ))}
-            </Slider>
-      )}
+                ))}
+              </Slider>
+            )}
           </div>
         </div>
       )}
-    
-        <div className="flex flex-col lg:flex-row p-4 gap-10 pt-16">
-          {/*Images*/}
-          <div className="w-full lg:w-1/2">
-            <div className="flex flex-col sm:flex-row gap-2">
-              <div className="w-full sm:w-2/3 h-96 overflow-hidden rounded-lg relative">
-                <img
-                  src={property.imageUrls[0] || defaultImage}
-                  alt="Property Image"
-                  className="w-full h-full object-cover"
-                />
-                {/* View all media button */}
-              {(property.imageUrls?.length > 1 || property.videoUrls?.length > 0) && (
-                <button 
+
+
+      {/*Actual content*/}
+      <div className="flex flex-col lg:flex-row p-4 gap-10 pt-16">
+        {/*Images*/}
+        <div className="w-full lg:w-1/2">
+          <div className="flex flex-col sm:flex-row gap-2">
+            <div className="w-full sm:w-2/3 h-96 overflow-hidden rounded-lg relative">
+              <img
+                src={property.imageUrls[0] || defaultImage}
+                alt="Property Image"
+                className="w-full h-full object-cover"
+              />
+              {/* View all media button */}
+              {(property.imageUrls?.length > 1 ||
+                property.videoUrls?.length > 0) && (
+                <button
                   onClick={openModal}
                   className="absolute bottom-4 right-4 bg-white text-gray-800 px-3 py-1.5 rounded-md shadow-md hover:bg-gray-100 text-sm font-medium"
                 >
                   View All Media
                 </button>
               )}
-              </div>
-              <div className="hidden sm:flex flex-col gap-2 w-1/3 h-96">
-                {[...Array(3)].map((_, index)=>{
-                  const imageUrl= property.imageUrls[index+1]|| defaultImage;
-                  return(
-                    <div
+            </div>
+
+            {/*Thre three images on the thumbnail*/}
+            <div className="hidden sm:flex flex-col gap-2 w-1/3 h-96">
+              {[...Array(3)].map((_, index) => {
+                const imageUrl = property.imageUrls[index + 1] || defaultImage;
+                return (
+                  <div
                     key={index}
                     className="flex-1 overflow-hidden rounded-lg"
                   >
@@ -150,27 +165,27 @@ export default function PropertyDetailsCard({property}){
                       alt={"Property image"}
                       className="w-full h-full object-cover"
                     />
-                  </div> 
-                  );
-                })}
-
-              </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
+        </div>
 
-          {/* Right hand side- property infor*/}
-          <div className="w-full lg:w-1/2 p-2 space-y-3">
-            <div className="text-2xl md:text-3xl font-semibold text-gray-800">
-                ${property.price} <span className="text-lg font-medium">per Week </span>
-            </div>
-                <div className="text-3xl text-gray-800">
-                    {property.address}
-                </div>
-                <div className="text-1xl text-gray-600">
-                    Property Type: <span className="text-gray-700">{property.type}</span>
-                </div>
-                <div className="text-1xl text-gray-600">
-                  {/*
+        {/* Right hand side- property infor*/}
+        <div className="w-full lg:w-1/2 p-2 space-y-3">
+          <div className="text-2xl md:text-3xl font-semibold text-gray-800">
+            ${property.price}{" "}
+            <span className="text-lg font-medium">per Week </span>
+          </div>
+          <div className="text-3xl text-gray-800">{property.address}</div>
+          <div className="text-1xl text-gray-600">
+            Property Type:{" "}
+            <span className="text-gray-700">{property.type}</span>
+          </div>
+          <div className="text-1xl text-gray-600">
+            {/*Code used to disaply lease start date based on the status of the property: next milestone*/}
+            {/*
                   {property.status==='Leased'?(
                     <>
                     Leased On: {' '}
@@ -189,49 +204,54 @@ export default function PropertyDetailsCard({property}){
                   )}
                     */}
 
-                  <div className="text-1xl text-gray-600">
-  {property.leaseStartDate ? (
-    <>
-      Lease Start Date: {' '}
-      <span className="text-gray-700">
-        {new Date(property.leaseStartDate).toLocaleDateString()}
-      </span>
-    </>
-  ) : (
-    <>
-      Available From: {' '}
-      <span className="text-gray-700">
-        {property.AvailableDate ? new Date(property.AvailableDate).toLocaleDateString() : 'N/A'}
-      </span>
-    </>
-  )}
-</div>
-                    
-                </div>
-                <div className="text-1xl text-gray-600">
-                    Pets Allowed: <span className="text-gray-700">{property.Pets}</span>
-                </div>
+            {/*Display lease start date if its given through the input
+            surrenty itll give a lease start date if there are tenants approved
+            if  not it will show vailable date*/}
+            <div className="text-1xl text-gray-600">
+              {property.leaseStartDate ? (
+                <>
+                  Lease Start Date:{" "}
+                  <span className="text-gray-700">
+                    {new Date(property.leaseStartDate).toLocaleDateString()}
+                  </span>
+                </>
+              ) : (
+                <>
+                  Available From:{" "}
+                  <span className="text-gray-700">
+                    {property.AvailableDate
+                      ? new Date(property.AvailableDate).toLocaleDateString()
+                      : "N/A"}
+                  </span>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="text-1xl text-gray-600">
+            Pets Allowed: <span className="text-gray-700">{property.Pets}</span>
+          </div>
 
-            <div className="grid grid-cols-2 gap-4 pt-4 text-gray-700">
-                <div className="flex items-center gap-2">
-                    <FaBath className="text-gray-600 text-lg"/>
-                    <span className="text-xl">{property.details.baths}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <FaBed className="text-gray-600 text-lg"/>
-                    <span className="text-xl">{property.details.beds}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <FaCar className="text-gray-600 text-lg"/>
-                    <span className="text-xl">{property.details.carSpots}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                    <FaCouch className="text-gray-600 text-lg"/>
-                    <span className="text-xl">{property.details.furnished}</span>
-                </div>
+          {/*Icons and data associated*/}
+          <div className="grid grid-cols-2 gap-4 pt-4 text-gray-700">
+            <div className="flex items-center gap-2">
+              <FaBath className="text-gray-600 text-lg" />
+              <span className="text-xl">{property.details.baths}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaBed className="text-gray-600 text-lg" />
+              <span className="text-xl">{property.details.beds}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaCar className="text-gray-600 text-lg" />
+              <span className="text-xl">{property.details.carSpots}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaCouch className="text-gray-600 text-lg" />
+              <span className="text-xl">{property.details.furnished}</span>
             </div>
           </div>
         </div>
-        </>
-    );
-    }
+      </div>
+    </>
+  );
+}

@@ -26,9 +26,11 @@ export default function DetailedLease() {
     
     if (isLoading) return {loading: true, property: null};
 
+    // find property
     const selectedProperty= Properties.findOne({ prop_id: id });
     if (!selectedProperty) return { loading: false, property: null};
 
+    // finf images
     const photos= Photos.find({ prop_id: id}).fetch();
     const sortedUrls= photos
     .sort((a,b)=> a.photo_order-b.photo_order)
@@ -44,6 +46,7 @@ export default function DetailedLease() {
     //const leaseStartDate= isLeased ? RentalApplications.findOne({ prop_id: id, status: "Approved"})?.lease_start_date||null
     //:null;
 
+    // find the lease start date if tenant is approved
     const leaseStartDate = RentalApplications.findOne({ 
   prop_id: id, 
   status: "Approved" 
@@ -54,6 +57,7 @@ export default function DetailedLease() {
 
     return{
       loading: false,
+      // data passed on to propertyDetailsCard
       property:{
         id: selectedProperty.prop_id,
         price: selectedProperty.prop_pricepweek,
@@ -97,7 +101,7 @@ export default function DetailedLease() {
       {/*Description and buttons*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
         <div className="p-6 flex space-x-4 mt-4">
-          {/*Add furture ticket button*/}
+          {/*Add future ticket button*/}
         </div>
         <p className="font-semibold text-lg text-[#434343]">
           {property.description}
