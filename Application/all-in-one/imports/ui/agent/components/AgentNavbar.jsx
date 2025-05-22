@@ -15,14 +15,22 @@ function Navbar() {
 
       {/*Nav bar options*/}
       <div className="flex items-center gap-4">
-        <NavButton to="/PLACEHOLDER">Dashboard</NavButton> {/*Add route to Agent dashboard*/}
-        <NavButton to="/PLACEHOLDER">Applications</NavButton> {/*Add route to Agent applications*/}
-        <NavButton to="/AgentListings">Properties</NavButton> 
-        <NavButton onClick={() => console.log("Logout clicked")}> {/*Add logout function*/}
+        {/*TODO: Add route to Agent dashboard*/}
+        <NavButton to="/PLACEHOLDER">Dashboard</NavButton>
+
+        {/*TODO: Add route to Agent applications*/}
+        <NavButton to="/PLACEHOLDER">Applications</NavButton>
+
+        {/*Route to Agent's listing*/}
+        <NavButton to="/AgentListings">Properties</NavButton>
+
+        {/*TODO: Add logout function*/}
+        <NavButton onClick={() => console.log("Logout clicked")}>
           Log Out
         </NavButton>
 
-        <Link to="/PLACEHOLDER"> {/*Add route to the Agent's profile settings*/}
+        {/*TODO: Add route to the Agent's profile settings*/}
+        <Link to="/PLACEHOLDER">
           <img
             src="/images/user-avatar.png"
             alt="User Avatar"
