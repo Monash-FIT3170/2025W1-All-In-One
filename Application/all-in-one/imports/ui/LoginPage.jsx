@@ -52,7 +52,7 @@ export const LoginPage = () => {
   return (
     <div className="flex min-h-screen">
       {/* Left Side */}
-      <div className="w-1/2 bg-[#ffffff] flex flex-col items-center justify-center p-10">
+      <div className="w-1/2 bg-[#fff8e9] flex flex-col items-center justify-center p-10">
         <img src="/images/logo.png" alt="All In One Logo" className="mb-8" />
         <h2 className="text-2xl font-semibold mb-4">Don't have an account?</h2>
         <Link

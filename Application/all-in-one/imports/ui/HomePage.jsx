@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export const HomePage = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#efe3ff] via-[#f2defa] to-[#ab79ed] relative">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#fff8e9] via-[#f2defa] to-[#ab79ed] relative">
 
 
       {/* Top right buttons */}
