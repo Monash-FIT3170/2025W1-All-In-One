@@ -9,18 +9,22 @@ import { Meteor } from "meteor/meteor";
 import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
 
 export default function TenantBasicPropListings() {
+  // Subscribe to the "properties" and "photos" collections and fetch them
   const { isReady, properties, photos }=  useTracker(()=>{
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
-  
+
+      // Wait until both subscriptions are ready
       const isReady= subProps.ready() && subPhotos.ready();
+      // Fetch data only when ready
       const properties= isReady ? Properties.find().fetch(): [];
       const photos= isReady ? Photos.find().fetch(): [];
   
       return { isReady, properties, photos};
   
     });
-  
+    
+    // Show loading message until data is ready
     if (!isReady){
       return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
     }
@@ -28,8 +32,10 @@ export default function TenantBasicPropListings() {
     const availableProperties= properties.filter(
     (p)=> p.prop_status==="Available"
   );
-  
+
+     // Map properties to a format the card component expects
     const propertyCards= availableProperties.map((p)=>{
+      // Match the photo by property ID
       const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
       return{
         id: p.prop_id,
