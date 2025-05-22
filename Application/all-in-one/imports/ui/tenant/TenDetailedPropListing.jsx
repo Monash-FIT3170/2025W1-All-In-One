@@ -7,6 +7,7 @@ import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos } from "../../api/database/collections"; // importing mock for now
+import { Link } from "react-router-dom";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a listed property (accessed through TenantBasicPropListing) //
@@ -74,12 +75,17 @@ export default function TenDetailedPropListing() {
       <div className="max-w-7xl mx-auto w-full px-6">
         <PropertyDetailsCard property={propertyData} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
-          <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base py-2 rounded-md shadow-md transition duration-200">
-            Book Inspection
-          </button>
-          <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base py-2 rounded-md shadow-md transition duration-200">
-            Apply
-          </button>
+          <Link
+          to={`/PLACEHOLDER`} // TBD: replace with actual link to inspection booking page
+          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+          >Book Inspection 
+          </Link>
+          <Link
+          to={`/PLACEHOLDER`} // TBD: replace with actual link to application page
+          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+          >Apply 
+          </Link>
+
         </div>
 
       </div>
