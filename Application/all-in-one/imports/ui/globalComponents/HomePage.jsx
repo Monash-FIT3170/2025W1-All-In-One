@@ -26,9 +26,18 @@ export const HomePage = () => {
       </div>
 
       {/* Main Title */}
-      <h1 className="text-7xl font-extrabold text-[#6E3BAA] uppercase tracking-wide drop-shadow-md">
+      <h1 className="text-7xl font-extrabold text-[#6E3BAA] uppercase tracking-wide drop-shadow-md mb-6">
         All In One
       </h1>
+
+      {/* Search Bar */}
+      <div className="w-full max-w-xl px-6 mb-6">
+        <input
+          type="text"
+          placeholder="Search listings, agents, or locations..."
+          className="w-full p-4 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#B57FE6] text-[#4B2B62]"
+        />
+      </div>
 
       {/* Logo */}
       <img src="/images/logo.png" alt="Logo" className="w-40 h-40 mb-8" />
