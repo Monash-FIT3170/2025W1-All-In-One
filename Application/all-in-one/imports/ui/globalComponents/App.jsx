@@ -2,7 +2,7 @@ import React from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './LoginPage.jsx';
 import { HomePage } from './HomePage.jsx'; 
-import { SignUpPage } from '../tenant/SignUpPage.jsx';
+import { SignUpPage } from './SignUpPage.jsx';
 import { Dashboard } from '../agent/Dashboard.jsx';
 import { SignedInTenant } from '../tenant/SignedInTenant.jsx';
 import { SignedInLandlord } from '../landlord/SignedInLandlord.jsx'; 
