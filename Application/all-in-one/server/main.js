@@ -7,7 +7,7 @@ import {
   Landlords
 } from '/imports/api/databases/collections';
 import { Employment } from '../imports/api/databases/collections';
-import '/imports/api/databases/account.js';
+import '/imports/api/tenant/register.js';
 
 Meteor.startup(async () => {
   if (!await Properties.findOneAsync({ prop_id: 'P001' })) {
