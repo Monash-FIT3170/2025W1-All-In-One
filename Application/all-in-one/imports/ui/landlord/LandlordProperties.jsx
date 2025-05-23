@@ -17,24 +17,35 @@ export default function LandlordProperties() {
   
     const LandLordId= "L001" // this should be adjusted so that the logged in landlords's id is taken
     
+    // useTracker hook to subscribe to Meteor publications and fetch data
     const { isReady, properties, photos }=  useTracker(()=>{
+      // Subscribe to 'properties' and 'photos' collections
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
   
+      // Wait until both subscriptions are ready
       const isReady= subProps.ready() && subPhotos.ready();
+
+      // Fetch properties that belong to this landlord
       const properties= isReady ? Properties.find({landlord_id: LandLordId}).fetch(): [];
+
+      // Fetch all photos
       const photos= isReady ? Photos.find().fetch(): [];
   
       return { isReady, properties, photos};
   
     });
   
+    // Show loading state while data is being fetched
     if (!isReady){
       return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
     }
   
+    // Format properties into card-friendly structure
     const propertyCards= properties.map((p)=>{
+      // Find the photo that matches the property
       const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
+      // Return formatted property data
       return{
         id: p.prop_id,
         location: p.prop_address,
