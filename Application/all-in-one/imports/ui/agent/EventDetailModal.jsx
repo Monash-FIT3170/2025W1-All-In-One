@@ -1,4 +1,5 @@
 import React from 'react';
+import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
 
 export const EventDetailModal = ({ event, onClose }) => {
   if (!event) return null;
@@ -50,15 +51,15 @@ export const EventDetailModal = ({ event, onClose }) => {
             
             <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
               <div className="flex items-center gap-1">
-                <img src="/bed-icon.png" alt="bed" className="w-4 h-4" />
+                <BedDouble className="w-4 h-4 text-gray-600" />
                 {event.bedrooms || '—'}
               </div>
               <div className="flex items-center gap-1">
-                <img src="/bath-icon.png" alt="bath" className="w-4 h-4" />
+                <ShowerHead className="w-4 h-4 text-gray-600" />
                 {event.bathrooms || '—'}
               </div>
               <div className="flex items-center gap-1">
-                <img src="/car-icon.png" alt="car" className="w-4 h-4" />
+                <CarFront className="w-4 h-4 text-gray-600" />
                 {event.parking || '—'}
               </div>
             </div>

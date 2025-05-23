@@ -149,19 +149,6 @@ export const Calendar = () => {
     });
   };
   
-  
-
-  // const handleCancel = () => {
-  //   setNewEvents([]);
-  //   setShowDialog(false);
-  // };
-  
-  // const handleClearCancel = () => {
-  //   setShowClearDialog(false);
-  // };
-
-  
-  
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
 
