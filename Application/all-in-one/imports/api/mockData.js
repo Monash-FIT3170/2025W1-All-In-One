@@ -20,9 +20,9 @@ export const mockProperties = [
   ];
   
   export const mockTenants = [
-    { name: 'Kelly Appleby'},
-    { name: 'Penn Badgley'},
-    { name: 'Porter Nguyen'},
+    { name: 'Kelly Appleby', age: 52, occupation: 'Project Manager'},
+    { name: 'Penn Badgley', age: 25, occupation: 'Architecturer'},
+    { name: 'Tony Stark', age:68, occupation: 'Avenger'},
     { name: 'Bob Ross', age: 28, occupation: 'Software Engineer' },
     { name: 'Ada Lovelace', age: 35, occupation: 'Interior Designer' },
     { name: 'Jackie Chan', age: 18, occupation: 'Student' },

@@ -1,40 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Calendar } from './Calendar.jsx';
-import { Mail } from 'lucide-react';
-
-// Mock tenant data
-const mockTenants = [
-  {
-    id: 1,
-    name: 'Clark Kent',
-    age: 18,
-    occupation: 'Superman',
-    property: {
-      price: '$700 per week',
-      location: 'Melton South, 3338',
-      bedrooms: 3,
-      bathrooms: 7,
-      parking: 4,
-      image: '/api/placeholder/400/240'
-    }
-  },
-  {
-    id: 2,
-    name: 'Harley Quinn',
-    age: 25,
-    occupation: 'Psychiatrist',
-    property: {
-      price: '$350 per week',
-      location: 'Clayton North, 3168',
-      bedrooms: 2,
-      bathrooms: 5,
-      parking: 3,
-      image: '/api/placeholder/400/240'
-    }
-  }
-];
+import { Mail, BedDouble, ShowerHead, CarFront } from 'lucide-react';
+import { mockTenants, mockProperties } from '../../api/mockData'; // Adjust the path if needed
 
 export const CalendarBooking = () => {
+  // Pair each tenant with a property
+  const tenantsWithProperties = mockTenants.slice(0, mockProperties.length).map((tenant, idx) => ({
+    ...tenant,
+    property: mockProperties[idx]
+  }));
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20">
       {/* Header */}
@@ -69,8 +44,8 @@ export const CalendarBooking = () => {
         <div className="border-t border-gray-300 mb-8"></div>
 
         <div className="space-y-6">
-          {mockTenants.map((tenant) => (
-            <div key={tenant.id} className="flex gap-6 items-center">
+          {tenantsWithProperties.map((tenant, idx) => (
+            <div key={idx} className="flex gap-6 items-center">
               {/* Property Card */}
               <div className="relative bg-white rounded-lg shadow-sm overflow-hidden w-80">
                 <img 
@@ -80,20 +55,22 @@ export const CalendarBooking = () => {
                 />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                   <div className="text-white">
-                    <div className="text-xl font-bold mb-2">{tenant.property.price}</div>
-                    <div className="text-sm mb-2">{tenant.property.location}</div>
+                    <div className="text-xl font-bold mb-2">${tenant.property.price} per week</div>
+                    <div className="text-sm mb-2">{tenant.property.name}</div>
                     <div className="flex gap-4 text-sm">
-                      <div className="flex items-center gap-1">
-                        <span>🛏️</span>
-                        <span>{tenant.property.bedrooms}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span>🚿</span>
-                        <span>{tenant.property.bathrooms}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <span>🚗</span>
-                        <span>{tenant.property.parking}</span>
+                      <div className="flex gap-4 text-sm">
+                        <div className="flex items-center gap-1">
+                          <BedDouble className="w-4 h-4 text-white" />
+                          <span>{tenant.property.bedrooms}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <ShowerHead className="w-4 h-4 text-white" />
+                          <span>{tenant.property.bathrooms}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <CarFront className="w-4 h-4 text-white" />
+                          <span>{tenant.property.parking}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -104,8 +81,8 @@ export const CalendarBooking = () => {
               <div className="flex-1 rounded-lg p-6 relative" style={{backgroundColor: '#CBADD8'}}>
                 <div className="bg-white rounded-lg p-6">
                   <h3 className="text-xl font-semibold mb-2">{tenant.name}</h3>
-                  <p className="text-gray-600 mb-1">Age: {tenant.age}</p>
-                  <p className="text-gray-600">Occupation: {tenant.occupation}</p>
+                  <p className="text-gray-600 mb-1">Age: {tenant.age || '-'}</p>
+                  <p className="text-gray-600">Occupation: {tenant.occupation || '-'}</p>
                 </div>
                 
                 {/* Mail Icon */}
