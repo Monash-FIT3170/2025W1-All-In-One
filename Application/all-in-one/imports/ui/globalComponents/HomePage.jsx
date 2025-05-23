@@ -4,38 +4,34 @@ import { Link } from "react-router-dom";
 
 export const HomePage = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#CEF4F1] via-[#FFF7E6] to-[#F3D673] relative">
-
-
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#CBADD8] via-[#D8C4E6] to-[#EADDF5] relative">
+      
       {/* Top right buttons */}
       <div className="absolute top-6 right-6 flex gap-4">
         <Link to="/login">
-          <button className="bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-5 rounded-full">
+          <button className="bg-[#9747FF] hover:bg-[#5c2b9b] text-white font-bold py-2 px-5 rounded-full">
             Log In
           </button>
         </Link>
         <Link to="/signup">
-          <button className="bg-[#F3D673] hover:bg-yellow-400 text-black font-bold py-2 px-5 rounded-full">
+          <button className="bg-[#9747FF] hover:bg-[#5c2b9b] text-white font-bold py-2 px-5 rounded-full">
             Sign Up
           </button>
         </Link>
       </div>
 
-      {/* Tagline (smaller text above logo) */}
+      {/* Tagline */}
       <div className="text-center mb-4">
-        <p className="text-2xl text-gray-700 font-semibold">Your One Stop for Rental Solutions</p>
+        <p className="text-2xl text-[#4B2B62] font-semibold">Your One Stop for Rental Solutions</p>
       </div>
 
-      
-
       {/* Main Title */}
-      <h1 className="text-7xl font-extrabold text-[#368C87] uppercase tracking-wide">
+      <h1 className="text-7xl font-extrabold text-[#5c2b9b] uppercase tracking-wide">
         All In One
       </h1>
 
       {/* Logo */}
       <img src="/images/logo.png" alt="Logo" className="w-40 h-40 mb-8" />
-
     </div>
   );
 };
