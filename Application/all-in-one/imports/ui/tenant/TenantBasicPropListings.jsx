@@ -1,5 +1,5 @@
 import React from "react";
-import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter} from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
@@ -7,6 +7,12 @@ import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
+
+
+
+/////////////////////////////////////////////////////////////////
+// This page will display all the properties to a Basic Tenant //
+/////////////////////////////////////////////////////////////////
 
 export default function TenantBasicPropListings() {
   // Subscribe to the "properties" and "photos" collections and fetch them
@@ -33,7 +39,7 @@ export default function TenantBasicPropListings() {
     (p)=> p.prop_status==="Available"
   );
 
-     // Map properties to a format the card component expects
+    // Map properties to a format the card component expects
     const propertyCards= availableProperties.map((p)=>{
       // Match the photo by property ID
       const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
