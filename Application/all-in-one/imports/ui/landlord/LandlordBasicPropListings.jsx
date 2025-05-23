@@ -1,5 +1,5 @@
 import React from "react";
-import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter } from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./components/LandlordNavbar";
 import Footer from "./components/Footer";
@@ -8,16 +8,21 @@ import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
 
+
+
 /////////////////////////////////////////////////////////////
 // This page will display all the properties to a landlord //
 /////////////////////////////////////////////////////////////
 
 export default function LandlordBasicPropListings() {
+// Subscribe to the "properties" and "photos" collections and fetch them
 const { isReady, properties, photos }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
     const subPhotos= Meteor.subscribe("photos");
 
+    // Wait until both subscriptions are ready
     const isReady= subProps.ready() && subPhotos.ready();
+    // Fetch data only when ready
     const properties= isReady ? Properties.find().fetch(): [];
     const photos= isReady ? Photos.find().fetch(): [];
 
@@ -25,6 +30,7 @@ const { isReady, properties, photos }=  useTracker(()=>{
 
   });
 
+  // Show loading message until data is ready
   if (!isReady){
     return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
   }
@@ -33,7 +39,9 @@ const { isReady, properties, photos }=  useTracker(()=>{
     (p)=> p.prop_status==="Available"
   );
 
+  // Map properties to a format the card component expects
   const propertyCards= availableProperties.map((p)=>{
+    // Match the photo by property ID
     const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
     return{
       id: p.prop_id,
