@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 
 export const HomePage = () => {
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#CBADD8] via-[#D8C4E6] to-[#EADDF5] relative">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#5c2b9b] via-[#D8C4E6] to-[#5c2b9b] relative">
       
       {/* Top right buttons */}
       <div className="absolute top-6 right-6 flex gap-4">
@@ -22,11 +22,11 @@ export const HomePage = () => {
 
       {/* Tagline */}
       <div className="text-center mb-4">
-        <p className="text-2xl text-[#4B2B62] font-semibold">Your One Stop for Rental Solutions</p>
+        <p className="text-2xl text-white font-semibold drop-shadow-md">Your One Stop for Rental Solutions</p>
       </div>
 
       {/* Main Title */}
-      <h1 className="text-7xl font-extrabold text-[#5c2b9b] uppercase tracking-wide">
+      <h1 className="text-7xl font-extrabold text-white uppercase tracking-wide drop-shadow-lg">
         All In One
       </h1>
 
