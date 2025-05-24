@@ -12,11 +12,9 @@ function NavBar() {
 
       {/*Nav bar options*/}
       <div className="flex items-center gap-4">
-        {/*TODO: Add route to sign up page*/}
-        <NavButton to="/PLACEHOLDER">Sign Up</NavButton>
+        <NavButton to="/signup">Sign Up</NavButton>
 
-        {/*TODO: Add route to login Page*/}
-        <NavButton to="/PLACEHOLDER">Log in</NavButton>
+        <NavButton to="/login">Log in</NavButton>
 
       </div>
     </div>
