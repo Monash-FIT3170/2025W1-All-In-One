@@ -236,7 +236,7 @@ export default function AddPropertyListing() {
             />
 
             {/*Landlord ID Input*/}
-            <label className="text-l font-semibold text-gray-600 mb-5"> Landlord ID </label>
+            <label className="text-l font-semibold text-gray-600 mb-5"> Landlord Email </label>
             <input 
               type="text" 
               placeholder="example@example.com" 
