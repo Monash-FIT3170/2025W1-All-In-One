@@ -25,9 +25,9 @@ export const LoginPage = () => {
             const role = user.profile.role;
 
             if (role === "tenant") {
-              navigate("/signedInTenant");
+              navigate("/TenantBasicPropListings");
             } else if (role === "landlord") {
-              navigate("/signedInLandlord");
+              navigate("/LandlordBasicPropListings");
             } else if (role === "agent") {
               navigate("/dashboard");
             } else {
