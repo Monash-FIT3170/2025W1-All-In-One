@@ -1,91 +1,139 @@
-// src/pages/forms/GeneralForm.jsx
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
+import { RentalApplications } from '/imports/api/database/collections';
 
-function Employment() {
+function Employment({ propId = 'P002', tenId = 'T001' }) {
+  const [notEmployed, setNotEmployed] = useState(false);
+  const [empType, setEmpType] = useState('');
+  const [companyName, setCompanyName] = useState('');
+  const [jobTitle, setJobTitle] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [rentalAppId, setRentalAppId] = useState(null);
+  const [statusMessage, setStatusMessage] = useState('');
+
+  // Match this exactly:
+  const rentalApp = useTracker(() => {
+    Meteor.subscribe('rentalApplications');
+    return RentalApplications.findOne({ prop_id: propId, ten_id: tenId });
+  }, [propId, tenId]);
+
+  useEffect(() => {
+    if (rentalApp) {
+      setRentalAppId(rentalApp._id);
+    } else {
+      setRentalAppId(null);
+    }
+  }, [rentalApp]);
+
+const handleSubmit = () => {
+
+
+  if (notEmployed) {
+    Meteor.call('rentalApplications.update', rentalAppId, { employment_id: null }, (err) => {
+    });
+    return;
+  }
+
+  const employment_id = `${tenId}-emp-${Date.now()}`;
+  const employmentData = {
+    employment_id,
+    ten_id: tenId,
+    emp_type: empType,
+    emp_comp: companyName,
+    emp_job_title: jobTitle,
+    emp_start_date: new Date(startDate),
+    emp_verification: 'null',
+  };
+
+  Meteor.call('employment.insert', employmentData, (err) => {
+
+    Meteor.call('rentalApplications.update', rentalAppId, { employment_id }, (err2) => {
+      setStatusMessage(err ? `Error: ${err.message}` : 'Saved successfully!');
+    });
+  });
+};
+
+
   return (
     <div>
       <h3 className="text-xl font-semibold mb-2">Current Employment</h3>
-      <p className="text-gray-600 text-sm mb-6">Your current employment will be taken into account for the application</p>
+      <p className="text-gray-600 text-sm mb-6">
+        Your current employment will be taken into account for the application.
+      </p>
 
-      {/* No Employment */}
       <div className="mb-4">
-      <div className="flex items-center space-x-2">
-        <input
+        <label className="flex items-center space-x-2">
+          <input
             type="checkbox"
-            id="not-employed"
-            className="w-4 h-4 text-yellow-400 bg-gray-100 border-gray-300 rounded focus:ring-yellow-500"
-        />
-        <label htmlFor="not-employed" className="text-sm font-medium text-gray-700">
-            I am currently not Employed
+            checked={notEmployed}
+            onChange={(e) => setNotEmployed(e.target.checked)}
+            className="w-4 h-4 text-yellow-400 bg-gray-100 border-gray-300 rounded"
+          />
+          <span className="text-sm font-medium text-gray-700">I am currently not employed</span>
         </label>
-        </div>
-        <p className="text-gray-600 text-sm mb-6">You do not need to provide employment information if you are currently not employed</p>
       </div>
 
-        {/* Employment Type */}
-        <div className="mb-4">
-        <label htmlFor="employment-type" className="block mb-1 font-medium">
-            Employment Type
-        </label>
-        <select
-          id="lease-term"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
-        >
-          <option value="" disabled selected>
-            Select your current employment
-          </option>
-          <option value="1">Part Time</option>
-          <option value="2">Casual</option>
-          <option value="3">Full Time</option>
-        </select>
-        <p className="text-gray-600 text-sm mb-6">Please provide your employment type (g: self-employed, part-time, casual, full-time)</p>
-      </div>
+      {!notEmployed && (
+        <>
+          <div className="mb-4">
+            <label className="block mb-1 font-medium">Employment Type</label>
+            <select
+              value={empType}
+              onChange={(e) => setEmpType(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+            >
+              <option value="" disabled>Select your employment type</option>
+              <option value="Part Time">Part Time</option>
+              <option value="Casual">Casual</option>
+              <option value="Full Time">Full Time</option>
+            </select>
+          </div>
 
-        {/* Company Name */}
-        <div className="mb-4">
-        <label htmlFor="company-name" className="block mb-1 font-medium">
-            Company Name
-        </label>
-        <input
-          type="text"
-          id="company-name"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
-          placeholder="E.g. Google"
-        />
-        <p className="text-gray-600 text-sm mb-6">What is the name of the company you were employed at?</p>
-      </div>
+          <div className="mb-4">
+            <label className="block mb-1 font-medium">Company Name</label>
+            <input
+              type="text"
+              value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+              placeholder="E.g. Google"
+            />
+          </div>
 
-      {/* Job Title */}
-      <div className="mb-4">
-        <label htmlFor="job-title" className="block mb-1 font-medium">
-            Job Title
-        </label>
-        <input
-          type="text"
-          id="job-title"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
-          placeholder="E.g. Manager"
-        />
-        <p className="text-gray-600 text-sm mb-6">What is your job title?</p>
-      </div>
+          <div className="mb-4">
+            <label className="block mb-1 font-medium">Job Title</label>
+            <input
+              type="text"
+              value={jobTitle}
+              onChange={(e) => setJobTitle(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+              placeholder="E.g. Manager"
+            />
+          </div>
 
-        {/* Start Date */}
-        <div className="mb-4">
-        <label htmlFor="start-date" className="block mb-1 font-medium">
-            Start Date
-        </label>
-        <input
-          type="text"
-          id="start-date"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
-          placeholder="DD/MM/YYYY"
-        />
-        <p className="text-gray-600 text-sm mb-6">When did you start working here?</p>
-      </div>
+          <div className="mb-4">
+            <label className="block mb-1 font-medium">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full p-2 border border-gray-300 rounded-md"
+            />
+          </div>
+        </>
+      )}
 
-      <button className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition">
+      <button
+        onClick={handleSubmit}
+        className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+      >
         Save Details
       </button>
+
+      {statusMessage && (
+        <p className="mt-4 text-sm text-green-600">{statusMessage}</p>
+      )}
     </div>
   );
 }

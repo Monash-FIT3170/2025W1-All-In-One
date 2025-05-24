@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { RentalApplications, Incomes, Identities, Addresses, Tenants } from '/imports/api/database/collections';
+import { RentalApplications, Incomes, Identities, Addresses, Tenants,Employment } from '/imports/api/database/collections';
 
 Meteor.methods({
   // Rental Applications
@@ -170,4 +170,36 @@ Meteor.methods({
     console.log(`[METHOD] addresses.remove called for address_id: ${addressId}`);
     return await Addresses.removeAsync({ address_id: addressId });
   },
+
+  async 'employment.insert'(employmentData) {
+  check(employmentData, {
+    employment_id: String,
+    ten_id: String,
+    emp_type: String,
+    emp_comp: String,
+    emp_job_title: String,
+    emp_start_date: Date,
+    emp_verification: String,
+  });
+
+  return await Employment.insertAsync(employmentData);
+},
+
+  'employment.update'(employmentId, updates) {
+    check(employmentId, String);
+    check(updates, {
+      emp_type: Match.Maybe(String),
+      emp_comp: Match.Maybe(String),
+      emp_job_title: Match.Maybe(String),
+      emp_start_date: Match.Maybe(Date),
+      emp_verification: Match.Maybe(String),
+    });
+
+    const existing = Employment.findOne({ employment_id: employmentId });
+    if (!existing) {
+      throw new Meteor.Error('not-found', 'Employment record not found');
+    }
+
+    return Employment.update({ employment_id: employmentId }, { $set: updates });
+  }
 });
