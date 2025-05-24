@@ -38,7 +38,7 @@ export const HomePage = () => {
           className="w-full p-4 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#B57FE6] text-[#4B2B62]"
         />
         <Link
-          to="/search" // adjust to your target search page
+          to="/search" 
           className="bg-[#B57FE6] hover:bg-[#A260D1] text-white font-bold px-6 py-2 rounded-full flex items-center justify-center no-underline"
         >
           Enter

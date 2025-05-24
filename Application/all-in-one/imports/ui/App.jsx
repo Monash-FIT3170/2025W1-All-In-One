@@ -5,13 +5,14 @@ import { HomePage } from './globalComponents/HomePage.jsx';
 import { SignUpPage } from './globalComponents/SignUpPage.jsx';
 import { Dashboard } from './agent/Dashboard.jsx';
 
+
 import ProtectedAgentRoutes from './utils/ProtectedAgentRoutes.jsx'; 
 import ProtectedLandlordRoutes from './utils/ProtectedLandlordRoutes.jsx';
 import ProtectedTenantRoutes from './utils/ProtectedTenantRoutes.jsx';
 
-// Guest pages
-import BasicPropListing from './globalComponents/BasicPropListing.jsx';
+// Guest pagess
 import DetailedPropListing from './globalComponents/DetailedPropListing.jsx';
+import GuestBasicPropListings from './globalComponents/GuestBasicPropListings.jsx';
 
 // importing tenant pages
 import BasicLeases from "./tenant/BasicLeases.jsx";
@@ -37,6 +38,9 @@ const App = () => (
   <BrowserRouter>
     <div>
       <Routes>
+
+
+
         {/* Home Page */}
         <Route path="/" element={<HomePage />} />
 
@@ -47,8 +51,11 @@ const App = () => (
         <Route path="/signup" element={<SignUpPage />} />
 
         {/*Guest basic leases and detailed listing page*/}
-              <Route path="/GuestBasicLeases" element={<BasicPropListing/>} />
+              <Route path="/GuestBasicListings" element={<GuestBasicPropListings/>} />
               <Route path="/GuestDetailedPropListing/:id" element={<DetailedPropListing/>} />
+              
+        {/* ROUTING gues to view properties */}
+                <Route path="/search" element={<GuestBasicPropListings />} />
 
         {/* Protected Tenant Routes */}
         <Route element={<ProtectedTenantRoutes />}>
@@ -69,8 +76,7 @@ const App = () => (
                     path="/DetailedLease/:id"
                     element={<DetailedLease />}
                   />
-
-
+                
 
         </Route>
 

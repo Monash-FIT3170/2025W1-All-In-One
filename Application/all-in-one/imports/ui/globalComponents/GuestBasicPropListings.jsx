@@ -3,10 +3,10 @@ import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter} from "react-icons/f
 import { Link } from "react-router-dom";
 import NavBar from "./NavBar.jsx";
 import Footer from "./Footer.jsx";
-import BasicPropertyCard from "./BasicPropertyCard";
+import BasicPropertyCard from "./BasicPropertyCard.jsx";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos } from "../../api/database/collections.js"; // importing mock for now
 
 export default function GuestBasicPropListings() {
   const { isReady, properties, photos }=  useTracker(()=>{
