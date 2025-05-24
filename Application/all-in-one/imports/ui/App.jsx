@@ -1,14 +1,14 @@
 import React from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
-import { LoginPage } from './LoginPage.jsx';
-import { HomePage } from './HomePage.jsx'; 
-import { SignUpPage } from './SignUpPage.jsx';
-import { Dashboard } from '../agent/Dashboard.jsx';
-import { SignedInTenant } from '../tenant/SignedInTenant.jsx';
-import { SignedInLandlord } from '../landlord/SignedInLandlord.jsx'; 
-import ProtectedAgentRoutes from '../utils/ProtectedAgentRoutes.jsx'; 
-import ProtectedLandlordRoutes from '../utils/ProtectedLandlordRoutes.jsx';
-import ProtectedTenantRoutes from '../utils/ProtectedTenantRoutes.jsx'; 
+import { LoginPage } from './globalComponents/LoginPage.jsx';
+import { HomePage } from './globalComponents/HomePage.jsx'; 
+import { SignUpPage } from './globalComponents/SignUpPage.jsx';
+import { Dashboard } from './agent/Dashboard.jsx';
+import { SignedInTenant } from './tenant/SignedInTenant.jsx';
+import { SignedInLandlord } from './landlord/SignedInLandlord.jsx'; 
+import ProtectedAgentRoutes from './utils/ProtectedAgentRoutes.jsx'; 
+import ProtectedLandlordRoutes from './utils/ProtectedLandlordRoutes.jsx';
+import ProtectedTenantRoutes from './utils/ProtectedTenantRoutes.jsx'; 
 
 
 export const App = () => (
