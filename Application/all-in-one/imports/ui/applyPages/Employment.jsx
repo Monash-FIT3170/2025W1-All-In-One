@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { RentalApplications } from '/imports/api/database/collections';
+import { RentalApplications, Employment } from '/imports/api/database/collections';
 
-function Employment({ propId = 'P002', tenId = 'T001' }) {
+function EmploymentSection({ propId = 'P002', tenId = 'T001' }) {
   const [notEmployed, setNotEmployed] = useState(false);
   const [empType, setEmpType] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -12,11 +12,18 @@ function Employment({ propId = 'P002', tenId = 'T001' }) {
   const [rentalAppId, setRentalAppId] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');
 
-  // Match this exactly:
   const rentalApp = useTracker(() => {
     Meteor.subscribe('rentalApplications');
     return RentalApplications.findOne({ prop_id: propId, ten_id: tenId });
   }, [propId, tenId]);
+
+  const employment = useTracker(() => {
+    if (rentalApp?.employment_id) {
+      Meteor.subscribe('employment');
+      return Employment.findOne({ employment_id: rentalApp.employment_id });
+    }
+    return null;
+  }, [rentalApp]);
 
   useEffect(() => {
     if (rentalApp) {
@@ -26,34 +33,54 @@ function Employment({ propId = 'P002', tenId = 'T001' }) {
     }
   }, [rentalApp]);
 
-const handleSubmit = () => {
+  // Prefill form with existing employment data
+  useEffect(() => {
+    if (employment) {
+      setEmpType(employment.emp_type || '');
+      setCompanyName(employment.emp_comp || '');
+      setJobTitle(employment.emp_job_title || '');
+      setStartDate(employment.emp_start_date?.toISOString().slice(0, 10) || '');
+      setNotEmployed(false);
+    } else if (rentalApp && rentalApp.employment_id === null) {
+      setNotEmployed(true);
+    }
+  }, [employment, rentalApp]);
 
+  const handleSubmit = () => {
+    if (!rentalAppId) {
+      setStatusMessage('Please save the general section first.');
+      return;
+    }
 
-  if (notEmployed) {
-    Meteor.call('rentalApplications.update', rentalAppId, { employment_id: null }, (err) => {
+    if (notEmployed) {
+      Meteor.call('rentalApplications.update', rentalAppId, { employment_id: null }, (err) => {
+        setStatusMessage(err ? `Error: ${err.message}` : 'Marked as not employed.');
+      });
+      return;
+    }
+
+    const employment_id = rentalApp?.employment_id || `${tenId}-emp-${Date.now()}`;
+    const employmentData = {
+      employment_id,
+      ten_id: tenId,
+      emp_type: empType,
+      emp_comp: companyName,
+      emp_job_title: jobTitle,
+      emp_start_date: new Date(startDate),
+      emp_verification: 'null',
+    };
+
+    Meteor.call('employment.upsert', employmentData, (err) => {
+      if (err) {
+        setStatusMessage(`Error saving employment: ${err.message}`);
+        return;
+      }
+
+      Meteor.call('rentalApplications.update', rentalAppId, { employment_id }, (err2) => {
+        setStatusMessage(err2 ? `Error: ${err2.message}` : 'Employment saved successfully!');
+      });
     });
-    return;
-  }
-
-  const employment_id = `${tenId}-emp-${Date.now()}`;
-  const employmentData = {
-    employment_id,
-    ten_id: tenId,
-    emp_type: empType,
-    emp_comp: companyName,
-    emp_job_title: jobTitle,
-    emp_start_date: new Date(startDate),
-    emp_verification: 'null',
   };
-
-  Meteor.call('employment.insert', employmentData, (err) => {
-
-    Meteor.call('rentalApplications.update', rentalAppId, { employment_id }, (err2) => {
-      setStatusMessage(err ? `Error: ${err.message}` : 'Saved successfully!');
-    });
-  });
-};
-
 
   return (
     <div>
@@ -138,4 +165,4 @@ const handleSubmit = () => {
   );
 }
 
-export default Employment;
+export default EmploymentSection;
