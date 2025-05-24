@@ -17,21 +17,7 @@ import { mockData } from '/imports/api/database/mockData';
 import '/imports/api/methods/account.js';
 
 
-Meteor.startup(async () => {
-  // Clear existing data 
-  // TODO: Remove this once we have a real database
-  await Properties.removeAsync({});
-  await Photos.removeAsync({});
-  await Videos.removeAsync({});
-  await Tenants.removeAsync({});
-  await RentalApplications.removeAsync({});
-  await Employment.removeAsync({});
-  await Addresses.removeAsync({});
-  await Incomes.removeAsync({});
-  await Identities.removeAsync({});
-  await Households.removeAsync({});
-  await Agents.removeAsync({});
-  await Landlords.removeAsync({});
+Meteor.startup(async () => { 
 
   // Insert mock data - one item at a time
   for (const property of mockData.properties) {

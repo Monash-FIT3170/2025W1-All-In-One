@@ -78,7 +78,7 @@ const App = () => (
         <Route element={<ProtectedAgentRoutes />}>
           
           {/* Dashboard Page*/}
-          <Route path="/dashboard" element={<Dashboard/>} />
+          <Route path="/dashboard" element={<AgentBasicPorpListing/>} /> {/*Replacewith dashboard*/}
         
           {/* Add any other protected agent routes here */}
           {/* Agent Routes team-2 */ }

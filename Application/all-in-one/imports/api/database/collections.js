@@ -1,7 +1,6 @@
 import { Mongo } from 'meteor/mongo';
 import SimpleSchema from 'simpl-schema';
 
-// ─────────────────────────────────────────────────────────────
 // Properties
 export const Properties = new Mongo.Collection('properties');
 Properties.schema = new SimpleSchema({
@@ -22,7 +21,7 @@ Properties.schema = new SimpleSchema({
   landlord_id: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Photos
 export const Photos = new Mongo.Collection('photos');
 Photos.schema = new SimpleSchema({
@@ -32,7 +31,7 @@ Photos.schema = new SimpleSchema({
   photo_order: { type: Number },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Videos
 export const Videos = new Mongo.Collection('videos');
 Videos.schema = new SimpleSchema({
@@ -41,7 +40,7 @@ Videos.schema = new SimpleSchema({
   video_url: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Rental Applications
 export const RentalApplications = new Mongo.Collection('rental_applications');
 RentalApplications.schema = new SimpleSchema({
@@ -59,7 +58,7 @@ RentalApplications.schema = new SimpleSchema({
   emergency_contact_id: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Tenants
 export const Tenants = new Mongo.Collection('tenants');
 Tenants.schema = new SimpleSchema({
@@ -74,7 +73,7 @@ Tenants.schema = new SimpleSchema({
   prop_id: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Leaseholders
 export const Leaseholders = new Mongo.Collection('leaseholders');
 Leaseholders.schema = new SimpleSchema({
@@ -83,7 +82,7 @@ Leaseholders.schema = new SimpleSchema({
   leaseholder_email: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Landlords (Plural)
 export const Landlords = new Mongo.Collection('landlords');
 Landlords.schema = new SimpleSchema({
@@ -97,7 +96,7 @@ Landlords.schema = new SimpleSchema({
   prop_id: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Employment
 export const Employment = new Mongo.Collection('employment');
 Employment.schema = new SimpleSchema({
@@ -110,7 +109,7 @@ Employment.schema = new SimpleSchema({
   emp_verification: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Addresses
 export const Addresses = new Mongo.Collection('addresses');
 Addresses.schema = new SimpleSchema({
@@ -127,7 +126,7 @@ Addresses.schema = new SimpleSchema({
   address_status: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Incomes
 export const Incomes = new Mongo.Collection('incomes');
 Incomes.schema = new SimpleSchema({
@@ -138,7 +137,7 @@ Incomes.schema = new SimpleSchema({
   inc_supporting_doc: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Identities
 export const Identities = new Mongo.Collection('identities');
 Identities.schema = new SimpleSchema({
@@ -148,7 +147,7 @@ Identities.schema = new SimpleSchema({
   identity_scan: { type: String },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Households
 export const Households = new Mongo.Collection('households');
 Households.schema = new SimpleSchema({
@@ -158,7 +157,7 @@ Households.schema = new SimpleSchema({
   occupant_age: { type: Number },
 });
 
-// ─────────────────────────────────────────────────────────────
+
 // Agents
 export const Agents = new Mongo.Collection('agents');
 Agents.schema = new SimpleSchema({

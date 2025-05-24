@@ -35,7 +35,7 @@ Meteor.methods({
     }
   },
 
-  async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordId, status}) {
+  async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordEmail, status, agentId}) {
     try {
       //The following 3 lines can be used to make IDs for any collection, given you replace the following aspects:
         // Properties --> {name of collection}
@@ -43,6 +43,13 @@ Meteor.methods({
         // 3 (in padStart) --> {number of digits you want excluding the letter}
         // "P" --> {letter to represent the collection's data}
 
+      
+      // First, find the landlord by email
+      const landlord = await Meteor.users.findOneAsync({ "emails.address": landlordEmail });
+      
+      if (!landlord) {
+        throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
+      }
 
       {/* Creating Property Id */}
       const collectionSize = await Properties.find({}, {fields: {prop_id: 1}}).countAsync() + 1;  // Counts the number of items in the collection, then adds 1 
@@ -67,8 +74,8 @@ Meteor.methods({
         prop_pets: petsAllowed,
         prop_bond: bond,
         prop_status: status,
-        agent_id: 'A001',   // to be changed
-        landlord_id: landlordId
+        agent_id: agentId,   // to be changed
+        landlord_id: landlord._id
       });
   
       return propID;

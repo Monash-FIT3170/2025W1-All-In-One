@@ -27,12 +27,14 @@ export default function AddPropertyListing() {
   const [isFurnished, setIsFurnished] = useState(true);
   const [petsAllowed, setPetsAllowed] = useState(true);
   const [bond, setBond] = useState(0);
-  const [landlordId, setLandlordId] = useState("");
+  const [landlordEmail, setLandlordEmail] = useState("");
 
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    const agentId= Meteor.userId();
 
     Meteor.call(
       "addProperty",    // See 'imports/api/methods/account.js' for method
@@ -48,8 +50,9 @@ export default function AddPropertyListing() {
         isFurnished,
         petsAllowed,
         bond,
-        landlordId,
+        landlordEmail,
         status: "Available",  // I assume if you are putting a new property, it would be available right??
+        agentId,
       },
       (err) => {
         if (err) {
@@ -236,8 +239,8 @@ export default function AddPropertyListing() {
             <label className="text-l font-semibold text-gray-600 mb-5"> Landlord ID </label>
             <input 
               type="text" 
-              placeholder="L###" 
-              onChange={(e) => setLandlordId(e.target.value)} 
+              placeholder="example@example.com" 
+              onChange={(e) => setLandlordEmail(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-10"
             />
 

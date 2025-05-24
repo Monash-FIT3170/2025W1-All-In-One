@@ -13,8 +13,7 @@ import { Properties, Photos, RentalApplications } from "../../api/database/colle
 ////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function BasicLeases() {
-  //const userId= Meteor.userId();
-  const userId= "T002"
+  const userId= Meteor.userId();
 
   const leasedProperties= useTracker(()=>{
     if (!userId) return [];

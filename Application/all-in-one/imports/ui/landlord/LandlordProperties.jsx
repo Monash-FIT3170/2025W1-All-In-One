@@ -15,13 +15,13 @@ import { Properties, Photos } from "../../api/database/collections"; // importin
 
 export default function LandlordProperties() {
   
-    const LandLordId= "L001" // this should be adjusted so that the logged in landlords's id is taken
-    
     const { isReady, properties, photos }=  useTracker(()=>{
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
   
       const isReady= subProps.ready() && subPhotos.ready();
+      const landlord = Meteor.user();
+      const LandLordId = landlord?._id;
       const properties= isReady ? Properties.find({landlord_id: LandLordId}).fetch(): [];
       const photos= isReady ? Photos.find().fetch(): [];
   

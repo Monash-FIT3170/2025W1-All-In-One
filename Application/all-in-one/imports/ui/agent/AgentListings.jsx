@@ -13,14 +13,14 @@ import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function AgentListings() {
-  
-  const agentId= "A001" // this should be adjusted so that the logged in agent's id is taken
-  
+
   const { isReady, properties, photos }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
     const subPhotos= Meteor.subscribe("photos");
 
     const isReady= subProps.ready() && subPhotos.ready();
+    const agent = Meteor.user();
+    const agentId = agent?._id;
     const properties= isReady ? Properties.find({agent_id: agentId}).fetch(): [];
     const photos= isReady ? Photos.find().fetch(): [];
 
