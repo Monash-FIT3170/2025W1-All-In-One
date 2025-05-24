@@ -19,53 +19,77 @@ import '/imports/api/methods/account.js';
 
 Meteor.startup(async () => { 
 
-  // Insert mock data - one item at a time
-  for (const property of mockData.properties) {
-    await Properties.insertAsync(property);
+  // Insert mock data only if collections are empty
+  if ((await Properties.find().countAsync()) === 0) {
+    for (const property of mockData.properties) {
+      await Properties.insertAsync(property);
+    }
   }
 
-  for (const photo of mockData.photos) {
-    await Photos.insertAsync(photo);
+  if ((await Photos.find().countAsync()) === 0) {
+    for (const photo of mockData.photos) {
+      await Photos.insertAsync(photo);
+    }
   }
 
-  for (const video of mockData.videos) {
-    await Videos.insertAsync(video);
+  if ((await Videos.find().countAsync()) === 0) {
+    for (const video of mockData.videos) {
+      await Videos.insertAsync(video);
+    }
   }
 
-  for (const tenant of mockData.tenants) {
-    await Tenants.insertAsync(tenant);
+  if ((await Tenants.find().countAsync()) === 0) {
+    for (const tenant of mockData.tenants) {
+      await Tenants.insertAsync(tenant);
+    }
   }
 
-  for (const application of mockData.rentalApplications) {
-    await RentalApplications.insertAsync(application);
+  if ((await RentalApplications.find().countAsync()) === 0) {
+    for (const application of mockData.rentalApplications) {
+      await RentalApplications.insertAsync(application);
+    }
   }
 
-  for (const employment of mockData.employment) {
-    await Employment.insertAsync(employment);
+  if ((await Employment.find().countAsync()) === 0) {
+    for (const employment of mockData.employment) {
+      await Employment.insertAsync(employment);
+    }
   }
 
-  for (const address of mockData.addresses) {
-    await Addresses.insertAsync(address);
+  if ((await Addresses.find().countAsync()) === 0) {
+    for (const address of mockData.addresses) {
+      await Addresses.insertAsync(address);
+    }
   }
 
-  for (const income of mockData.incomes) {
-    await Incomes.insertAsync(income);
+  if ((await Incomes.find().countAsync()) === 0) {
+    for (const income of mockData.incomes) {
+      await Incomes.insertAsync(income);
+    }
   }
 
-  for (const identity of mockData.identities) {
-    await Identities.insertAsync(identity);
+  if ((await Identities.find().countAsync()) === 0) {
+    for (const identity of mockData.identities) {
+      await Identities.insertAsync(identity);
+    }
   }
 
-  for (const household of mockData.households) {
-    await Households.insertAsync(household);
+  if ((await Households.find().countAsync()) === 0) {
+    for (const household of mockData.households) {
+      await Households.insertAsync(household);
+    }
   }
 
-  for (const agent of mockData.agents) {
-    await Agents.insertAsync(agent);
+  if ((await Agents.find().countAsync()) === 0) {
+    for (const agent of mockData.agents) {
+      await Agents.insertAsync(agent);
+    }
   }
 
-  for (const landlord of mockData.landlords) {
-    await Landlords.insertAsync(landlord);
+  if ((await Landlords.find().countAsync()) === 0) {
+    for (const landlord of mockData.landlords) {
+      await Landlords.insertAsync(landlord);
+    }
   }
 
   // Manual addition of extra data if not already present
