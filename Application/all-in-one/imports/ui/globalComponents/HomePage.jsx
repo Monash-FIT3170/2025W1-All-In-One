@@ -26,9 +26,7 @@ export const HomePage = () => {
       </div>
 
       {/* Main Title */}
-      <h1 className="text-7xl font-extrabold uppercase tracking-wide drop-shadow-md mb-6 
-             text-transparent bg-clip-text 
-             bg-gradient-to-r from-[#a267d7] via-[#d5b0ff] to-[#6e3baa]">
+      <h1 className="text-7xl font-extrabold text-[#6E3BAA] uppercase tracking-wide drop-shadow-md mb-6">
         All In One
       </h1>
 
