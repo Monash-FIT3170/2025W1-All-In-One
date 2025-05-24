@@ -3,8 +3,8 @@ import SimpleSchema from 'simpl-schema';
 
 const addressSchema = new SimpleSchema({
   address: String,
-  moveIn: String,
-  moveOut: String,
+  moveIn: Date,
+  moveOut: Date,
   ownership: {
     type: String,
     allowedValues: ['yes', 'no'],
@@ -34,15 +34,27 @@ function AddressModal({ open, onClose, onSave, initialData = {}, status }) {
   const handleChange = (field) => (e) =>
     setFormData((prev) => ({ ...prev, [field]: e.target.value }));
 
-  const handleSave = () => {
-    try {
-      addressSchema.validate(formData);
-      onSave({ ...formData, status });
-      onClose();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
+const handleSave = () => {
+  try {
+    // Strip out address_id if present (e.g., in edit mode)
+    const { address_id, ...formDataWithoutId } = formData;
+
+    const validatedData = {
+      ...formDataWithoutId,
+      moveIn: new Date(formData.moveIn),
+      moveOut: new Date(formData.moveOut),
+    };
+
+    addressSchema.validate(validatedData);
+
+    // Restore address_id after validation
+    onSave({ ...validatedData, ...(address_id && { address_id }), status });
+    onClose();
+  } catch (err) {
+    alert(err.message);
+  }
+};
+
 
   if (!open) return null;
 
