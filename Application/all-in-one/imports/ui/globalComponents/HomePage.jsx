@@ -30,18 +30,19 @@ export const HomePage = () => {
         All In One
       </h1>
 
-      {/* Search Bar + Button */}
+      {/* Search Bar + Link Button */}
       <div className="w-full max-w-xl px-6 mb-6 flex gap-3">
         <input
           type="text"
           placeholder="Search listings, agents, or locations..."
           className="w-full p-4 rounded-full border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#B57FE6] text-[#4B2B62]"
         />
-        <button
-          className="bg-[#B57FE6] hover:bg-[#A260D1] text-white font-bold px-6 py-2 rounded-full"
+        <Link
+          to="/search" // adjust to your target search page
+          className="bg-[#B57FE6] hover:bg-[#A260D1] text-white font-bold px-6 py-2 rounded-full flex items-center justify-center no-underline"
         >
           Enter
-        </button>
+        </Link>
       </div>
 
       {/* Logo */}
