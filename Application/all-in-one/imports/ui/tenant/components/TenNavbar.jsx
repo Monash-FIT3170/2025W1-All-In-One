@@ -1,8 +1,16 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import NavButton from "../../globalComponents/NavButton";
 
 function Navbar() {
+  const navigate = useNavigate();
+
+  const logout = () => {
+    Meteor.logout(() => {
+      navigate("/");
+    });
+  };
+
   return (
     <div className="flex items-center justify-between px-6 h-[63px] bg-[#CBADD8]">
       {/*Logo linked back to search bar*/}
@@ -22,7 +30,7 @@ function Navbar() {
         <NavButton to="/BasicLeases">Properties</NavButton>
 
         {/*TODO: Add logout function*/}
-        <NavButton onClick={() => console.log("Logout clicked")}>
+        <NavButton onClick={logout}>
           Log Out
         </NavButton>
 
