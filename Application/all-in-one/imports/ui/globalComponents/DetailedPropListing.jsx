@@ -13,7 +13,7 @@ import { Link } from "react-router-dom";
 // This page will display the details of a listed property (accessed through TenantBasicPropListing) //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export default function GuestDetailedPropListing() {
+export default function DetailedPropListing() {
   const { id } = useParams();
   
      const { isReady, property, photos, videos }=  useTracker(()=>{

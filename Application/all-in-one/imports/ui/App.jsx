@@ -48,7 +48,7 @@ const App = () => (
 
         {/*Guest basic leases and detailed listing page*/}
               <Route path="/GuestBasicLeases" element={<BasicPropListing/>} />
-              <Route path="/GuestDetailedPropListing" element={<DetailedPropListing/>} />
+              <Route path="/GuestDetailedPropListing/:id" element={<DetailedPropListing/>} />
 
         {/* Protected Tenant Routes */}
         <Route element={<ProtectedTenantRoutes />}>
