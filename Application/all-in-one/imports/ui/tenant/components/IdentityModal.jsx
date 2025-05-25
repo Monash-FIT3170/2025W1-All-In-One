@@ -17,7 +17,7 @@ function IdentityModal({ open, onClose, onSave }) {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-      <div className="bg-[#FEF7E7] p-8 rounded-lg shadow-lg w-[90%] max-w-md relative">
+      <div className="bg-[#CBADD8] p-8 rounded-lg shadow-lg w-[90%] max-w-md relative">
 
         {/* Close Button */}
         <button

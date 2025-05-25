@@ -55,7 +55,7 @@ function Household({ propId , tenId }) {
           id="hasPets"
           value={hasPets ? 'yes' : 'no'}
           onChange={(e) => setHasPets(e.target.value === 'yes')}
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
+          className="bg-gray-100 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
         >
           <option value="no">No</option>
           <option value="yes">Yes</option>
@@ -72,7 +72,7 @@ function Household({ propId , tenId }) {
             id="petDescription"
             value={petDescription}
             onChange={(e) => setPetDescription(e.target.value)}
-            className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
+            className="bg-gray-100 w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
             placeholder="e.g. 2 small dogs, 1 cat"
           />
         </div>
@@ -80,7 +80,7 @@ function Household({ propId , tenId }) {
 
       <button
         onClick={handleSubmit}
-        className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+        className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 hover:text-white transition"
       >
         Save Details
       </button>

@@ -54,7 +54,7 @@ const GeneralSection = ({ propId, tenId }) => {
       rental_app_prop_inspected: propertyInspected, // use checkbox state here
       ten_id: tenId,
       leaseholder_id: 'L001',      // keep your defaults or logic here
-      employment_id: 'E001',
+      employment_id: null,
       household_pets: false,
       status: 'Pending',
     };
@@ -77,7 +77,7 @@ const GeneralSection = ({ propId, tenId }) => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block font-semibold">Property ID:</label>
-        <p className="bg-gray-100 px-3 py-2 rounded">{propId}</p>
+        <p className="bg-gray-100 px-3 py-2 rounded focus:ring-[#9747FF]">{propId}</p>
       </div>
 
       <div>
@@ -86,7 +86,7 @@ const GeneralSection = ({ propId, tenId }) => {
           type="date"
           value={leaseStart}
           onChange={(e) => setLeaseStart(e.target.value)}
-          className="border px-3 py-2 rounded w-full"
+          className="border px-3 py-2 rounded w-full focus:ring-[#9747FF]"
         />
       </div>
 
@@ -95,7 +95,7 @@ const GeneralSection = ({ propId, tenId }) => {
         <input
           value={leaseTerm}
           onChange={(e) => setLeaseTerm(e.target.value)}
-          className="border px-3 py-2 rounded w-full"
+          className="border px-3 py-2 rounded w-full focus:ring-[#9747FF]"
           placeholder="e.g. 6 months"
         />
       </div>
@@ -106,7 +106,7 @@ const GeneralSection = ({ propId, tenId }) => {
           type="number"
           value={appRent}
           onChange={(e) => setAppRent(e.target.value)}
-          className="border px-3 py-2 rounded w-full"
+          className="border px-3 py-2 rounded w-full focus:ring-[#9747FF]"
           placeholder={property ? `$${property.prop_pricepweek}` : 'Loading...'}
         />
       </div>
@@ -118,7 +118,7 @@ const GeneralSection = ({ propId, tenId }) => {
           id="rental-inspected"
           checked={propertyInspected}
           onChange={(e) => setPropertyInspected(e.target.checked)}
-          className="form-checkbox h-5 w-5 text-yellow-400"
+          className="form-checkbox h-5 w-5 text-yellow-400 focus:ring-[#9747FF]"
         />
         <label htmlFor="rental-inspected" className="font-semibold">
           I have inspected the property
@@ -127,7 +127,7 @@ const GeneralSection = ({ propId, tenId }) => {
 
       <button
         type="submit"
-        className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+        className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 hover:text-white transition"
       >
         Save Details
       </button>

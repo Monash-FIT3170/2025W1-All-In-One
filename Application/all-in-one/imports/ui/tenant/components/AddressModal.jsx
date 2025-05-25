@@ -60,7 +60,7 @@ const handleSave = () => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-      <div className="bg-[#FEF7E7] p-8 rounded-lg shadow-lg w-[90%] max-w-2xl relative">
+      <div className="bg-[#CBADD8] p-8 rounded-lg shadow-lg w-[90%] max-w-2xl relative">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-600 hover:text-black text-xl font-bold focus:outline-none"
@@ -114,7 +114,7 @@ const handleSave = () => {
                   key={val}
                   onClick={() => setFormData((p) => ({ ...p, ownership: val }))}
                   className={`px-4 py-2 rounded-full text-sm font-semibold ${
-                    formData.ownership === val ? 'bg-yellow-400 text-white' : 'bg-yellow-200'
+                    formData.ownership === val ? 'bg-[#9747FF] text-white' : 'bg-[#CBADD8] border border-[#9747FF] border-2'
                   }`}
                 >
                   {val.toUpperCase()}

@@ -137,7 +137,7 @@ function Income({ propId, tenId }) {
         </label>
         <button
           onClick={handleAddIncome}
-          className="bg-yellow-100 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+          className="bg-[#CBADD8] px-6 py-2 rounded-full font-semibold hover:bg-[#9747FF] hover:text-white transition"
         >
           Add Source
         </button>
@@ -178,7 +178,7 @@ function Income({ propId, tenId }) {
 
       {/* Save Button */}
       <button
-        className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+        className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 hover:text-white transition"
         disabled
       >
         Save Details

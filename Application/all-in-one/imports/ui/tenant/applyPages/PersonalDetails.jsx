@@ -82,7 +82,7 @@ const PersonalDetails = ({ propId, tenId}) => {
         <input
           type="text"
           id="first-name"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
           value={firstName}
           onChange={(e) => setFirstName(e.target.value)}
           placeholder="John"
@@ -99,7 +99,7 @@ const PersonalDetails = ({ propId, tenId}) => {
         <input
           type="text"
           id="last-name"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
           value={lastName}
           onChange={(e) => setLastName(e.target.value)}
           placeholder="Doe"
@@ -116,7 +116,7 @@ const PersonalDetails = ({ propId, tenId}) => {
         <input
           type="date"
           id="DOB"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
           value={dob}
           onChange={(e) => setDob(e.target.value)}
           placeholder="DD/MM/YYYY"
@@ -130,7 +130,7 @@ const PersonalDetails = ({ propId, tenId}) => {
         <input
           type="text"
           id="phone-number"
-          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
+          className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
           value={phone}
           onChange={(e) => setPhone(e.target.value)}
           placeholder="Numbers only; no spaces or special chars."
@@ -145,7 +145,7 @@ const PersonalDetails = ({ propId, tenId}) => {
 
       <button
         type="submit"
-        className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+        className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 hover:text-white transition"
       >
         Save Details
       </button>

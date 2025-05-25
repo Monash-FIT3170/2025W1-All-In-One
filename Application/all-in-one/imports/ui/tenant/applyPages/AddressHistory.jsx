@@ -100,7 +100,7 @@ function AddressHistory({ propId, tenId }) {
                 setEditingAddress(null);
                 setOpenModal(true);
               }}
-              className="bg-yellow-100 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400"
+              className="bg-[#CBADD8] px-6 py-2 rounded-full font-semibold hover:bg-[#9747FF] hover:text-white transition"
             >
               Enter Address
             </button>

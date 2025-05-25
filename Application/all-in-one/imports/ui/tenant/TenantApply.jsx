@@ -9,6 +9,7 @@ import Income from './applyPages/Income';
 import Identity from './applyPages/Identity';
 import Household from './applyPages/Household';
 import Navbar from './components/TenNavbar';
+import Footer from './components/Footer';
 
 function Apply() {
   const tenantId = 'T001'; // Replace with dynamic logic when needed
@@ -71,7 +72,7 @@ function Apply() {
     <div>
       <Navbar/>
       {/* Application Section */}
-      <div className="flex flex-col p-8 bg-yellow-100 min-h-screen">
+      <div className="flex flex-col p-8 bg-[#FFF8E9] min-h-screen">
         
         {/* Application Header */}
         <div className="mb-8">
@@ -90,7 +91,7 @@ function Apply() {
                 key={index}
                 onClick={() => setActiveSection(item)}
                 className={`p-3 mb-2 rounded-md font-semibold cursor-pointer ${
-                  item === activeSection ? 'bg-yellow-300' : 'hover:bg-yellow-100'
+                  item === activeSection ? 'bg-[#9747FF] text-white' : 'bg-transparent text-black hover:bg-violet-900 hover:text-white'
                 }`}
               >
                 {item}
@@ -120,7 +121,7 @@ function Apply() {
               <button
                 onClick={goNext}
                 disabled={currentIndex === sectionList.length - 1}
-                className="px-4 py-2 bg-yellow-400 text-gray-800 font-semibold rounded disabled:opacity-50"
+                className="px-4 py-2 bg-[#9747FF] text-white text-gray-800 font-semibold rounded disabled:opacity-50 hover:bg-violet-900 hover:text-white"
               >
                 Next
               </button>
@@ -128,6 +129,7 @@ function Apply() {
           </div>
         </div>
       </div>
+      <Footer/>
       </div>
     </>
   );

@@ -56,7 +56,7 @@ const AboutMe = ({ propId, tenId}) => {
       <div className="mb-4">
         <textarea
           id="about-me"
-          className="w-full p-2 h-24 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-300"
+          className="w-full p-2 h-24 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
           placeholder="Tell us a bit about yourself."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
@@ -68,7 +68,7 @@ const AboutMe = ({ propId, tenId}) => {
 
       <button
         type="submit"
-        className="bg-yellow-300 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+        className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 hover:text-white transition"
       >
         Save Details
       </button>
