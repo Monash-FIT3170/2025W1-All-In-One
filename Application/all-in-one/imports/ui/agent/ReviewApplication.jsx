@@ -150,7 +150,7 @@ export const ReviewApplication = () => {
                                 <div className="w-3/4 p-8 bg-[#CBADD8] rounded-2xl flex flex-col justify-between">
                                     <ApplicantCard
                                         name={`${tenant?.ten_fn || 'Unknown'} ${tenant?.ten_ln || ''}`}
-                                        age={'N/A'}
+                                        desc={app.app_desc || 'N/A'}
                                         occupation={employment?.emp_job_title || 'N/A'}
                                         status={app.status || 'Pending'}
                                         statusIcon={
