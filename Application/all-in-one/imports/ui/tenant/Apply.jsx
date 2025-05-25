@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import GeneralSection from '../applyPages/GeneralSection';
-import PersonalDetails from '../applyPages/PersonalDetails';
-import AboutMe from '../applyPages/AboutMe';
-import AddressHistory from '../applyPages/AddressHistory';
-import Employment from '../applyPages/Employment';
-import Income from '../applyPages/Income';
-import Identity from '../applyPages/Identity';
-import Household from '../applyPages/Household';
+import GeneralSection from './applyPages/GeneralSection';
+import PersonalDetails from './applyPages/PersonalDetails';
+import AboutMe from './applyPages/AboutMe';
+import AddressHistory from './applyPages/AddressHistory';
+import Employment from './applyPages/Employment';
+import Income from './applyPages/Income';
+import Identity from './applyPages/Identity';
+import Household from './applyPages/Household';
 
 function Apply() {
   const sectionList = [

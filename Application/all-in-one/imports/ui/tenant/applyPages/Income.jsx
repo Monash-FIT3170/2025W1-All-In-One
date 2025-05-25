@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Incomes, RentalApplications } from '/imports/api/database/collections';
-import IncomeModal from '../tenant/components/IncomeModal';
+import IncomeModal from '../components/IncomeModal';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 
