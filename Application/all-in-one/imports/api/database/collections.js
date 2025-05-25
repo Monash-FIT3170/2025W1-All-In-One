@@ -45,9 +45,13 @@ RentalApplications.schema = new SimpleSchema({
   app_rent: { type: Number },
   app_desc: { type: String },
   ten_id: { type: String },
-  employment_id: { type: String },
+  employment_id: {
+  type: String,
+  optional: true,
+},
   status: { type: String, optional: true },
   household_pets: { type: Boolean },
+  pet_description: { type: String, optional: true },
   emergency_contact_id: { type: String },
 });
 
@@ -136,3 +140,4 @@ Agents.schema = new SimpleSchema({
   agent_email: { type: String },
   agent_password: { type: String },
 });
+

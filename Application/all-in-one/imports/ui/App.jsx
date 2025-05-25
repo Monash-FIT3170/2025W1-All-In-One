@@ -1,3 +1,4 @@
+// App.js
 import React from 'react';
 import {
   BrowserRouter as Router,
@@ -8,8 +9,12 @@ import {
 
 import  About  from './About.jsx';
 import { ReviewApplication } from './agent/ReviewApplication.jsx';
-import  Navbar  from './globalComponents/Navbar.jsx';
+import  Navbar  from './components/Navbar.jsx';
+import  './Apply.jsx';
 
+// Named import of Apply
+// App.js
+import Apply from './Apply.jsx'; // Default import (no curly braces)
 export const App = () => (
   <>
     <Router>
@@ -21,6 +26,7 @@ export const App = () => (
         <Routes>
           <Route path="/about" element={<About />} />
           <Route path="/applications" element={<ReviewApplication />} />
+          <Route path="/apply" element={<Apply />} />
         </Routes>
       </div>
     </Router>

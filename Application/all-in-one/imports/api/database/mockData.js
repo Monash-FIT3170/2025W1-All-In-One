@@ -204,6 +204,7 @@ export const mockData = {
       employment_id: 'E002',
       status: 'Approved',
       household_pets: true,
+      pet_description : "2 Dogs",
       emergency_contact_id: 'EC002'
     }
   ],
