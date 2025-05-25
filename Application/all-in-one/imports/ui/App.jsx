@@ -8,13 +8,13 @@ import {
 } from 'react-router-dom';
 
 import  About  from './About.jsx';
-import { ReviewApplication } from './agent/ReviewApplication.jsx';
+import { ReviewApplication } from './agent/AgentReviewApplication.jsx';
 import  Navbar  from './globalComponents/Navbar.jsx';
-import  './tenant/Apply.jsx';
+import  './tenant/TenantApply.jsx';
 
 // Named import of Apply
 // App.js
-import Apply from './tenant/Apply.jsx'; // Default import (no curly braces)
+import Apply from './tenant/TenantApply.jsx'; // Default import (no curly braces)
 export const App = () => (
   <>
     <Router>
