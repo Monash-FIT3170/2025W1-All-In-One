@@ -1,3 +1,4 @@
+// App.js
 import React from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './globalComponents/LoginPage.jsx';
@@ -26,6 +27,7 @@ import AgentBasicPorpListing from "./agent/AgentBasicPropListing.jsx";
 import AgentDetailedListing from "./agent/AgentDetailedListing.jsx";
 import AgentDetailedPropListing from "./agent/AgentDetailedPropListing.jsx"
 import AgentListings from "./agent/AgentListings.jsx"
+import ReviewApplication from "./agent/AgentReviewApplication.jsx"
 
 // importing landlord pages 
 import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx";
@@ -93,6 +95,7 @@ const App = () => (
                   <Route path="/AgentDetailedListing/:id" element={<AgentDetailedListing/>}/>
                   <Route path="/AgentDetailedPropListing/:id" element={<AgentDetailedPropListing/>}/>
                   <Route path="/AgentListings" element={<AgentListings/>}/>
+                  <Route path="/AgentReviewApplication" element={<ReviewApplication/>}/>
           
           
         
