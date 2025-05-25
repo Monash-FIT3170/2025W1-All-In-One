@@ -32,6 +32,7 @@ import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx"
 import LandlordDetailedProp from "./landlord/LandLordDetailedProp.jsx";
 import LandlordDetailedPropListing from "./landlord/LandlordDetailedPropListing.jsx";
 import LandlordProperties from "./landlord/LandlordProperties.jsx";
+import { ReviewApplication } from './agent/ReviewApplication.jsx';
 
 
 const App = () => (
@@ -104,6 +105,8 @@ const App = () => (
         <Route element={<ProtectedLandlordRoutes />}>
           {/* Signed In Landlord Page*/}
           <Route path="/LandlordBasicPropListings" element={<LandlordBasicPropListings/>}/>
+                    <Route path="/applications" element={<ReviewApplication />} />
+
           
 
           {/* Add any other protected routes here */}
