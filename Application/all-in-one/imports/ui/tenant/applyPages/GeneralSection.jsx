@@ -3,9 +3,8 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Properties, RentalApplications } from '/imports/api/database/collections';
 
-const GeneralSection = () => {
-  const [propId, setPropId] = useState('P002');
-  const tenantId = 'T001'; // hardcoded tenant for now, you can make this dynamic later
+const GeneralSection = ({ propId, tenId }) => {
+  console.log("propId received:", propId);
 
   // Form state
   const [leaseStart, setLeaseStart] = useState('');
@@ -17,8 +16,8 @@ const GeneralSection = () => {
   // Track existing rental application for this property and tenant
   const rentalApplication = useTracker(() => {
     Meteor.subscribe('rentalApplications');
-    return RentalApplications.findOne({ prop_id: propId, ten_id: tenantId });
-  }, [propId, tenantId]);
+    return RentalApplications.findOne({ prop_id: propId, ten_id: tenId });
+  }, [propId, tenId]);
 
   // Track property data
   const property = useTracker(() => {
@@ -53,7 +52,7 @@ const GeneralSection = () => {
       lease_term: leaseTerm,
       app_rent: Number(appRent),
       rental_app_prop_inspected: propertyInspected, // use checkbox state here
-      ten_id: tenantId,
+      ten_id: tenId,
       leaseholder_id: 'L001',      // keep your defaults or logic here
       employment_id: 'E001',
       household_pets: false,
@@ -78,11 +77,7 @@ const GeneralSection = () => {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
         <label className="block font-semibold">Property ID:</label>
-        <input
-          value={propId}
-          onChange={(e) => setPropId(e.target.value)}
-          className="border px-3 py-2 rounded w-full"
-        />
+        <p className="bg-gray-100 px-3 py-2 rounded">{propId}</p>
       </div>
 
       <div>

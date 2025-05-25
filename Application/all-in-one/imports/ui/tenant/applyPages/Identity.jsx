@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import IdentityModal from '../components/IdentityModal';
 
-function Identity({ propId = 'P002', tenId = 'T001' }) {
+function Identity({ propId, tenId }) {
   const [openModal, setOpenModal] = useState(false);
   const [rentalAppId, setRentalAppId] = useState(null);
   const [statusMessage, setStatusMessage] = useState('');

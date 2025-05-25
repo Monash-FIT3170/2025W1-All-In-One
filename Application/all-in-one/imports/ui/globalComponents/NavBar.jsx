@@ -1,24 +1,43 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import NavButton from "./NavButton";
+import React from 'react';
+import { Link } from 'react-router-dom'; // ✅ import Link
 
-function NavBar() {
+function Navbar() {
   return (
-    <div className="flex items-center justify-between px-6 h-[63px] bg-[#CBADD8]">
-      {/*Logo linked back to search bar*/}
-      <Link to="/GuestBasicListings" className="flex items-center gap-2 h-full">
+    <div className="flex items-center justify-between px-8 py-4 bg-[#D6F2F2]">
+      <div className="flex items-center gap-2">
         <img src="/images/logo.png" alt="Logo" className="h-12" />
-      </Link>
-
-      {/*Nav bar options*/}
+        <span className="text-xl font-bold">All In One</span>
+      </div>
       <div className="flex items-center gap-4">
-        <NavButton to="/signup">Sign Up</NavButton>
+      {['Apply', 'Applications', 'Tickets', 'Properties'].map((label) => {
+        const path = label === 'Apply' ? '/apply' :
+                    label === 'Applications' ? '/applications' : null;
 
-        <NavButton to="/login">Log in</NavButton>
+        return path ? (
+          <Link
+            key={label}
+            to={path}
+            className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition flex items-center justify-center"
+          >
+            {label}
+          </Link>
+        ) : (
+          <button
+            key={label}
+            className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition"
+          >
+            {label}
+          </button>
+        );
+      })}
 
+        <button className="bg-yellow-300 px-4 py-2 rounded-full font-semibold hover:bg-yellow-400 transition">
+          Log out
+        </button>
+        <img src="/images/user-avatar.png" alt="User Avatar" className="w-10 h-10 rounded-full" />
       </div>
     </div>
   );
 }
 
-export default NavBar;
+export default Navbar;

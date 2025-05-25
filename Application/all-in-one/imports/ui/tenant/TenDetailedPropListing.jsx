@@ -14,8 +14,8 @@ import { Link } from "react-router-dom";
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function TenDetailedPropListing() {
-  const { id } = useParams();
-  
+    const { id } = useParams();
+    console.log("propId received:", id);
      const { isReady, property, photos, videos }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
@@ -81,7 +81,8 @@ export default function TenDetailedPropListing() {
           >Book Inspection 
           </Link>
           <Link
-          to={`/PLACEHOLDER`} // TBD: replace with actual link to application page
+          key={id}
+          to={`/Apply/${id}`} // TBD: replace with actual link to application page
           className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
           >Apply 
           </Link>

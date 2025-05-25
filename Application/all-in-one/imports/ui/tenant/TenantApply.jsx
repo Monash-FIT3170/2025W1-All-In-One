@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useParams } from 'react-router-dom';
 import GeneralSection from './applyPages/GeneralSection';
 import PersonalDetails from './applyPages/PersonalDetails';
 import AboutMe from './applyPages/AboutMe';
@@ -7,8 +8,12 @@ import Employment from './applyPages/Employment';
 import Income from './applyPages/Income';
 import Identity from './applyPages/Identity';
 import Household from './applyPages/Household';
+import Navbar from './components/TenNavbar';
 
 function Apply() {
+  const tenantId = 'T001'; // Replace with dynamic logic when needed
+  const { id } = useParams();
+  console.log("propId received:", id);
   const sectionList = [
     'General',
     'Personal Details',
@@ -36,32 +41,38 @@ function Apply() {
   };
 
   const renderFormSection = () => {
-    switch (activeSection) {
-      case 'General':
-        return <GeneralSection />;
-      case 'Personal Details':
-        return <PersonalDetails />;
-      case 'About Me':
-        return <AboutMe />;
-      case 'Address History':
-        return <AddressHistory />;
-      case 'Employment':
-        return <Employment />;
-      case 'Income':
-        return <Income />;
-      case 'Identity':
-        return <Identity />;
-      case 'Household':
-        return <Household />;
-      default:
-        return <div>Select a section from the sidebar.</div>;
+  const sharedProps = { propId: id, tenId: tenantId };
+
+  switch (activeSection) {
+    case 'General':
+      return <GeneralSection {...sharedProps} />;
+    case 'Personal Details':
+      return <PersonalDetails {...sharedProps} />;
+    case 'About Me':
+      return <AboutMe {...sharedProps} />;
+    case 'Address History':
+      return <AddressHistory {...sharedProps} />;
+    case 'Employment':
+      return <Employment {...sharedProps} />;
+    case 'Income':
+      return <Income {...sharedProps} />;
+    case 'Identity':
+      return <Identity {...sharedProps} />;
+    case 'Household':
+      return <Household {...sharedProps} />;
+    default:
+      return <div>Select a section from the sidebar.</div>;
     }
   };
 
+
   return (
     <>
+    <div>
+      <Navbar/>
       {/* Application Section */}
       <div className="flex flex-col p-8 bg-yellow-100 min-h-screen">
+        
         {/* Application Header */}
         <div className="mb-8">
           <h1 className="text-2xl font-bold mb-2">Application - Melton South, 3338</h1>
@@ -116,6 +127,7 @@ function Apply() {
             </div>
           </div>
         </div>
+      </div>
       </div>
     </>
   );

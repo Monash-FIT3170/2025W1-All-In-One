@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import AddressModal from '../components/AddressModal';
 
-function AddressHistory({ propId = 'P002', tenId = 'T001' }) {
+function AddressHistory({ propId, tenId }) {
   const [openModal, setOpenModal] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('Current');
   const [editingAddress, setEditingAddress] = useState(null);

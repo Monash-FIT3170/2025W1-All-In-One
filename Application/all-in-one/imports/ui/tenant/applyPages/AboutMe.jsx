@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications } from '/imports/api/database/collections';
 
-const AboutMe = ({ propId = 'P002', tenId = 'T001' }) => {
+const AboutMe = ({ propId, tenId}) => {
   const [description, setDescription] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [rentalAppId, setRentalAppId] = useState(null);

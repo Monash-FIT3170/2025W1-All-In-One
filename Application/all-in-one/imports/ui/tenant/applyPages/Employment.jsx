@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Employment } from '/imports/api/database/collections';
 
-function EmploymentSection({ propId = 'P002', tenId = 'T001' }) {
+function EmploymentSection({ propId , tenId}) {
   const [notEmployed, setNotEmployed] = useState(false);
   const [empType, setEmpType] = useState('');
   const [companyName, setCompanyName] = useState('');

@@ -5,7 +5,7 @@ import IncomeModal from '../components/IncomeModal';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 
-function Income({ propId = 'P002', tenId = 'T001' }) {
+function Income({ propId, tenId }) {
   const [openModal, setOpenModal] = useState(false);
   const [incomeSources, setIncomeSources] = useState([]);
   const [rentalAppId, setRentalAppId] = useState(null);

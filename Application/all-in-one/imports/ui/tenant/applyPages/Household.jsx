@@ -3,9 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications } from '/imports/api/database/collections';
 
-function Household() {
-  const propId = 'P002'; // Replace or pass as props/context
-  const tenantId = 'T001'; // Replace or pass as props/context
+function Household({ propId , tenId }) {
 
   const [hasPets, setHasPets] = useState(false);
   const [petDescription, setPetDescription] = useState('');
@@ -13,8 +11,8 @@ function Household() {
 
   const rentalApplication = useTracker(() => {
     Meteor.subscribe('rentalApplications');
-    return RentalApplications.findOne({ prop_id: propId, ten_id: tenantId });
-  }, [propId, tenantId]);
+    return RentalApplications.findOne({ prop_id: propId, ten_id: tenId });
+  }, [propId, tenId]);
 
   useEffect(() => {
     if (rentalApplication) {
