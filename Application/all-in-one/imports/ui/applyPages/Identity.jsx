@@ -3,7 +3,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { Identities, RentalApplications } from '/imports/api/database/collections';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
-import IdentityModal from '../components/IdentityModal';
+import IdentityModal from '../tenant/components/IdentityModal';
 
 function Identity({ propId = 'P002', tenId = 'T001' }) {
   const [openModal, setOpenModal] = useState(false);

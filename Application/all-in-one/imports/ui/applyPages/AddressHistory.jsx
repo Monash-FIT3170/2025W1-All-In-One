@@ -3,7 +3,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { Addresses, RentalApplications } from '/imports/api/database/collections';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
-import AddressModal from '../components/AddressModal';
+import AddressModal from '../tenant/components/AddressModal';
 
 function AddressHistory({ propId = 'P002', tenId = 'T001' }) {
   const [openModal, setOpenModal] = useState(false);

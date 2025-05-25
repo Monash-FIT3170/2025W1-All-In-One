@@ -9,12 +9,12 @@ import {
 
 import  About  from './About.jsx';
 import { ReviewApplication } from './agent/ReviewApplication.jsx';
-import  Navbar  from './components/Navbar.jsx';
-import  './Apply.jsx';
+import  Navbar  from './globalComponents/Navbar.jsx';
+import  './tenant/Apply.jsx';
 
 // Named import of Apply
 // App.js
-import Apply from './Apply.jsx'; // Default import (no curly braces)
+import Apply from './tenant/Apply.jsx'; // Default import (no curly braces)
 export const App = () => (
   <>
     <Router>

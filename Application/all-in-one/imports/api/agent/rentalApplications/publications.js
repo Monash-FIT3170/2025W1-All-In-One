@@ -1,7 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
 import { RentalApplications, Incomes, Identities } from '/imports/api/database/collections';
-import '/imports/api/rentalApplications/methods';
+import '/imports/api/agent/rentalApplications/methods';
 
 // Publish all rental applications (optionally add filters later)
 Meteor.publish('rentalApplications', function () {
