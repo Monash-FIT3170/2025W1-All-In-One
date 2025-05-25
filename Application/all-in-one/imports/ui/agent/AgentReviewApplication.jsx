@@ -6,8 +6,9 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
 import FilterMenu from './components/FilterMenu';
 import StatusMenu from './components/StatusMenu';
+import Navbar from "./components/AgentNavbar";
 
-export const ReviewApplication = () => {
+export default function ReviewApplication() {
     // State for the search bar
     const [allSearch, setAllSearch] = useState('');
     // State to show/hide the filter menu
@@ -64,6 +65,7 @@ export const ReviewApplication = () => {
 
     return (
         <div className="bg-[#FFF8EB] min-h-screen pb-20">
+            <Navbar/>
             {/* Main content container */}
             <div className="px-12 py-8">
                 <h2 className="text-2xl font-semibold">Review Applications</h2>

@@ -27,7 +27,7 @@ function Navbar() {
         <NavButton to="/PLACEHOLDER">Dashboard</NavButton>
 
         {/*TODO: Add route to Agent applications*/}
-        <NavButton to="/PLACEHOLDER">Applications</NavButton>
+        <NavButton to="/AgentReviewApplication">Applications</NavButton>
 
         {/*Route to Agent's listing*/}
         <NavButton to="/AgentListings">Properties</NavButton>
