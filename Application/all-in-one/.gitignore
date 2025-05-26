@@ -1,14 +1,29 @@
+# Dependency directories
 node_modules/
 
+# Meteor specific
 .meteor/local/
+.meteor/.flags
+.meteor/.id
 platforms/
 release/
 versions/
 
+# Environment files
+.env
+
+# IDE files
+.vscode/
+.idea/
+
+# System files
 .DS_Store
 Thumbs.db
 
+# Log files
 npm-debug.log
 yarn-error.log
-
 *.log
+
+# Local files
+local
