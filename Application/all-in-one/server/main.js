@@ -136,7 +136,7 @@ Meteor.startup(async () => {
       }
     });
 
-    await Landlords.insertAsync({
+    await Landlord.insertAsync({
       ll_id: landlordUserId,
       ll_fn: 'John',
       ll_ln: 'Doe',
