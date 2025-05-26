@@ -52,25 +52,35 @@ export const EventDetailModal = ({ event, onClose }) => {
           />
 
           <div className="bg-[#FFF8E9] p-4 rounded-xl">
-            <p className="text-center text-gray-700">{event.property || 'No property information'}</p>
-            <p className="text-center text-sm text-gray-700">${event.price || '—'} per week</p>
-            
-            <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
-              <div className="flex items-center gap-1">
-                <BedDouble className="w-4 h-4" />
-                {event.bedrooms || '—'}
-              </div>
-              <div className="flex items-center gap-1">
-                <ShowerHead className="w-4 h-4" />
-                {event.bathrooms || '—'}
-              </div>
-              <div className="flex items-center gap-1">
-                <CarFront className="w-4 h-4" />
-                {event.parking || '—'}
-              </div>
-            </div>
+            {event.property ? (
+              <>
+              
+                <p className="text-center text-gray-700">
+                  {event.property?.address || 'No address available'}
+                </p>
 
+                <p className="text-center text-sm text-gray-700">${event.property.price} per week</p>
+
+                <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
+                  <div className="flex items-center gap-1">
+                    <BedDouble className="w-4 h-4" />
+                    {event.property.bedrooms || '—'}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <ShowerHead className="w-4 h-4" />
+                    {event.property.bathrooms || '—'}
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <CarFront className="w-4 h-4" />
+                    {event.property.parking || '—'}
+                  </div>
+                </div>
+              </>
+            ) : (
+              <p className="text-center text-gray-700">No property information</p>
+            )}
           </div>
+
         </div>
 
         {/* Right: Booking Info */}

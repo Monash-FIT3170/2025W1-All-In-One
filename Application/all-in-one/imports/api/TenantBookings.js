@@ -11,27 +11,33 @@ if (Meteor.isServer) {
 }
 
 Meteor.methods({
-  async 'tenantBookings.insert'(bookingData) {
-    check(bookingData, {
-      agentAvailabilityId: String,
-      tenantName: String,
-      tenantId: String,
-      start: Date,
-      end: Date,
-      property: Object,
-      status: String,
-    });
-
-    const existing = await TenantBookings.findOne({ agentAvailabilityId: bookingData.agentAvailabilityId });
-    if (existing) {
-      throw new Meteor.Error('already-booked', 'This slot is already booked.');
+    async 'tenantBookings.insert'(bookingData) {
+      try {
+        check(bookingData, {
+          agentAvailabilityId: String,
+          tenantName: String,
+          tenantId: String,
+          start: Date,
+          end: Date,
+          property: Object,
+          status: String,
+        });
+  
+        const existing = await TenantBookings.findOneAsync({ agentAvailabilityId: bookingData.agentAvailabilityId });
+        if (existing) {
+          throw new Meteor.Error('already-booked', 'This slot is already booked.');
+        }
+  
+        await Meteor.callAsync('agentAvailabilities.markAsBooked', bookingData.agentAvailabilityId);
+  
+        return await TenantBookings.insertAsync({
+          ...bookingData,
+          createdAt: new Date(),
+        });
+      } catch (err) {
+        console.error('Booking error:', err);
+        throw new Meteor.Error('booking-failed', err.message || 'Unknown error');
+      }
     }
-
-    await Meteor.callAsync('agentAvailabilities.markAsBooked', bookingData.agentAvailabilityId);
-
-    return TenantBookings.insert({
-      ...bookingData,
-      createdAt: new Date(),
-    });
-  }
-});
+  });
+  

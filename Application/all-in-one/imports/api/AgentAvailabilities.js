@@ -28,7 +28,7 @@ Meteor.methods({
     check(end, String);
     check(activity_type, String);
     check(availability_type, String);
-    check(property, String);
+    check(property, Object);
     check(price, Match.Optional(String));
     check(bedrooms, Match.Optional(String));
     check(bathrooms, Match.Optional(String));

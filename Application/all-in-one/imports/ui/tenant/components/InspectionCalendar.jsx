@@ -7,77 +7,92 @@ import { AgentAvailabilities } from '../../../api/AgentAvailabilities';
 import { BookingConfirmDialog } from './BookingConfirmDialog'; 
 import { Meteor } from 'meteor/meteor'; 
 
-
-
 export const InspectionCalendar = () => {
-    const [selectedSlot, setSelectedSlot] = useState(null); // slot info
-    const [showDialog, setShowDialog] = useState(false);
-    const user = useTracker(() => (typeof Meteor.user === 'function' ? Meteor.user() : null));
+  const [selectedSlot, setSelectedSlot] = useState(null);
+  const [showDialog, setShowDialog] = useState(false);
 
+  const userId = useTracker(() => Meteor.userId());
+  const user = useTracker(() => Meteor.user());
+  
 
   const { availabilities } = useTracker(() => {
     Meteor.subscribe('agentAvailabilities');
-    return {
-      availabilities: AgentAvailabilities.find().fetch(),
-    };
+    const all = AgentAvailabilities.find({ type: 'Inspection' }).fetch();
+    return { availabilities: all };
   });
+  
 
   const handleEventClick = (info) => {
     const availability = info.event.extendedProps;
-  
+
     if (availability.status === 'booked') {
       alert('This slot has already been booked.');
       return;
     }
-  
+
+    // Ensure property is passed as full object
     setSelectedSlot({
       id: info.event.id,
       start: info.event.start,
       end: info.event.end,
-      property: availability.property,
+      property: typeof availability.property === 'object'
+        ? availability.property
+        : {
+            address: availability.property,
+            price: availability.price,
+            bedrooms: availability.bedrooms,
+            bathrooms: availability.bathrooms,
+            parking: availability.parking,
+            image: availability.image,
+          },
+
     });
+
     setShowDialog(true);
   };
-  
 
   const handleConfirmBooking = () => {
     if (!selectedSlot) return;
-  
-    if (!user || !user._id) {
-      alert("You must be logged in to book an inspection.");
-      return;
-    }
-  
+    const tenantId = Meteor.userId();
+
+    // if (userId === null) {
+    //   alert("Checking login state... please wait a moment and try again.");
+    //   return;
+    // }
+    // if (!userId) {
+    //   alert("You must be logged in to book an inspection.");
+    //   return;
+    // }
+    
+
     const bookingData = {
       agentAvailabilityId: String(selectedSlot.id),
+      tenantId,
       tenantName: user?.profile?.name || 'Anonymous',
-      tenantId: user._id, 
       start: new Date(selectedSlot.start),
       end: new Date(selectedSlot.end),
       property: selectedSlot.property,
       status: 'pending',
     };
-  
-    console.log("🚀 Booking data being sent to server:", bookingData);
-  
+
+    console.log("📦 Booking Data:", bookingData);
+
     Meteor.call('tenantBookings.insert', bookingData, (err) => {
       if (err) {
         alert('Booking failed: ' + err.reason);
       } else {
-        alert('Inspection booked successfully!');
+        alert('Booking confirmed!')
         setShowDialog(false);
         setSelectedSlot(null);
       }
     });
   };
-  
-  
+
   const handleCancelBooking = () => {
     setShowDialog(false);
     setSelectedSlot(null);
   };
 
-  
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       <div className="text-center mb-6">
@@ -97,12 +112,15 @@ export const InspectionCalendar = () => {
             id: slot._id,
             start: slot.start,
             end: slot.end,
-            title: slot.status === 'booked' ? 'Booked' : `${slot.type} Availability`,
+            title: slot.status === 'booked'
+              ? 'Booked'  
+              : 'Inspection Availability',
             backgroundColor: slot.status === 'booked' ? '#e5e7eb' : '#CEF4F1',
             textColor: slot.status === 'booked' ? '#6b7280' : '#24A89E',
             borderColor: slot.status === 'booked' ? '#9ca3af' : '#24A89E',
             ...slot
           }))}
+          
           eventClick={handleEventClick}
           headerToolbar={{
             left: 'prev today next',
@@ -113,12 +131,12 @@ export const InspectionCalendar = () => {
           titleFormat={{ year: 'numeric', month: 'long' }}
           height="auto"
         />
-        <BookingConfirmDialog
-        isOpen={showDialog}
-        onConfirm={handleConfirmBooking}
-        onCancel={handleCancelBooking}
-        />
 
+        <BookingConfirmDialog
+          isOpen={showDialog}
+          onConfirm={handleConfirmBooking}
+          onCancel={handleCancelBooking}
+        />
       </div>
     </div>
   );

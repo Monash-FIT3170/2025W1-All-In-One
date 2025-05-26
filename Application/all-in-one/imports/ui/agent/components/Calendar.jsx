@@ -1,4 +1,4 @@
-import React, { useState , useEffect} from 'react';
+import React, { useState , useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -11,7 +11,6 @@ import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx';
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
 import { EventDetailModal } from './EventDetailModal.jsx'; 
 
-
 const callAsync = (methodName, ...args) => {
   return new Promise((resolve, reject) => {
     Meteor.call(methodName, ...args, (err, res) => {
@@ -21,7 +20,6 @@ const callAsync = (methodName, ...args) => {
   });
 };
 
-
 export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
@@ -29,7 +27,6 @@ export const Calendar = () => {
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
-  // const [showInspectionDialog, setShowInspectionDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null); 
 
@@ -42,7 +39,7 @@ export const Calendar = () => {
     setPendingSlot(null);
     setSelectedEvent(null);
   };
-  
+
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('agentAvailabilities');
     const data = AgentAvailabilities.find().fetch();
@@ -51,7 +48,7 @@ export const Calendar = () => {
       isLoading: !handler.ready(),
     };
   });
-  
+
   const handleSelect = (info) => {
     setPendingSlot({ start: info.start, end: info.end });
     setShowActivityTypeDialog(true);
@@ -63,19 +60,35 @@ export const Calendar = () => {
       setShowAvailabilityTypeDialog(true);
     }
   };
-  
 
   const handleAvailabilityTypeSelect = (type, start, end, propertyInfo) => {
     setShowAvailabilityTypeDialog(false);
+
+    const {
+      address,
+      price,
+      bedrooms,
+      bathrooms,
+      parking,
+      image,
+    } = propertyInfo;
+
+    console.log('[Calendar] propertyInfo:', propertyInfo);
+
     handleBookingSelect({
       type,
       start,
       end,
-      ...propertyInfo, // includes property, image, price, etc.
+      address, 
+      price,
+      bedrooms,
+      bathrooms,
+      parking,
+      image,
     });
   };
-  
-  const handleBookingSelect = ({ type, start, end, property, price, bedrooms, bathrooms, parking, image }) => {
+
+  const handleBookingSelect = ({ type, start, end, address, price, bedrooms, bathrooms, parking, image }) => {
     const tempEvent = {
       id: Date.now(),
       start,
@@ -83,7 +96,14 @@ export const Calendar = () => {
       type,
       status: 'pending',
       title: `Pending: ${type} Availability`,
-      property,
+      property: {
+        address,
+        price,
+        bedrooms,
+        bathrooms,
+        parking,
+        image,
+      },
       price,
       bedrooms,
       bathrooms,
@@ -91,10 +111,12 @@ export const Calendar = () => {
       image,
       allDay: false,
     };
+  
     setNewEvents((prev) => [...prev, tempEvent]);
     setPendingSlot(null);
-    setShowOpenHouseDialog(false); 
+    setShowOpenHouseDialog(false);
   };
+  
 
   const handleConfirmButtonClick = () => {
     setShowDialog(true); 
@@ -113,9 +135,7 @@ export const Calendar = () => {
           event.end.toISOString(),
           'Availability',
           event.type,
-          typeof event.property === 'string'
-            ? event.property
-            : (event.property?.address || 'Unknown Property'), // fallback if it's an object
+          event.property, // ✅ now guaranteed to be an object
           String(event.price ?? ''),
           String(event.bedrooms ?? ''),
           String(event.bathrooms ?? ''),
@@ -124,7 +144,7 @@ export const Calendar = () => {
           'confirmed'
         );
       }
-  
+
       setNewEvents([]);
       setShowDialog(false);
     } catch (error) {
@@ -132,9 +152,7 @@ export const Calendar = () => {
       console.error('Failed to create availability:', error.reason);
     }
   };
-  
-  
-  
+
   const handleClearConfirm = () => {
     Meteor.call('agentAvailabilities.clear', (error) => {
       if (error) {
@@ -143,38 +161,20 @@ export const Calendar = () => {
         console.log('All availabilities cleared!');
         setNewEvents([]); 
         setShowClearDialog(false);
-  
         Meteor.subscribe('agentAvailabilities'); 
       }
     });
   };
-  
-  
 
-  // const handleCancel = () => {
-  //   setNewEvents([]);
-  //   setShowDialog(false);
-  // };
-  
-  // const handleClearCancel = () => {
-  //   setShowClearDialog(false);
-  // };
-
-  
-  
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
-
-      {/* Header */}
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
         <p className="text-gray-500 mt-2">Click empty timeslot to schedule an activity - an availability (inspection or open house) or maintenance (to be added in Milestone 3).</p>
       </div>
 
-      {/* Divider */}
       <div className="border-t border-gray-300 max-w-6xl mx-auto mb-6"></div>
 
-      {/* Calendar */}
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-6xl mx-auto">
         <FullCalendar
           plugins={[timeGridPlugin, interactionPlugin]}
@@ -235,7 +235,6 @@ export const Calendar = () => {
               });
             } 
           }}          
-        
           headerToolbar={{
             left: 'prev today next',
             center: '',
@@ -249,11 +248,10 @@ export const Calendar = () => {
           }}
           height="auto"
         />
-        {/* Dialog Component */}
+
         <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={closeDialogs} />
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={closeDialogs} />
         <ActivityTypeDialog isOpen={showActivityTypeDialog} onSelect={handleActivityTypeSelect} onClose={closeDialogs} />
-      
         <AvailabilityTypeDialog 
           isOpen={showAvailabilityTypeDialog} 
           pendingSlot={pendingSlot}
@@ -262,7 +260,6 @@ export const Calendar = () => {
         />
       </div>
 
-      {/* Detail view modal */}
       {selectedEvent && (
         <EventDetailModal
           event={selectedEvent}
@@ -270,22 +267,14 @@ export const Calendar = () => {
         />
       )}
 
-      {/* Buttons */}
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
-
-        {/* Confirm */}
-        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0}className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0? 'bg-gray-300 cursor-not-allowed': 'bg-[#9747FF] hover:bg-purple-200 text-white'}`}>
-            Confirm 
+        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0} className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#9747FF] hover:bg-purple-200 text-white'}`}>
+          Confirm 
         </button>
-
-
         <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
-            Clear
+          Clear
         </button>
-
       </div>
-
-
     </div>
   );
 };
