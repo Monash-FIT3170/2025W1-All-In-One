@@ -58,8 +58,27 @@ Meteor.methods({
     return result;
   },
 
+  async 'agentAvailabilities.markAsBooked'(availabilityId) {
+    check(availabilityId, String);
+
+    const result = await AgentAvailabilities.updateAsync(
+      { _id: availabilityId },
+      { $set: { status: 'booked' } }
+    );
+
+    if (result === 0) {
+      throw new Meteor.Error('not-found', 'No matching availability found.');
+    }
+
+    return result;
+  },
+
   async 'agentAvailabilities.clear'() {
     console.log('Clearing all availabilities...');
     return await AgentAvailabilities.removeAsync({});
   }
+  
+
+  
+
 });

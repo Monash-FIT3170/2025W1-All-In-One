@@ -186,37 +186,41 @@ export const Calendar = () => {
             ...availabilities.map(slot => ({
               ...slot,
               id: slot._id,
-              title: slot.type ? `${slot.type} Availability` : 'Available',
-              start: slot.start,
-              end: slot.end,
-              allDay: false,
+              title: slot.status === 'booked'
+                ? 'Booked'
+                : `${slot.type} Availability`,
               backgroundColor:
-                slot.status === 'pending'
-                  ? '#F2F2F2'  
+                slot.status === 'booked'
+                  ? '#e5e7eb'
+                  : slot.status === 'pending'
+                  ? '#F2F2F2'
                   : slot.type === 'Open House'
-                  ? '#DCFFCD' 
+                  ? '#DCFFCD'
                   : '#CEF4F1',
               textColor:
-                slot.status === 'pending'
-                  ? '#000000'  
+                slot.status === 'booked'
+                  ? '#6b7280'
+                  : slot.status === 'pending'
+                  ? '#000000'
                   : slot.type === 'Open House'
-                  ? '#68A44F' 
+                  ? '#68A44F'
                   : '#24A89E',
               borderColor:
-                slot.status === 'pending'
-                  ? '#000000'  
+                slot.status === 'booked'
+                  ? '#9ca3af'
+                  : slot.status === 'pending'
+                  ? '#000000'
                   : slot.type === 'Open House'
-                  ? '#A98A22' 
+                  ? '#A98A22'
                   : '#24A89E',
-              ...slot
             })),
             ...newEvents.map(event => ({
               ...event,
-              backgroundColor: '#F2F2F2', 
+              backgroundColor: '#F2F2F2',
               textColor: '#000000',
               borderColor: '#000000',
             })),
-          ]}             
+          ]}                   
           eventClick={(info) => {
             const clicked = info.event.extendedProps;
             if (clicked.type === 'Open House') {
