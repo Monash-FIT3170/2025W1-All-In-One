@@ -3,7 +3,7 @@ import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useTracker } from 'meteor/react-meteor-data';
-import { AgentAvailabilities } from '../../api/AgentAvailabilities';
+import { AgentAvailabilities } from '../../../api/AgentAvailabilities';
 import { BookingConfirmDialog } from './BookingConfirmDialog'; 
 import { Meteor } from 'meteor/meteor'; 
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar } from './Calendar.jsx';
+import { Calendar } from './components/Calendar.jsx';
 import { Mail, BedDouble, ShowerHead, CarFront } from 'lucide-react';
 import { mockTenants, mockProperties } from '../../api/mockData'; 
 

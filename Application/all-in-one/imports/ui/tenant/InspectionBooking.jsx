@@ -1,5 +1,5 @@
 import React from 'react';
-import { InspectionCalendar } from './InspectionCalendar.jsx';
+import { InspectionCalendar } from './components/InspectionCalendar.jsx';
 
 export const InspectionBooking = () => {
   return (

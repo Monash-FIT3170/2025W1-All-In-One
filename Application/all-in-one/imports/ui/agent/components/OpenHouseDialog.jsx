@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { mockProperties } from '../../api/mockData';
+import { mockProperties } from '../../../api/mockData';
 
 export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
   const [property, setProperty] = useState('');

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { mockProperties } from '../../api/mockData'; // adjust path as needed
+import { mockProperties } from '../../../api/mockData'; // adjust path as needed
 
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
