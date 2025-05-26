@@ -1,26 +1,15 @@
 import React from 'react';
 import { InspectionCalendar } from './components/InspectionCalendar.jsx';
 import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
+import Navbar from "./components/TenNavbar";
 
 export const InspectionBooking = () => {
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20">
       {/* Header */}
-      <div className="flex items-center justify-between px-8 py-4 bg-[#CBADD8]"> 
-        <div className="flex items-center gap-2">
-          <img src="/logo.png" alt="Logo" className="h-20 w-auto" />
-        </div>
-        <div className="flex gap-4">
-          {['Dashboard', 'Applications', 'Properties'].map(label => (
-            <button key={label} className="bg-[#9747FF] hover:bg-purple-200 text-white px-4 py-2 rounded-full font-semibold">
-              {label}
-            </button>
-          ))}
-          <button className="bg-[#9747FF] hover:bg-purple-200 text-white px-4 py-2 rounded-full font-semibold">Log out</button>
-          <img src="/user-avatar.png" alt="User" className="w-10 h-10 rounded-full" />
-        </div>
-      </div>
-      
+      <Navbar />
+
+
       {/* Featured Property View */}
       <div className="flex justify-center mt-20">
         <div className="flex bg-[#FFF8E9] rounded-2xl overflow-hidden shadow-lg w-full max-w-3xl">

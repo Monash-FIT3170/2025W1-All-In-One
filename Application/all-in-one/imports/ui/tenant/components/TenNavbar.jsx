@@ -21,7 +21,7 @@ function Navbar() {
       {/*Nav bar options*/}
       <div className="flex items-center gap-4">
         {/*TODO: Add route to tenant inspections*/}
-        <NavButton to="/PLACEHOLDER">Inspections</NavButton>
+        <NavButton to="/InspectionListing">Inspections</NavButton>
 
         {/*TODO: Add route to tenant's applications*/}
         <NavButton to="/PLACEHOLDER">Applications</NavButton>
