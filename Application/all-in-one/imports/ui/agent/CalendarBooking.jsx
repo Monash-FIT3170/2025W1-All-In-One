@@ -1,7 +1,7 @@
 import React from 'react';
 import { Calendar } from './Calendar.jsx';
 import { Mail, BedDouble, ShowerHead, CarFront } from 'lucide-react';
-import { mockTenants, mockProperties } from '../../api/mockData'; // Adjust the path if needed
+import { mockTenants, mockProperties } from '../../api/mockData'; 
 
 export const CalendarBooking = () => {
   // Pair each tenant with a property
