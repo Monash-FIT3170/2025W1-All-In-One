@@ -24,7 +24,7 @@ function Navbar() {
         <NavButton to="/InspectionListing">Inspections</NavButton>
 
         {/*TODO: Add route to tenant's applications*/}
-        <NavButton to="/PLACEHOLDER">Applications</NavButton>
+        <NavButton to="/TenantApplications">Applications</NavButton>
 
         {/*Route to tenant's properties*/}
         <NavButton to="/BasicLeases">Properties</NavButton>
