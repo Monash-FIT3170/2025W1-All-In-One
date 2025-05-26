@@ -1,5 +1,5 @@
 import React from 'react';
-import { Calendar } from '../agent/Calendar.jsx';
+import { InspectionCalendar } from './InspectionCalendar.jsx';
 
 export const InspectionBooking = () => {
   return (
@@ -52,7 +52,7 @@ export const InspectionBooking = () => {
 
       {/* Calendar */}
       <div className="mt-20">
-        <Calendar />
+        <InspectionCalendar />
       </div>
     </div>
   );
