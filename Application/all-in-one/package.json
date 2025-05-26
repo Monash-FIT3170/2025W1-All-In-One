@@ -8,7 +8,13 @@
     "visualize": "meteor --production --extra-packages bundle-visualizer"
   },
   "dependencies": {
+
     "@babel/runtime": "^7.27.1",
+    "@fullcalendar/interaction": "^6.1.17",
+    "@fullcalendar/react": "^6.1.17",
+    "@fullcalendar/timegrid": "^6.1.17",
+    "dayjs": "^1.11.13",
+    "lucide-react": "^0.510.0",
     "@heroicons/react": "^2.2.0",
     "clone": "^2.1.2",
     "meteor-node-stubs": "^1.2.5",
@@ -20,6 +26,7 @@
     "react-slick": "^0.30.3",
     "simpl-schema": "^3.4.6",
     "slick-carousel": "^1.8.1"
+
   },
   "meteor": {
     "mainModule": {

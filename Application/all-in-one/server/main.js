@@ -16,6 +16,9 @@ import {
 import { mockData } from '/imports/api/database/mockData';
 import '/imports/api/methods/account.js';
 import '/imports/api/agent/rentalApplications/methods'
+import { LinksCollection } from '/imports/api/links';
+import '/imports/api/AgentAvailabilities';
+import '/imports/api/TenantBookings.js';
 
 
 Meteor.startup(async () => { 
@@ -146,6 +149,9 @@ Meteor.startup(async () => {
     console.log('✅ Landlord created and added to Landlords collection');
   }
 
+  async function insertLink({ title, url }) {
+  await LinksCollection.insertAsync({ title, url, createdAt: new Date() });
+}
 
   // Publications
   Meteor.publish('properties', function () {

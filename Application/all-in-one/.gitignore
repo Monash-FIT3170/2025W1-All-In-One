@@ -1,5 +1,3 @@
-local
-
 # Dependency directories
 node_modules/
 
@@ -7,6 +5,9 @@ node_modules/
 .meteor/local/
 .meteor/.flags
 .meteor/.id
+platforms/
+release/
+versions/
 
 # Environment files
 .env
@@ -19,5 +20,10 @@ node_modules/
 .DS_Store
 Thumbs.db
 
-.meteor/local/
-node_modules/
+# Log files
+npm-debug.log
+yarn-error.log
+*.log
+
+# Local files
+local
