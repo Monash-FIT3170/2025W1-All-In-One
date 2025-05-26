@@ -1,5 +1,6 @@
 import React from 'react';
 import { InspectionCalendar } from './components/InspectionCalendar.jsx';
+import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
 
 export const InspectionBooking = () => {
   return (
@@ -33,15 +34,15 @@ export const InspectionBooking = () => {
 
             <div className="flex flex-col gap-6 mt-4 text-gray-700 text-lg">
               <div className="flex items-center gap-2">
-                <img src="/bed-icon.png" alt="Bed" className="w-6 h-6" />
+                <BedDouble className="w-6 h-6" />
                 <span>3</span>
               </div>
               <div className="flex items-center gap-2">
-                <img src="/bath-icon.png" alt="Bath" className="w-6 h-6" />
+                <ShowerHead className="w-6 h-6" />
                 <span>7</span>
               </div>
               <div className="flex items-center gap-2">
-                <img src="/car-icon.png" alt="Car" className="w-6 h-6" />
+                <CarFront className="w-6 h-6" />
                 <span>4</span>
               </div>
             </div>
