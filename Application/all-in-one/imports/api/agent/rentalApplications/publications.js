@@ -23,3 +23,11 @@ Meteor.publish('incomes', function () {
 Meteor.publish('identities', function () {
   return Identities.find();
 });
+
+Meteor.publish('properties', function () {
+  return Properties.find();
+});
+
+Meteor.publish('agents', function () {
+  return Agents.find();
+});

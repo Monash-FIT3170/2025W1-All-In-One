@@ -1,34 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useTracker } from 'meteor/react-meteor-data';
+import { Meteor } from 'meteor/meteor';
 import { Search, Filter, ChevronDown, X } from 'lucide-react';
+import { AgentAvailabilities } from '../../api/AgentAvailabilities';
+import { TenantBookings } from '../../api/TenantBookings';
+import { Properties, Agents } from "../../api/database/collections";
 import Navbar from "./components/TenNavbar";
 
-// Mock data for events
-const mockEvents = [
-  {
-    id: 1,
-    date: 'April 25th',
-    property: 'Melton South, 3338',
-    time: '1:00 - 2:00 pm',
-    agent: 'Michael Scott',
-    image: '/api/placeholder/400/240'
-  },
-  {
-    id: 2,
-    date: 'April 25th',
-    property: 'Caulfield, 3162',
-    time: '4:00 - 5:00 pm',
-    agent: 'Pam Beesly',
-    image: '/api/placeholder/400/240'
-  },
-  {
-    id: 3,
-    date: 'April 29th',
-    property: 'Clayton North, 3168',
-    time: '10:00 - 11:00 am',
-    agent: 'Dwight Schrute',
-    image: '/api/placeholder/400/240'
-  }
-];
 
 // Group events by date
 const groupEventsByDate = (events) => {
@@ -42,27 +20,114 @@ const groupEventsByDate = (events) => {
   return grouped;
 };
 
+// Format date for display
+const formatDisplayDate = (dateString) => {
+  const date = new Date(dateString);
+  const options = { month: 'long', day: 'numeric' };
+  return date.toLocaleDateString('en-US', options) + getOrdinalSuffix(date.getDate());
+};
+
+// Get ordinal suffix for date
+const getOrdinalSuffix = (day) => {
+  if (day > 3 && day < 21) return 'th';
+  switch (day % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+};
+
+// Format time for display
+const formatTime = (start, end) => {
+  const startTime = new Date(start).toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  const endTime = new Date(end).toLocaleTimeString('en-US', { 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  });
+  return `${startTime} - ${endTime}`;
+};
+
 export const PropertyListing = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
   const [selectedAgents, setSelectedAgents] = useState(['All Agents']);
   const [selectedProperties, setSelectedProperties] = useState(['All Properties']);
   const [selectedDates, setSelectedDates] = useState(['All Dates']);
-  
+  const [loading, setLoading] = useState(true);
+
+  // Subscribe to data - only get current user's bookings
+  const { myBookings, availabilities, properties, agents, isReady } = useTracker(() => {
+    const bookingsHandle = Meteor.subscribe('tenantBookings');
+    const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
+    const propertiesHandle = Meteor.subscribe('properties');
+    const agentsHandle = Meteor.subscribe('agents');
+    
+    const ready = bookingsHandle.ready() && 
+                  availabilitiesHandle.ready() && 
+                  propertiesHandle.ready() && 
+                  agentsHandle.ready();
+
+    return {
+      myBookings: TenantBookings.find({ tenantId: Meteor.userId() }).fetch(),
+      availabilities: AgentAvailabilities.find({}).fetch(),
+      properties: Properties.find({}).fetch(),
+      agents: Agents.find({}).fetch(),
+      isReady: ready
+    };
+  }, []);
+
+  useEffect(() => {
+    setLoading(!isReady);
+  }, [isReady]);
+
+  // Transform booked data for display
+  const transformedEvents = myBookings.map(booking => {
+    // Find the corresponding availability
+    const availability = availabilities.find(a => a._id === booking.agentAvailabilityId) || {};
+    
+    // Find corresponding property details
+    const property = properties.find(p => p.prop_id === availability.property) || {};
+    
+    // Find corresponding agent details
+    const agent = agents.find(a => a.agent_id === property.agent_id) || {};
+
+    return {
+      id: booking._id,
+      date: formatDisplayDate(booking.start),
+      property: property.prop_address || booking.property?.address || availability.property || 'Property Address',
+      time: formatTime(booking.start, booking.end),
+      agent: `${agent.agent_fname || 'Unknown'} ${agent.agent_lname || 'Agent'}`,
+      image: availability.image || '/api/placeholder/400/240',
+      activityType: availability.activity_type || 'Inspection',
+      availabilityType: availability.availability_type || 'Standard',
+      status: booking.status,
+      bookingDate: booking.createdAt,
+      propertyDetails: {
+        price: booking.property?.price || availability.price || property.prop_pricepweek,
+        bedrooms: booking.property?.bedrooms || availability.bedrooms || property.prop_numbeds,
+        bathrooms: booking.property?.bathrooms || availability.bathrooms || property.prop_numbaths,
+        parking: booking.property?.parking || availability.parking || property.prop_numcarspots
+      }
+    };
+  });
+
   // Filter events based on selected filters
-  const filteredEvents = mockEvents.filter(event => {
+  const filteredEvents = transformedEvents.filter(event => {
     const agentMatch = selectedAgents.includes('All Agents') || selectedAgents.includes(event.agent);
     const propertyMatch = selectedProperties.includes('All Properties') || 
-      selectedProperties.some(prop => event.property.includes(prop.split(',')[0]));
+      selectedProperties.some(prop => event.property.toLowerCase().includes(prop.toLowerCase()));
     const dateMatch = selectedDates.includes('All Dates') || 
-      selectedDates.some(date => {
-        if (date === '25/04/25') return event.date === 'April 25th';
-        if (date === '29/04/25') return event.date === 'April 29th';
-        return false;
-      });
+      selectedDates.some(date => event.date.includes(date));
     const searchMatch = searchTerm === '' || 
       event.agent.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      event.property.toLowerCase().includes(searchTerm.toLowerCase());
+      event.property.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.activityType.toLowerCase().includes(searchTerm.toLowerCase());
     
     return agentMatch && propertyMatch && dateMatch && searchMatch;
   });
@@ -70,9 +135,10 @@ export const PropertyListing = () => {
   // Group filtered events by date
   const eventsByDate = groupEventsByDate(filteredEvents);
   
-  const agents = ['All Agents', 'Michael Scott', 'Dwight Schrute', 'Pam Beesly'];
-  const properties = ['All Properties', '123 Main Street, Melton South, VIC, Australia', '456 Sesame Street, Caulfield, VIC, Australia', '789 Hello Road, Clayton North, VIC, Australia'];
-  const dates = ['All Dates', '25/04/25', '29/04/25'];
+  // Generate filter options from actual data
+  const agentOptions = ['All Agents', ...new Set(transformedEvents.map(e => e.agent))];
+  const propertyOptions = ['All Properties', ...new Set(transformedEvents.map(e => e.property))];
+  const dateOptions = ['All Dates', ...new Set(transformedEvents.map(e => e.date))];
 
   const handleCheckboxChange = (value, type, setterFunction, currentValues) => {
     if (value === `All ${type}`) {
@@ -91,19 +157,31 @@ export const PropertyListing = () => {
       }
     }
   };
+
+  if (loading) {
+    return (
+      <div className="bg-[#FFF8E9] min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading your booked inspections...</p>
+        </div>
+      </div>
+    );
+  }
   
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20"> 
-
       {/* Header */}
       <Navbar />
-
       
       {/* Main Content */}
       <main className="flex-1 container mx-auto p-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">View Inspections</h2>
-          <p className="text-gray-600">All upcoming inspections in one place!</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">My Booked Inspections</h2>
+          <p className="text-gray-600">All your upcoming property inspections in one place!</p>
+          <p className="text-sm text-gray-500 mt-1">
+            You have {filteredEvents.length} booked inspection{filteredEvents.length !== 1 ? 's' : ''}
+          </p>
         </div>
         
         {/* Search and Filter */}
@@ -112,7 +190,7 @@ export const PropertyListing = () => {
             <Search className="absolute left-3 top-3 text-gray-500" size={18} />
             <input
               type="text"
-              placeholder="Search agent or property address..."
+              placeholder="Search agent, property, or activity type..."
               className="pl-10 p-3 rounded-md w-full border-0 focus:ring-2 focus:ring-purple-500"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -125,6 +203,13 @@ export const PropertyListing = () => {
           >
             <Filter size={18} />
             Filters
+            {(selectedAgents.length > 1 || selectedProperties.length > 1 || selectedDates.length > 1 || 
+              !selectedAgents.includes('All Agents') || !selectedProperties.includes('All Properties') || 
+              !selectedDates.includes('All Dates')) && (
+              <span className="bg-purple-500 text-white text-xs rounded-full px-2 py-1 ml-1">
+                Active
+              </span>
+            )}
           </button>
           
           {/* Filter Modal */}
@@ -140,11 +225,11 @@ export const PropertyListing = () => {
               {/* Agent Filter */}
               <div className="mb-6">
                 <h4 className="font-medium mb-3 flex items-center justify-between">
-                  Agent
+                  Agent ({agentOptions.length - 1} available)
                   <ChevronDown size={16} />
                 </h4>
-                <div className="space-y-2">
-                  {agents.map(agent => (
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {agentOptions.map(agent => (
                     <label key={agent} className="flex items-center gap-2">
                       <input
                         type="checkbox"
@@ -161,11 +246,11 @@ export const PropertyListing = () => {
               {/* Property Filter */}
               <div className="mb-6">
                 <h4 className="font-medium mb-3 flex items-center justify-between">
-                  Property
+                  Property ({propertyOptions.length - 1} available)
                   <ChevronDown size={16} />
                 </h4>
-                <div className="space-y-2">
-                  {properties.map(property => (
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {propertyOptions.map(property => (
                     <label key={property} className="flex items-center gap-2">
                       <input
                         type="checkbox"
@@ -173,7 +258,7 @@ export const PropertyListing = () => {
                         onChange={() => handleCheckboxChange(property, 'Properties', setSelectedProperties, selectedProperties)}
                         className="w-4 h-4 text-purple-600 rounded"
                       />
-                      <span className="text-sm">{property}</span>
+                      <span className="text-sm truncate">{property}</span>
                     </label>
                   ))}
                 </div>
@@ -182,11 +267,11 @@ export const PropertyListing = () => {
               {/* Date Filter */}
               <div className="mb-4">
                 <h4 className="font-medium mb-3 flex items-center justify-between">
-                  Date
+                  Date ({dateOptions.length - 1} available)
                   <ChevronDown size={16} />
                 </h4>
-                <div className="space-y-2">
-                  {dates.map(date => (
+                <div className="space-y-2 max-h-32 overflow-y-auto">
+                  {dateOptions.map(date => (
                     <label key={date} className="flex items-center gap-2">
                       <input
                         type="checkbox"
@@ -204,36 +289,90 @@ export const PropertyListing = () => {
         </div>
         
         {/* Events List */}
-        <div className="space-y-8">
-          {Object.keys(eventsByDate).map(date => (
-            <div key={date}>
-              <div className="flex items-center mb-6">
-                <div className="border-t border-gray-400 flex-grow"></div>
-                <h3 className="text-xl text-gray-600 font-medium px-4">{date}</h3>
-                <div className="border-t border-gray-400 flex-grow"></div>
-              </div>
-              
-              {eventsByDate[date].map(event => (
-                <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
-                  <div className="w-48 h-32">
-                    <img src={event.image} alt="Property" className="w-full h-full object-cover" />
-                  </div>
-                  
-                  <div className="p-6 flex-grow">
-                    <h4 className="text-lg font-semibold text-gray-800 mb-2">{event.property}</h4>
-                    <p className="text-gray-700 font-medium">{event.time}</p>
-                  </div>
-                  
-                  <div className="bg-white rounded-lg m-4 p-6 w-64">
-                    <h5 className="font-semibold text-gray-600 mb-1">Agent Name: {event.agent}</h5>
-                  </div>
-                </div>
-              ))}
+        {Object.keys(eventsByDate).length === 0 ? (
+          <div className="text-center py-12">
+            <div className="text-gray-400 mb-4">
+              <Search size={48} className="mx-auto" />
             </div>
-          ))}
-        </div>
+            <h3 className="text-xl font-medium text-gray-600 mb-2">No booked inspections found</h3>
+            <p className="text-gray-500">
+              {myBookings.length === 0 
+                ? "You haven't booked any inspections yet" 
+                : "Try adjusting your search or filter criteria"
+              }
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-8">
+            {Object.keys(eventsByDate).map(date => (
+              <div key={date}>
+                <div className="flex items-center mb-6">
+                  <div className="border-t border-gray-400 flex-grow"></div>
+                  <h3 className="text-xl text-gray-600 font-medium px-4">{date}</h3>
+                  <div className="border-t border-gray-400 flex-grow"></div>
+                </div>
+                
+                {eventsByDate[date].map(event => (
+                  <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
+                    <div className="w-48 h-32 flex-shrink-0">
+                      <img src={event.image} alt="Property" className="w-full h-full object-cover" />
+                    </div>
+                    
+                    <div className="p-6 flex-grow">
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="text-lg font-semibold text-gray-800">{event.property}</h4>
+                        <div className="flex gap-2">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            event.activityType === 'Inspection' ? 'bg-blue-100 text-blue-800' :
+                            event.activityType === 'Open House' ? 'bg-green-100 text-green-800' :
+                            'bg-gray-100 text-gray-800'
+                          }`}>
+                            {event.activityType}
+                          </span>
+                          <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
+                            Booked
+                          </span>
+                        </div>
+                      </div>
+                      <p className="text-gray-700 font-medium mb-2">{event.time}</p>
+                      <div className="text-sm text-gray-600">
+                        {event.propertyDetails.bedrooms && (
+                          <span className="mr-4">{event.propertyDetails.bedrooms} bed</span>
+                        )}
+                        {event.propertyDetails.bathrooms && (
+                          <span className="mr-4">{event.propertyDetails.bathrooms} bath</span>
+                        )}
+                        {event.propertyDetails.parking && (
+                          <span className="mr-4">{event.propertyDetails.parking} car</span>
+                        )}
+                        {event.propertyDetails.price && (
+                          <span className="font-medium">${event.propertyDetails.price}/week</span>
+                        )}
+                      </div>
+                    </div>
+                    
+                    <div className="bg-white rounded-lg m-4 p-6 w-64">
+                      <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
+                      <p className="text-sm text-gray-500 mb-2">
+                        {event.availabilityType} Available
+                      </p>
+                      <div className="text-sm text-green-600 font-medium">
+                        ✓ Inspection Confirmed
+                      </div>
+                      {event.bookingDate && (
+                        <p className="text-xs text-gray-400 mt-2">
+                          Booked on {new Date(event.bookingDate).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+        )}
       </main> 
       <div className="h-16 bg-[#CBADD8]" />
     </div>
   );
-}
+};
