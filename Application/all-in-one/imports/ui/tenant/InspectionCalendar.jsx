@@ -12,7 +12,7 @@ import { Meteor } from 'meteor/meteor';
 export const InspectionCalendar = () => {
     const [selectedSlot, setSelectedSlot] = useState(null); // slot info
     const [showDialog, setShowDialog] = useState(false);
-    const user = useTracker(() => Meteor.user());
+    const user = useTracker(() => (typeof Meteor.user === 'function' ? Meteor.user() : null));
 
 
   const { availabilities } = useTracker(() => {
