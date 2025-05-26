@@ -111,14 +111,16 @@ export const Calendar = () => {
           'agentAvailabilities.insert',
           event.start.toISOString(),
           event.end.toISOString(),
-          'Availability',             
-          event.type,                 
-          event.property,
-          event.price,
-          event.bedrooms,
-          event.bathrooms,
-          event.parking,
-          event.image,
+          'Availability',
+          event.type,
+          typeof event.property === 'string'
+            ? event.property
+            : (event.property?.address || 'Unknown Property'), // fallback if it's an object
+          String(event.price ?? ''),
+          String(event.bedrooms ?? ''),
+          String(event.bathrooms ?? ''),
+          String(event.parking ?? ''),
+          String(event.image ?? ''),
           'confirmed'
         );
       }
@@ -130,6 +132,7 @@ export const Calendar = () => {
       console.error('Failed to create availability:', error.reason);
     }
   };
+  
   
   
   const handleClearConfirm = () => {

@@ -1,47 +1,48 @@
 import React, { useState, useEffect } from 'react';
-import { mockProperties, mockTenants } from '../../../api/mockData';
+// import { mockData } from '../../../api/database/mockData.js';
+import { mockData } from '/imports/api/database/mockData.js';
+
 
 export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
   const [property, setProperty] = useState('');
   const [tenant, setTenant] = useState('');
-  // const [notes, setNotes] = useState('');
   const [showPropertySuggestions, setShowPropertySuggestions] = useState(false);
   const [showTenantSuggestions, setShowTenantSuggestions] = useState(false);
 
-  const filteredProperties = mockProperties.filter(p =>
-    p.name.toLowerCase().includes(property.toLowerCase())
+  // Filter property by prop_address
+  const filteredProperties = mockData.properties.filter(p =>
+    p.prop_address.toLowerCase().includes(property.toLowerCase())
   );
 
-  const filteredTenants = mockTenants.filter(t =>
-    t.name.toLowerCase().includes(tenant.toLowerCase())
+  // Filter tenants by full name
+  const filteredTenants = mockData.tenants.filter(t =>
+    `${t.ten_fn} ${t.ten_ln}`.toLowerCase().includes(tenant.toLowerCase())
   );
 
   useEffect(() => {
     if (isOpen) {
       setProperty('');
       setTenant('');
-      // setNotes('');
       setShowPropertySuggestions(false);
       setShowTenantSuggestions(false);
     }
   }, [isOpen]);
 
   const handleSubmit = () => {
-    const selectedProperty = mockProperties.find(p => p.name === property.trim());
-    const selectedTenant = mockTenants.find(t => t.name === tenant.trim());
+    const selectedProperty = mockData.properties.find(p => p.prop_address === property.trim());
+    const selectedTenant = mockData.tenants.find(t => `${t.ten_fn} ${t.ten_ln}` === tenant.trim());
 
     onSubmit({
-      type: 'Inspection', // or 'Open House'
-      property: selectedProperty?.name || property,
+      type: 'Inspection',
+      property: selectedProperty?.prop_address || property,
       image: selectedProperty?.image || '/property.png',
-      price: selectedProperty?.price || '-',
-      bedrooms: selectedProperty?.bedrooms || '-',
-      bathrooms: selectedProperty?.bathrooms || '-',
-      parking: selectedProperty?.parking || '-',
-      tenant: selectedTenant?.name || tenant,
-      tenantAge: selectedTenant?.age?.toString() || '-',
-      occupation: selectedTenant?.occupation || '-',
-      // notes,
+      price: selectedProperty?.prop_pricepweek || '-',
+      bedrooms: selectedProperty?.prop_numbeds || '-',
+      bathrooms: selectedProperty?.prop_numbaths || '-',
+      parking: selectedProperty?.prop_numcarspots || '-',
+      tenant: selectedTenant ? `${selectedTenant.ten_fn} ${selectedTenant.ten_ln}` : tenant,
+      tenantAge: '-', // You can calculate age from ten_dob if needed
+      occupation: '-', // Add if you have occupation field
     });
   };
 
@@ -79,12 +80,12 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
                   <div
                     key={idx}
                     onClick={() => {
-                      setProperty(p.name);
+                      setProperty(p.prop_address);
                       setShowPropertySuggestions(false);
                     }}
                     className="px-4 py-2 cursor-pointer hover:bg-gray-100"
                   >
-                    {p.name}
+                    {p.prop_address}
                   </div>
                 ))
               ) : (
@@ -114,12 +115,12 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
                   <div
                     key={idx}
                     onClick={() => {
-                      setTenant(t.name);
+                      setTenant(`${t.ten_fn} ${t.ten_ln}`);
                       setShowTenantSuggestions(false);
                     }}
                     className="px-4 py-2 cursor-pointer hover:bg-gray-100"
                   >
-                    {t.name}
+                    {t.ten_fn} {t.ten_ln}
                   </div>
                 ))
               ) : (
@@ -129,18 +130,7 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
           )}
         </div>
 
-        {/* Notes Field */}
-        {/* <div>
-          <label className="block text-black font-semibold mb-1">Notes</label>
-          <textarea
-            placeholder="Notes..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-[#FFF8E9] border border-gray-300"
-            rows={3}
-          ></textarea>
-        </div> */}
-
+        {/* Submit Button */}
         <div className="text-center">
           <button
             onClick={handleSubmit}

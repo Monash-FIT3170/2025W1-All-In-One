@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { mockProperties } from '../../../api/mockData'; // adjust path as needed
+import { mockData } from '/imports/api/database/mockData.js';
 
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
@@ -25,21 +25,23 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const handleSubmit = () => {
     const start = dayjs(`${date} ${startTime}`, 'YYYY-MM-DD HH:mm').toDate();
     const end = dayjs(`${date} ${endTime}`, 'YYYY-MM-DD HH:mm').toDate();
-    const selected = mockProperties.find(p => p.name === property.trim());
+    const selected = mockData.properties.find(p => p.prop_address === property.trim());
 
     onSelect(type, start, end, {
-      property: selected?.name || property,
+      property: selected?.prop_address || property,
       image: selected?.image || '/property.png',
-      price: selected?.price || '-',
-      bedrooms: selected?.bedrooms || '-',
-      bathrooms: selected?.bathrooms || '-',
-      parking: selected?.parking || '-',
+      price: selected?.prop_pricepweek || '-',
+      bedrooms: selected?.prop_numbeds || '-',
+      bathrooms: selected?.prop_numbaths || '-',
+      parking: selected?.prop_numcarspots || '-',
     });
+    
   };
 
-  const filteredProperties = mockProperties.filter((p) =>
-    p.name.toLowerCase().includes(property.toLowerCase())
+  const filteredProperties = mockData.properties.filter(p =>
+    p.prop_address.toLowerCase().includes(property.toLowerCase())
   );
+  
 
   if (!isOpen) return null;
 
@@ -96,23 +98,23 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
             />
             {showSuggestions && property && (
               <div className="mt-1 border rounded bg-white max-h-40 overflow-y-auto shadow">
-                {filteredProperties.length > 0 ? (
-                  filteredProperties.map((p, idx) => (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        setProperty(p.name);
-                        setShowSuggestions(false);
-                      }}
-                      className="px-4 py-2 cursor-pointer hover:bg-gray-100"
-                    >
-                      {p.name}
-                    </div>
-                  ))
-                ) : (
-                  <div className="px-4 py-2 text-sm text-gray-500">No matches found</div>
-                )}
-              </div>
+              {filteredProperties.length > 0 ? (
+                filteredProperties.map((p, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => {
+                      setProperty(p.prop_address);
+                      setShowSuggestions(false);
+                    }}
+                    className="px-4 py-2 cursor-pointer hover:bg-gray-100"
+                  >
+                    {p.prop_address}
+                  </div>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-500">No matches found</div>
+              )}
+            </div>            
             )}
           </div>
         )}

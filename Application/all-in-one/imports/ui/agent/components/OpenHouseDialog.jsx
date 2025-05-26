@@ -1,38 +1,34 @@
 import React, { useState, useEffect } from 'react';
-import { mockProperties } from '../../../api/mockData';
+// import { mockData } from '../../../api/database/mockData.js';
+import { mockData } from '/imports/api/database/mockData.js';
+
 
 export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
   const [property, setProperty] = useState('');
-  // const [notes, setNotes] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const filteredProperties = mockProperties.filter(p =>
-    p.name.toLowerCase().includes(property.toLowerCase())
+  const filteredProperties = mockData.properties.filter(p =>
+    p.prop_address.toLowerCase().includes(property.toLowerCase())
   );
 
   useEffect(() => {
     if (isOpen) {
       setProperty('');
-      // setNotes('');
       setShowSuggestions(false);
     }
   }, [isOpen]);
 
   const handleSubmit = () => {
-    const selected = mockProperties.find(p => p.name === property.trim());
+    const selected = mockData.properties.find(p => p.prop_address === property.trim());
 
     onSubmit({
       type: 'Open House',
-      property: selected?.name || property,
-      image: selected?.image || '/property.png',
-      price: selected?.price || '-',
-      bedrooms: selected?.bedrooms || '-',
-      bathrooms: selected?.bathrooms || '-',
-      parking: selected?.parking || '-',
-      // tenant: '',
-      // tenantAge: '',
-      // occupation: '',
-      // notes,
+      property: selected?.prop_address || property,
+      image: selected?.image || '/property.png', // Make sure you add .image to your mockData if needed
+      price: selected?.prop_pricepweek || '-',
+      bedrooms: selected?.prop_numbeds || '-',
+      bathrooms: selected?.prop_numbaths || '-',
+      parking: selected?.prop_numcarspots || '-',
     });
   };
 
@@ -69,12 +65,12 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
                   <div
                     key={idx}
                     onClick={() => {
-                      setProperty(p.name);
+                      setProperty(p.prop_address);
                       setShowSuggestions(false);
                     }}
                     className="px-4 py-2 cursor-pointer hover:bg-gray-100"
                   >
-                    {p.name}
+                    {p.prop_address}
                   </div>
                 ))
               ) : (
@@ -83,17 +79,6 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
             </div>
           )}
         </div>
-
-        {/* <div>
-          <label className="block text-black font-semibold mb-1">Notes</label>
-          <textarea
-            placeholder="Notes..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-4 py-2 rounded-lg bg-[#FFF8E9] border border-gray-300"
-            rows={3}
-          ></textarea>
-        </div> */}
 
         <div className="text-center">
           <button

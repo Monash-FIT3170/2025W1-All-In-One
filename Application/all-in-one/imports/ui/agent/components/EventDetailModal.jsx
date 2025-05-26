@@ -1,4 +1,6 @@
 import React from 'react';
+import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
+
 
 export const EventDetailModal = ({ event, onClose }) => {
   if (!event) return null;
@@ -40,28 +42,34 @@ export const EventDetailModal = ({ event, onClose }) => {
           </h2>
 
           <img
-            src={event.image || '/property.png'}
+            src={event.image || '/images/default.jpg'}
             alt="Property"
             className="rounded-xl mb-2 w-full h-48 object-cover"
+            onError={(e) => {
+              e.target.onerror = null; // prevent infinite loop
+              e.target.src = '/images/default.jpg'; // fallback
+            }}
           />
+
           <div className="bg-[#FFF8E9] p-4 rounded-xl">
             <p className="text-center text-gray-700">{event.property || 'No property information'}</p>
             <p className="text-center text-sm text-gray-700">${event.price || '—'} per week</p>
             
             <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
               <div className="flex items-center gap-1">
-                <img src="/bed-icon.png" alt="bed" className="w-4 h-4" />
+                <BedDouble className="w-4 h-4" />
                 {event.bedrooms || '—'}
               </div>
               <div className="flex items-center gap-1">
-                <img src="/bath-icon.png" alt="bath" className="w-4 h-4" />
+                <ShowerHead className="w-4 h-4" />
                 {event.bathrooms || '—'}
               </div>
               <div className="flex items-center gap-1">
-                <img src="/car-icon.png" alt="car" className="w-4 h-4" />
+                <CarFront className="w-4 h-4" />
                 {event.parking || '—'}
               </div>
             </div>
+
           </div>
         </div>
 

@@ -24,7 +24,7 @@ function Navbar() {
       {/*Nav bar options*/}
       <div className="flex items-center gap-4">
         {/*TODO: Add route to Agent dashboard*/}
-        <NavButton to="/PLACEHOLDER">Dashboard</NavButton>
+        <NavButton to="/AgentDashboard">Dashboard</NavButton>
 
         {/*TODO: Add route to Agent applications*/}
         <NavButton to="/AgentReviewApplication">Applications</NavButton>

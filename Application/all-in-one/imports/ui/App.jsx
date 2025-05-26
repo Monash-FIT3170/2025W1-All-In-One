@@ -31,6 +31,7 @@ import AgentDetailedListing from "./agent/AgentDetailedListing.jsx";
 import AgentDetailedPropListing from "./agent/AgentDetailedPropListing.jsx"
 import AgentListings from "./agent/AgentListings.jsx"
 import ReviewApplication from "./agent/AgentReviewApplication.jsx"
+import AgentDashboard from './agent/AgentDashboard.jsx';
 
 // importing landlord pages 
 import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx";
@@ -94,7 +95,9 @@ const App = () => (
         <Route element={<ProtectedAgentRoutes />}>
           
           {/* Dashboard Page*/}
-          <Route path="/dashboard" element={<AgentBasicPorpListing/>} /> {/*Replacewith dashboard*/}
+          <Route path="/dashboard" element={<AgentDashboard />} /> {/* Dashboard after log in */}
+          <Route path="/AgentDashboard" element={<AgentDashboard />} /> {/* Proper dashboard */}
+
         
           {/* Add any other protected agent routes here */}
           {/* Agent Routes team-2 */ }
@@ -134,4 +137,3 @@ const App = () => (
   </BrowserRouter>  
 );
 export default App;
-
