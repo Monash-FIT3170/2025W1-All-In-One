@@ -76,7 +76,7 @@ export default function TenDetailedPropListing() {
         <PropertyDetailsCard property={propertyData} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
           <Link
-          to={`/PLACEHOLDER`} // TBD: replace with actual link to inspection booking page
+          to={`/InspectionBooking`} // TBD: replace with actual link to inspection booking page
           className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
           >Book Inspection 
           </Link>
