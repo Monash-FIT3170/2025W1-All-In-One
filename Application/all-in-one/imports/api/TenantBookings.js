@@ -33,5 +33,5 @@ Meteor.methods({
       ...bookingData,
       createdAt: new Date(),
     });
-  },
+  }
 });

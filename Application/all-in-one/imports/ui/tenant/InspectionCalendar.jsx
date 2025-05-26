@@ -43,15 +43,24 @@ export const InspectionCalendar = () => {
   const handleConfirmBooking = () => {
     if (!selectedSlot) return;
   
-    Meteor.call('tenantBookings.insert', {
-      agentAvailabilityId: selectedSlot.id,
+    if (!user || !user._id) {
+      alert("You must be logged in to book an inspection.");
+      return;
+    }
+  
+    const bookingData = {
+      agentAvailabilityId: String(selectedSlot.id),
       tenantName: user?.profile?.name || 'Anonymous',
-      tenantId: user?._id,
-      start: selectedSlot.start,
-      end: selectedSlot.end,
+      tenantId: user._id, 
+      start: new Date(selectedSlot.start),
+      end: new Date(selectedSlot.end),
       property: selectedSlot.property,
       status: 'pending',
-    }, (err) => {
+    };
+  
+    console.log("🚀 Booking data being sent to server:", bookingData);
+  
+    Meteor.call('tenantBookings.insert', bookingData, (err) => {
       if (err) {
         alert('Booking failed: ' + err.reason);
       } else {
@@ -61,6 +70,7 @@ export const InspectionCalendar = () => {
       }
     });
   };
+  
   
   const handleCancelBooking = () => {
     setShowDialog(false);
