@@ -39,7 +39,6 @@ import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx"
 import LandlordDetailedProp from "./landlord/LandLordDetailedProp.jsx";
 import LandlordDetailedPropListing from "./landlord/LandlordDetailedPropListing.jsx";
 import LandlordProperties from "./landlord/LandlordProperties.jsx";
-import { ReviewApplication } from './agent/ReviewApplication.jsx';
 
 
 const App = () => (

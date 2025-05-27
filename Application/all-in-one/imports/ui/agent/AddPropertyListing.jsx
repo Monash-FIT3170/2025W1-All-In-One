@@ -60,7 +60,7 @@ export default function AddPropertyListing() {
         }
         else {
           alert("Property Successfully Added!");
-          navigate("/AgentBasicPropListing")  // Can change this based on where we should go after the form has been submitted
+          navigate("/AgentListings")  // Can change this based on where we should go after the form has been submitted
         }
       }
     );

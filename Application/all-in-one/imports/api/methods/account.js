@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
-import { Tenants, Properties } from '../database/collections.js'; // adjust path if needed
+import { Tenants, Properties, Photos } from '../database/collections.js'; // adjust path if needed
 
 Meteor.methods({
   async registerUser({ email, password, firstName, lastName, role }) {
@@ -77,7 +77,14 @@ Meteor.methods({
         agent_id: agentId,   // to be changed
         landlord_id: landlord._id
       });
-  
+      
+      await Photos.insertAsync({
+        prop_id: propID,
+        photo_id: 'PH004',
+        photo_url: '/images/properties/P001/main.jpg',
+        photo_order: 1
+      });
+
       return propID;
     } catch (error) {
       console.error("addProperty error:", error);
