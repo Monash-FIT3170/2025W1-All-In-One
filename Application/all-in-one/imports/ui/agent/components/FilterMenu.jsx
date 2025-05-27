@@ -18,7 +18,7 @@ const FilterMenu = ({
   const uniqueApplicants = Array.from(new Set(applications.map(app => app.ten_id)));
   // Define all possible statuses for filtering
   const allStatuses = [
-    'To Be Reviewed',
+    'Pending',
     'Rejected',
     'Shortlisted',
     'Flagged',

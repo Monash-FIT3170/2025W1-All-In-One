@@ -1,7 +1,7 @@
 import React from "react";
 import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter} from "react-icons/fa";
 import { Link } from "react-router-dom";
-import NavBar from "./Navbar.jsx";
+import NavBar from "./NavBar.jsx";
 import Footer from "./Footer.jsx";
 import BasicPropertyCard from "./BasicPropertyCard.jsx";
 import { useTracker } from "meteor/react-meteor-data";
