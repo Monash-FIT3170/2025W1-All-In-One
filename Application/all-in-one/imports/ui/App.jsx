@@ -76,7 +76,7 @@ const App = () => (
 
           {/* Inspection Booking Page */}
           <Route path="/InspectionListing" element={<PropertyListing />}/>
-          <Route path="/InspectionBooking" element={<InspectionBooking/>}/>
+          <Route path="/InspectionBooking/:id" element={<InspectionBooking/>}/>
           
           {/* Tenant Routes - team-2*/}
                   <Route path="/BasicLeases" element={<BasicLeases />} />
