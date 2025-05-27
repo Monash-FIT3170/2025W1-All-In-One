@@ -81,7 +81,7 @@ Meteor.methods({
       await Photos.insertAsync({
         prop_id: propID,
         photo_id: 'PH004',
-        photo_url: '/images/properties/P001/main.jpg',
+        photo_url: '/images/properties/P001/P001_1.jpg',
         photo_order: 1
       });
 

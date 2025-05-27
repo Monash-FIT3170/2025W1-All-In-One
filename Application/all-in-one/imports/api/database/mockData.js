@@ -59,19 +59,19 @@ export const mockData = {
     {
       prop_id: 'P001',
       photo_id: 'PH001',
-      photo_url: '/images/properties/P001/main.jpg',
+      photo_url: '/images/properties/P001/P001_1.jpg',
       photo_order: 1
     },
     {
       prop_id: 'P001',
       photo_id: 'PH002',
-      photo_url: '/images/properties/P001/living.jpg',
+      photo_url: '/images/properties/P001/P001_bathroom.jpg',
       photo_order: 2
     },
     {
       prop_id: 'P002',
       photo_id: 'PH003',
-      photo_url: '/images/properties/P002/main.jpg',
+      photo_url: '/images/properties/P002/P001_bedroom.jpg',
       photo_order: 1
     }
   ],
