@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Employment } from '/imports/api/database/collections';
 
-function EmploymentSection({ propId , tenId}) {
+function EmploymentSection({ propId, tenId }) {
   const [notEmployed, setNotEmployed] = useState(false);
   const [empType, setEmpType] = useState('');
   const [companyName, setCompanyName] = useState('');
@@ -33,7 +33,6 @@ function EmploymentSection({ propId , tenId}) {
     }
   }, [rentalApp]);
 
-  // Prefill form with existing employment data
   useEffect(() => {
     if (employment) {
       setEmpType(employment.emp_type || '');
@@ -59,7 +58,12 @@ function EmploymentSection({ propId , tenId}) {
       return;
     }
 
-    const employment_id = rentalApp?.employment_id || `${tenId}-emp-${Date.now()}`;
+    if (!startDate) {
+      setStatusMessage('Please select a valid start date.');
+      return;
+    }
+
+    const employment_id = employment?.employment_id || `${tenId}-emp-${Date.now()}`;
     const employmentData = {
       employment_id,
       ten_id: tenId,
@@ -70,16 +74,29 @@ function EmploymentSection({ propId , tenId}) {
       emp_verification: 'null',
     };
 
-    Meteor.call('employment.upsert', employmentData, (err) => {
+    const callback = (err) => {
       if (err) {
         setStatusMessage(`Error saving employment: ${err.message}`);
-        return;
+      } else {
+        Meteor.call('rentalApplications.update', rentalAppId, { employment_id }, (err2) => {
+          setStatusMessage(err2 ? `Error: ${err2.message}` : 'Employment saved successfully!');
+        });
       }
+    };
 
-      Meteor.call('rentalApplications.update', rentalAppId, { employment_id }, (err2) => {
-        setStatusMessage(err2 ? `Error: ${err2.message}` : 'Employment saved successfully!');
-      });
-    });
+    if (employment?.employment_id) {
+      // Only pass updatable fields
+      const updates = {
+        emp_type: employmentData.emp_type,
+        emp_comp: employmentData.emp_comp,
+        emp_job_title: employmentData.emp_job_title,
+        emp_start_date: employmentData.emp_start_date,
+        emp_verification: employmentData.emp_verification,
+      };
+      Meteor.call('employment.update', employment.employment_id, updates, callback);
+    } else {
+      Meteor.call('employment.insert', employmentData, callback);
+    }
   };
 
   return (
@@ -153,7 +170,7 @@ function EmploymentSection({ propId , tenId}) {
 
       <button
         onClick={handleSubmit}
-        className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 hover:text-white transition"
+        className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 transition"
       >
         Save Details
       </button>

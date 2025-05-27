@@ -4,7 +4,7 @@ import NavButton from "../../globalComponents/NavButton";
 
 function Navbar() {
   const navigate = useNavigate();
-
+  const tenantID = Meteor.userId();
   const logout = () => {
     Meteor.logout(() => {
       navigate("/");
@@ -24,7 +24,9 @@ function Navbar() {
         <NavButton to="/InspectionListing">Inspections</NavButton>
 
         {/*TODO: Add route to tenant's applications*/}
-        <NavButton to="/TenantApplications">Applications</NavButton>
+        <NavButton to="/TenantApplications">
+          Applications
+        </NavButton>
 
         {/*Route to tenant's properties*/}
         <NavButton to="/BasicLeases">Properties</NavButton>

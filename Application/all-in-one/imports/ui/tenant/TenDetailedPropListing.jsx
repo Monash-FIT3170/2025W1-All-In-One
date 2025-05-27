@@ -65,7 +65,9 @@ export default function TenDetailedPropListing() {
           description: property.prop_desc,
           
         };
-
+        
+      const tenantID = Meteor.userId()
+      console.log(tenantID)
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
@@ -82,7 +84,7 @@ export default function TenDetailedPropListing() {
           </Link>
           <Link
           key={id}
-          to={`/Apply/${id}`} // TBD: replace with actual link to application page
+          to={`/Apply/${id}?tenantId=${tenantID}`} // TBD: replace with actual link to application page
           className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
           >Apply 
           </Link>
