@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
 import { RentalApplications, Incomes, Identities, Addresses, Tenants,Employment } from '/imports/api/database/collections';
 
 Meteor.methods({
@@ -185,7 +185,7 @@ Meteor.methods({
   return await Employment.insertAsync(employmentData);
 },
 
-  'employment.update'(employmentId, updates) {
+  async 'employment.update'(employmentId, updates) {
     check(employmentId, String);
     check(updates, {
       emp_type: Match.Maybe(String),
@@ -195,11 +195,11 @@ Meteor.methods({
       emp_verification: Match.Maybe(String),
     });
 
-    const existing = Employment.findOne({ employment_id: employmentId });
+    const existing = Employment.findOneAsync({ employment_id: employmentId });
     if (!existing) {
       throw new Meteor.Error('not-found', 'Employment record not found');
     }
 
-    return Employment.update({ employment_id: employmentId }, { $set: updates });
+    return await Employment.updateAsync({ employment_id: employmentId }, { $set: updates });
   }
 });

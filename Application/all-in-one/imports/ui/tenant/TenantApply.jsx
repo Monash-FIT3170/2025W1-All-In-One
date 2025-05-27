@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { useParams } from 'react-router-dom';
 import GeneralSection from './applyPages/GeneralSection';
 import PersonalDetails from './applyPages/PersonalDetails';
 import AboutMe from './applyPages/AboutMe';
@@ -10,11 +9,20 @@ import Identity from './applyPages/Identity';
 import Household from './applyPages/Household';
 import Navbar from './components/TenNavbar';
 import Footer from './components/Footer';
+import { useLocation, useParams } from "react-router-dom";
+
+function useQuery() {
+  return new URLSearchParams(useLocation().search);
+}
+
 
 function Apply() {
-  const tenantId = 'T001'; // Replace with dynamic logic when needed
   const { id } = useParams();
-  console.log("propId received:", id);
+  const query = useQuery();
+  const tenantId = query.get("tenantId");
+
+  console.log("Property ID:", id);
+  console.log("Tenant ID:", tenantId);
   const sectionList = [
     'General',
     'Personal Details',
