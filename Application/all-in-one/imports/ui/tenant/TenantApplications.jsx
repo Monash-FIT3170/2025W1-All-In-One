@@ -4,8 +4,15 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
 import Navbar from './components/TenNavbar'; // Adjust if you're using a different navbar
+import { useLocation } from "react-router-dom";
 
 export default function TenantApplications() {
+
+    const location = useLocation();
+    const tenantID = Meteor.userId();
+
+    console.log("Tenant ID:", tenantID);
+
     const { isReady, applications, tenants, properties, employments } = useTracker(() => {
         const sub1 = Meteor.subscribe('rentalApplications');
         const sub2 = Meteor.subscribe('tenants');
@@ -14,9 +21,10 @@ export default function TenantApplications() {
 
         const isReady = sub1.ready() && sub2.ready() && sub3.ready() && sub4.ready();
 
+        // Filter applications by tenantID here
         return {
             isReady,
-            applications: isReady ? RentalApplications.find().fetch() : [],
+            applications: isReady ? RentalApplications.find({ ten_id: tenantID }).fetch() : [],
             tenants: isReady ? Tenants.find().fetch() : [],
             properties: isReady ? Properties.find().fetch() : [],
             employments: isReady ? Employment.find().fetch() : [],
