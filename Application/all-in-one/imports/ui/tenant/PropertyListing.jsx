@@ -2,11 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Search, Filter, ChevronDown, X } from 'lucide-react';
-import { AgentAvailabilities } from '../../api/AgentAvailabilities';
 import { TenantBookings } from '../../api/TenantBookings';
-import { Properties, Agents } from "../../api/database/collections";
+import { AgentAvailabilities } from '../../api/AgentAvailabilities';
+import { Properties, Agents, Photos } from "../../api/database/collections";
 import Navbar from "./components/TenNavbar";
-
 
 // Group events by date
 const groupEventsByDate = (events) => {
@@ -62,22 +61,25 @@ export const PropertyListing = () => {
   const [loading, setLoading] = useState(true);
 
   // Subscribe to data - only get current user's bookings
-  const { myBookings, availabilities, properties, agents, isReady } = useTracker(() => {
+  const { myBookings, availabilities, properties, agents, photos, isReady } = useTracker(() => {
     const bookingsHandle = Meteor.subscribe('tenantBookings');
     const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
     const propertiesHandle = Meteor.subscribe('properties');
     const agentsHandle = Meteor.subscribe('agents');
+    const photosHandle = Meteor.subscribe('photos');
     
     const ready = bookingsHandle.ready() && 
                   availabilitiesHandle.ready() && 
                   propertiesHandle.ready() && 
-                  agentsHandle.ready();
+                  agentsHandle.ready() &&
+                  photosHandle.ready();
 
     return {
       myBookings: TenantBookings.find({ tenantId: Meteor.userId() }).fetch(),
       availabilities: AgentAvailabilities.find({}).fetch(),
       properties: Properties.find({}).fetch(),
       agents: Agents.find({}).fetch(),
+      photos: Photos.find({}).fetch(),
       isReady: ready
     };
   }, []);
@@ -86,34 +88,86 @@ export const PropertyListing = () => {
     setLoading(!isReady);
   }, [isReady]);
 
-  // Transform booked data for display
+  // Transform booked data for display 
   const transformedEvents = myBookings.map(booking => {
     // Find the corresponding availability
     const availability = availabilities.find(a => a._id === booking.agentAvailabilityId) || {};
     
-    // Find corresponding property details
-    const property = properties.find(p => p.prop_id === availability.property) || {};
+    let property = {};
+    
+    // Try to find property by availability.property first
+    if (availability.property && availability.property !== "") {
+      property = properties.find(p => p.prop_id === availability.property) || {};
+    }
+    
+    // If no property found, try to get from booking.property if it exists
+    if (!property.prop_id && booking.property) {
+      // Check if booking.property has property info directly
+      if (typeof booking.property === 'object' && booking.property.address) {
+        // Use property data directly from booking
+        property = {
+          prop_id: booking.property.id || 'unknown',
+          prop_address: booking.property.address,
+          prop_pricepweek: booking.property.price,
+          prop_numbeds: booking.property.bedrooms,
+          prop_numbaths: booking.property.bathrooms,
+          prop_numcarspots: booking.property.parking,
+          prop_type: booking.property.type || 'Property',
+          prop_available_date: new Date(),
+          prop_pets: false,
+          prop_furnish: false,
+          prop_desc: 'Booked property'
+        };
+      }
+    }
+    
+    // If still no property, use first available property as fallback
+    if (!property.prop_id && properties.length > 0) {
+      property = properties[0]; // Use first property as fallback
+    }
     
     // Find corresponding agent details
     const agent = agents.find(a => a.agent_id === property.agent_id) || {};
+    
+    // Find property photos
+    const propertyPhotos = photos.filter(photo => photo.prop_id === property.prop_id);
+
+    // Create propertyData object
+    const propertyData = {
+      id: property.prop_id,
+      address: property.prop_address || 'Property Address',
+      price: property.prop_pricepweek || 0,
+      type: property.prop_type || 'Property',
+      AvailableDate: property.prop_available_date || new Date(),
+      Pets: property.prop_pets ? "True" : "False",
+      imageUrls: propertyPhotos.length ? propertyPhotos.map((photo) => photo.photo_url) : ["/images/default.jpg"],
+      details: {
+        beds: property.prop_numbeds ?? "N/A",
+        baths: property.prop_numbaths ?? "N/A",
+        carSpots: property.prop_numcarspots ?? "N/A",
+        furnished: property.prop_furnish ? "Yes" : "No",
+      },
+      description: property.prop_desc || 'Property description',
+    };
 
     return {
       id: booking._id,
       date: formatDisplayDate(booking.start),
-      property: property.prop_address || booking.property?.address || availability.property || 'Property Address',
+      property: propertyData.address,
       time: formatTime(booking.start, booking.end),
       agent: `${agent.agent_fname || 'Unknown'} ${agent.agent_lname || 'Agent'}`,
-      image: availability.image || '/api/placeholder/400/240',
+      image: propertyData.imageUrls[0],
       activityType: availability.activity_type || 'Inspection',
       availabilityType: availability.availability_type || 'Standard',
       status: booking.status,
       bookingDate: booking.createdAt,
       propertyDetails: {
-        price: booking.property?.price || availability.price || property.prop_pricepweek,
-        bedrooms: booking.property?.bedrooms || availability.bedrooms || property.prop_numbeds,
-        bathrooms: booking.property?.bathrooms || availability.bathrooms || property.prop_numbaths,
-        parking: booking.property?.parking || availability.parking || property.prop_numcarspots
-      }
+        price: propertyData.price,
+        bedrooms: propertyData.details.beds,
+        bathrooms: propertyData.details.baths,
+        parking: propertyData.details.carSpots
+      },
+      fullPropertyData: propertyData
     };
   });
 
@@ -334,31 +388,57 @@ export const PropertyListing = () => {
                           </span>
                         </div>
                       </div>
-                      <p className="text-gray-700 font-medium mb-2">{event.time}</p>
-                      <div className="text-sm text-gray-600">
-                        {event.propertyDetails.bedrooms && (
-                          <span className="mr-4">{event.propertyDetails.bedrooms} bed</span>
-                        )}
-                        {event.propertyDetails.bathrooms && (
-                          <span className="mr-4">{event.propertyDetails.bathrooms} bath</span>
-                        )}
-                        {event.propertyDetails.parking && (
-                          <span className="mr-4">{event.propertyDetails.parking} car</span>
-                        )}
-                        {event.propertyDetails.price && (
-                          <span className="font-medium">${event.propertyDetails.price}/week</span>
-                        )}
+                      <p className="text-gray-700 font-medium mb-3">{event.time}</p>
+                      
+                      {/* Property Details - ALWAYS SHOW */}
+                      <div className="text-sm text-gray-600 mb-2">
+                        <span className="mr-4">
+                          {event.propertyDetails.bedrooms && event.propertyDetails.bedrooms !== "N/A" 
+                            ? `${event.propertyDetails.bedrooms} bed` 
+                            : "- bed"}
+                        </span>
+                        <span className="mr-4">
+                          {event.propertyDetails.bathrooms && event.propertyDetails.bathrooms !== "N/A" 
+                            ? `${event.propertyDetails.bathrooms} bath` 
+                            : "- bath"}
+                        </span>
+                        <span className="mr-4">
+                          {event.propertyDetails.parking && event.propertyDetails.parking !== "N/A" 
+                            ? `${event.propertyDetails.parking} car` 
+                            : "- car"}
+                        </span>
+                        <span className="font-medium">
+                          {event.propertyDetails.price 
+                            ? `${event.propertyDetails.price}/week` 
+                            : "$-/week"}
+                        </span>
                       </div>
+                      
+                      {/* Additional Property Info */}
+                      {event.fullPropertyData && (
+                        <div className="mt-2 text-xs text-gray-500">
+                          {event.fullPropertyData.details.furnished === "Yes" && (
+                            <span className="mr-3">🛋️ Furnished</span>
+                          )}
+                          {event.fullPropertyData.Pets === "True" && (
+                            <span className="mr-3">🐕 Pets OK</span>
+                          )}
+                          {event.fullPropertyData.AvailableDate && (
+                            <span>Property Available: {new Date(event.fullPropertyData.AvailableDate).toLocaleDateString()}</span>
+                          )}
+                        </div>
+                      )}
                     </div>
                     
                     <div className="bg-white rounded-lg m-4 p-6 w-64">
                       <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
                       <p className="text-sm text-gray-500 mb-2">
-                        {event.availabilityType} Available
+                        Inspection Available
                       </p>
-                      <div className="text-sm text-green-600 font-medium">
+                      <div className="text-sm text-green-600 font-medium mb-2">
                         ✓ Inspection Confirmed
                       </div>
+                      
                       {event.bookingDate && (
                         <p className="text-xs text-gray-400 mt-2">
                           Booked on {new Date(event.bookingDate).toLocaleDateString()}
