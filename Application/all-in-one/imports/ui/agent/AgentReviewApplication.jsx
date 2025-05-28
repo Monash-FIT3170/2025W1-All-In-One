@@ -127,7 +127,7 @@ export default function ReviewApplication() {
                                 <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden ">
                                     {/* Property Image as Background */}
                                     <img
-                                        src="/images/property.png"
+                                        src="/images/properties/P006/P006_1.jpg"
                                         alt="Property"
                                         className="absolute inset-0 w-full h-full object-cover"
                                     />

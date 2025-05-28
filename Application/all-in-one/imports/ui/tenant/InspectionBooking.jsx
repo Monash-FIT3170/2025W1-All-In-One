@@ -30,6 +30,7 @@ export const InspectionBooking = () => {
     // find property, photos and videos corresponding to the property ID passed.
     if (isReady) {
       property = Properties.findOne({ prop_id: id });
+      console.log("Property found:", property);
       photos = Photos.find({ prop_id: id }, { sort: { photo_order: 1 } }).fetch();
       videos = Videos.find({ prop_id: id }).fetch();
     }
