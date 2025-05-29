@@ -1,0 +1,27 @@
+version: '3.8'
+
+services:
+  meteor-app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - METEOR_ALLOW_SUPERUSER=true
+      - ROOT_URL=http://localhost:3000
+      - MONGO_URL=mongodb://mongo:27017/meteor
+    depends_on:
+      - mongo
+    volumes:
+      - .:/usr/src/app
+    command: ["meteor", "run", "--allow-superuser"]
+
+  mongo:
+    image: mongo:6.0
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - meteor_mongo_data:/data/db
+
+volumes:
+  meteor_mongo_data: 
