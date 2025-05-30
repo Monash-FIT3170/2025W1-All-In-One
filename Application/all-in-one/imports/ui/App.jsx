@@ -120,7 +120,7 @@ const App = () => (
         <Route element={<ProtectedLandlordRoutes />}>
           {/* Signed In Landlord Page*/}
           <Route path="/LandlordBasicPropListings" element={<LandlordBasicPropListings/>}/>
-                    <Route path="/applications" element={<ReviewApplication />} />
+                    <Route path="/LandlordDetailedPropListing" element={<LandlordDetailedPropListing />} />
 
           
 
@@ -128,7 +128,7 @@ const App = () => (
           {/*Landlord routes- team 2*/}
                   
                   <Route path="/LandlordDetailedProp/:id" element={<LandlordDetailedProp/>}/>
-                  <Route path="/LandlordDetailedPropListing/:id" element={<LandlordDetailedPropListing/>}/>
+                  <Route path="/LandlordDetailedPropListing" element={<LandlordDetailedPropListing/>}/>
                   <Route path="/LandlordProperties" element={<LandlordProperties/>}/>
                   
         

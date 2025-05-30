@@ -24,7 +24,7 @@ function Navbar() {
       {/*Nav bar options*/}
       <div className="flex items-center gap-4">
         {/*TODO: Add route to Landlord applications*/}
-        <NavButton to="/applications">Applications</NavButton>
+        <NavButton to="/LandlordDetailedPropListing">Applications</NavButton>
 
         {/*Route to properties connected to landloard*/}
         <NavButton to="/LandlordProperties">Properties</NavButton>
