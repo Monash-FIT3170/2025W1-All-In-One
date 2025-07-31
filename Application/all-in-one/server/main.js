@@ -16,7 +16,6 @@ import {
 import { mockData } from '/imports/api/database/mockData';
 import '/imports/api/methods/account.js';
 import '/imports/api/agent/rentalApplications/methods'
-import { LinksCollection } from '/imports/api/links';
 import '/imports/api/AgentAvailabilities';
 import '/imports/api/TenantBookings.js';
 
