@@ -25,7 +25,7 @@ const AgentDashboard = () => {
     return {
       ...tenant,
       property: {
-        image: '/images/properties/' + property.prop_id + '/main.jpg',
+        image: `/images/properties/${property.prop_id}/main.jpg`,
         address: property.prop_address,
         price: property.prop_pricepweek,
         bedrooms: property.prop_numbeds,
