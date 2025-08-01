@@ -45,9 +45,20 @@ function Identity({ propId, tenId }) {
 
     Meteor.call('identities.insert', identityDoc, (err) => {
       if (err) {
-        setStatusMessage(`Error adding identity document: ${err.message}`);
+        setStatusMessage(`Error saving identity document: ${err.message}`);
       } else {
-        setStatusMessage('Identity document added successfully.');
+        setStatusMessage(editingIdentity
+          ? 'Identity document updated successfully.'
+          : 'Identity document added successfully.');
+
+        // If editing, delete the old identity
+        if (editingIdentity?.identity_id) {
+          Meteor.call('identities.remove', editingIdentity.identity_id, (removeErr) => {
+            if (removeErr) {
+              console.warn('Failed to remove old identity during edit:', removeErr.message);
+            }
+          });
+        }
       }
     });
 
