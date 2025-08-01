@@ -120,6 +120,7 @@ Identities.schema = new SimpleSchema({
   identity_id: { type: String },
   rental_app_id: { type: String },
   identity_type: { type: String },
+  identity_public_id: { type: String , optional: true },
   identity_desc: { type: String, optional: true },
   identity_scan: { type: String, optional: true },
 });

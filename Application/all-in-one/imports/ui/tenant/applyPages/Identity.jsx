@@ -40,6 +40,7 @@ function Identity({ propId, tenId }) {
       identity_type: newIdentity.type,
       identity_scan: newIdentity.scan || '',
       identity_desc: newIdentity.description || '',
+      identity_public_id: newIdentity.public_id || '',
     };
 
     Meteor.call('identities.insert', identityDoc, (err) => {

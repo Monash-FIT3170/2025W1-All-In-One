@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 function IdentityModal({ open, onClose, onSave, initialData }) {
   const [type, setType] = useState('');
   const [scan, setScan] = useState('');
+  const [public_id, setPublicId] = useState('');
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
 
@@ -11,10 +12,12 @@ function IdentityModal({ open, onClose, onSave, initialData }) {
       setType(initialData.type || '');
       setScan(initialData.scan || '');
       setDescription(initialData.description || '');
+      setPublicId(initialData.public_id || '');
     } else {
       setType('');
       setScan('');
       setDescription('');
+      setPublicId('');
     }
   }, [initialData]);
 
@@ -46,6 +49,9 @@ function IdentityModal({ open, onClose, onSave, initialData }) {
       const data = await res.json();
       if (data.secure_url) {
         setScan(data.secure_url);
+        console.log(data.public_id+ " 1 ")
+        setPublicId(data.public_id);
+
       } else {
         alert('Upload failed: no URL returned.');
       }
@@ -62,8 +68,8 @@ function IdentityModal({ open, onClose, onSave, initialData }) {
       alert('Please provide a document type and upload a file.');
       return;
     }
-
-    onSave({ type, scan, description });
+    console.log(public_id);
+    onSave({ type, scan, description, public_id });
     onClose();
   };
 

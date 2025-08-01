@@ -85,6 +85,7 @@ Meteor.methods({
       identity_id: String,
       rental_app_id: String,
       identity_type: String,
+      identity_public_id: Match.Optional(String),
       identity_scan: Match.Optional(String),
       identity_desc: Match.Optional(String),
     });
@@ -96,8 +97,31 @@ Meteor.methods({
   async 'identities.remove'(identityId) {
     check(identityId, String);
     console.log(`[METHOD] identities.remove called for identity_id: ${identityId}`);
-    return await Identities.removeAsync({ identity_id: identityId });
+
+    const identity = await Identities.findOneAsync({ identity_id: identityId });
+    console.log('Fetched identity:', identity);
+
+    if (!identity) {
+      throw new Meteor.Error('not-found', 'Identity not found');
+    }
+
+    // Remove from Cloudinary
+    if (identity.identity_public_id) {
+      try {
+        const result = await cloudinary.uploader.destroy(identity.identity_public_id);
+        console.log(`Cloudinary asset delete result:`, result);
+      } catch (err) {
+        console.error('Error deleting Cloudinary asset:', err);
+      }
+    } else {
+      console.warn('No identity_public_id found on identity document.');
+    }
+
+    // Remove from Mongo (based on internal _id)
+    return await Identities.removeAsync({ _id: identity._id });
   },
+
+  
 
   // Tenants
   async 'tenants.update'(tenId, updateData) {
