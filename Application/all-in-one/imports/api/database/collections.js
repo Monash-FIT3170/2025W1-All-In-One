@@ -120,7 +120,8 @@ Identities.schema = new SimpleSchema({
   identity_id: { type: String },
   rental_app_id: { type: String },
   identity_type: { type: String },
-  identity_scan: { type: String },
+  identity_desc: { type: String, optional: true },
+  identity_scan: { type: String, optional: true },
 });
 
 export const Households = new Mongo.Collection('households');

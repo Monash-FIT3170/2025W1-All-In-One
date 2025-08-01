@@ -286,18 +286,6 @@ export const mockData = {
   ],
 
   identities: [
-    {
-      identity_id: 'ID001',
-      rental_app_id: 'RA001',
-      identity_type: 'Passport',
-      identity_scan: '/documents/identity/T001/passport.pdf'
-    },
-    {
-      identity_id: 'ID002',
-      rental_app_id: 'RA002',
-      identity_type: 'Driver License',
-      identity_scan: '/documents/identity/T002/license.pdf'
-    }
   ],
 
   households: [

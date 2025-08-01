@@ -85,7 +85,8 @@ Meteor.methods({
       identity_id: String,
       rental_app_id: String,
       identity_type: String,
-      identity_scan: String,
+      identity_scan: Match.Optional(String),
+      identity_desc: Match.Optional(String),
     });
 
     console.log('[METHOD] identities.insert called with:', identityDoc);
