@@ -112,7 +112,8 @@ Incomes.schema = new SimpleSchema({
   rental_app_id: { type: String },
   inc_type: { type: String },
   inc_amt: { type: Number },
-  inc_supporting_doc: { type: String },
+  inc_supporting_doc: { type: String , optional: true },
+  inc_public_id: { type: String , optional: true },
 });
 
 export const Identities = new Mongo.Collection('identities');

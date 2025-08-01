@@ -17,6 +17,7 @@
     "@fullcalendar/timegrid": "^6.1.17",
     "@heroicons/react": "^2.2.0",
     "clone": "^2.1.2",
+    "cloudinary": "^2.7.0",
     "dayjs": "^1.11.13",
     "lucide-react": "^0.510.0",
     "meteor-node-stubs": "^1.2.5",

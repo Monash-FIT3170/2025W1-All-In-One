@@ -4,6 +4,8 @@ function IncomeModal({ open, onClose, onSave, income }) {
   const [type, setType] = useState('');
   const [amount, setAmount] = useState('');
   const [documents, setDocuments] = useState('');
+  const [public_id, setPublicId] = useState('');
+  const [uploading, setUploading] = useState(false);
 
   // When the modal opens or income changes, prefill the form if editing
   useEffect(() => {
@@ -11,23 +13,68 @@ function IncomeModal({ open, onClose, onSave, income }) {
       setType(income.type || '');
       setAmount(income.amount || '');
       setDocuments(income.documents || '');
+      setPublicId(income.public_id || '');
     } else {
       // Reset when no income (adding new)
       setType('');
       setAmount('');
       setDocuments('');
+      setPublicId('');
     }
   }, [income, open]);
+
+  const handleFileUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    setUploading(true);
+
+    const fileType = file.type;
+    let resourceType = 'image';
+
+    if (fileType.startsWith('video/')) {
+      resourceType = 'video';
+    } else if (fileType === 'application/pdf' || fileType.startsWith('application/')) {
+      resourceType = 'raw';
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', 'All in one');
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/dcceytydt/${resourceType}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.secure_url) {
+        setDocuments(data.secure_url);
+        console.log(data.public_id + " 1 ");
+        setPublicId(data.public_id);
+      } else {
+        alert('Upload failed: no URL returned.');
+      }
+    } catch (err) {
+      console.error('Cloudinary upload error:', err);
+      alert('Upload failed, please try again.');
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleSave = () => {
     if (!type || !amount) {
       return alert("Please fill in the required fields.");
     }
 
+    console.log(public_id);
     onSave({
       type,
       amount,
       documents,
+      public_id,
     });
 
     // No need to reset here because useEffect handles it on modal close/open
@@ -82,16 +129,29 @@ function IncomeModal({ open, onClose, onSave, income }) {
           />
         </div>
 
-        {/* Supporting Documents */}
+        {/* Upload Supporting Documents */}
         <div className="mb-4">
-          <label className="block font-semibold mb-1">Supporting Documents</label>
+          <label className="block font-semibold mb-1">Upload Supporting Documents</label>
           <input
-            type="text"
-            value={documents}
-            onChange={(e) => setDocuments(e.target.value)}
-            placeholder="Add Source"
-            className="w-full border rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-yellow-300 text-sm"
+            type="file"
+            accept="image/*,.pdf,video/*"
+            onChange={handleFileUpload}
+            className="w-full text-sm"
           />
+          {uploading && <p className="text-sm text-gray-600 mt-1">Uploading...</p>}
+          {documents && (
+            <div className="mt-2 space-y-1">
+              <p className="text-sm text-green-700">Uploaded successfully!</p>
+              <a
+                href={documents}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-600 underline text-sm"
+              >
+                View Uploaded Document
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Save Button */}
@@ -99,8 +159,9 @@ function IncomeModal({ open, onClose, onSave, income }) {
           <button
             onClick={handleSave}
             className="bg-black text-white px-6 py-2 rounded-full text-sm hover:bg-gray-800"
+            disabled={uploading}
           >
-            Save Income Source
+            {uploading ? 'Uploading...' : income ? 'Update Income Source' : 'Save Income Source'}
           </button>
         </div>
 

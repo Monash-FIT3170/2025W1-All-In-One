@@ -52,7 +52,8 @@ Meteor.methods({
       rental_app_id: String,
       inc_type: String,
       inc_amt: Number,
-      inc_supporting_doc: String,
+      inc_supporting_doc: Match.Optional(String), // Changed to optional
+      inc_public_id: Match.Optional(String),      // Added this field
     });
 
     console.log('[METHOD] incomes.insert called with:', incomeData);
@@ -63,7 +64,7 @@ Meteor.methods({
     check(incId, String);
     check(updateData, Object);
 
-    const allowedFields = ['inc_type', 'inc_amt', 'inc_supporting_doc'];
+    const allowedFields = ['inc_type', 'inc_amt', 'inc_supporting_doc', 'inc_public_id']; // Added inc_public_id
 
     const sanitizedUpdate = Object.fromEntries(
       Object.entries(updateData).filter(([key]) => allowedFields.includes(key))
@@ -73,7 +74,7 @@ Meteor.methods({
     return await Incomes.updateAsync({ inc_id: incId }, { $set: sanitizedUpdate });
   },
 
-  async 'incomes.remove'(incId) {
+   async 'incomes.remove'(incId) {
     check(incId, String);
     console.log(`[METHOD] incomes.remove called for inc_id: ${incId}`);
     return await Incomes.removeAsync({ inc_id: incId });
