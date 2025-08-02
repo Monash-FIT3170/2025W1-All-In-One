@@ -4,7 +4,6 @@ import { Incomes, RentalApplications } from '/imports/api/database/collections';
 import IncomeModal from '../components/IncomeModal';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
-import { uploadToCloudinary } from '/imports/utils/cloudinaryUtils';
 
 function Income({ propId, tenId }) {
   const [openModal, setOpenModal] = useState(false);
