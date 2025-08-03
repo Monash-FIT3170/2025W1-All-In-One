@@ -4,7 +4,6 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './globalComponents/LoginPage.jsx';
 import { HomePage } from './globalComponents/HomePage.jsx'; 
 import { SignUpPage } from './globalComponents/SignUpPage.jsx';
-import { Dashboard } from './agent/Dashboard.jsx';
 
 
 import ProtectedAgentRoutes from './utils/ProtectedAgentRoutes.jsx'; 

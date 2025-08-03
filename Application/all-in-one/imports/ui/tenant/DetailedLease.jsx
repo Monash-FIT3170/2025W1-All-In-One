@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
 import {Link, useParams} from "react-router-dom";
 import Navbar from "./components/TenNavbar";
@@ -6,7 +6,8 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections";
+import {AddTicketDialog} from "./AddTicketDialog";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a particular property leased by a Tenant (accessed through BasicLeases) //
@@ -14,6 +15,26 @@ import { Properties, Photos, Videos, RentalApplications } from "../../api/databa
 
 export default function DetailedLease() {
   const { id } = useParams();
+  const [showAddTicketDialog, setShowAddTicketDialog] = useState(false);
+  const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
+  const [showGeneralDialog, setShowGeneralDialog] = useState(false);
+
+  const closeDialogs = () => {
+    setShowAddTicketDialog(false);
+    setShowMaintenanceDialog(false);
+    setShowGeneralDialog(false);
+  };
+
+  const handleTicketSelect = (ticketType) => {
+    if (ticketType === 'Maintenance') {
+      setShowMaintenanceDialog(true);
+      setShowAddTicketDialog(false);
+    }
+    else {
+      setShowGeneralDialog(true);
+      setShowAddTicketDialog(false);
+    }
+  };
 
   const { loading, property }= useTracker(()=>{
     const propertyHandle= Meteor.subscribe("properties");
@@ -51,9 +72,6 @@ export default function DetailedLease() {
   prop_id: id, 
   status: "Approved" 
 })?.lease_start_date || null;
-
-
-    
 
     return{
       loading: false,
@@ -110,12 +128,15 @@ export default function DetailedLease() {
         <h2 className="text-4xl mt-8 mb-8 font-bold text-black">Tickets</h2>
       </div>
       <div className="flex justify-center">
-        <Link
-          to={`/AddTicketPopUp`}
-          className="w-1/4 mb-8 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-        >Add Ticket
-        </Link>
+        <button
+          onClick={() => setShowAddTicketDialog(true)}
+          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md mb-8 transition duration-200"
+        >
+          Add Ticket
+        </button>
       </div>
+
+      <AddTicketDialog isOpen={showAddTicketDialog} onSelect={handleTicketSelect} onClose={closeDialogs} />
 
       {/*Footer*/}
       <Footer />
