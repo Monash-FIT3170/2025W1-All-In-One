@@ -7,7 +7,9 @@ import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections";
-import {AddTicketDialog} from "./AddTicketDialog";
+import {AddTicketDialog} from "./ticketPages/AddTicketDialog";
+import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
+import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a particular property leased by a Tenant (accessed through BasicLeases) //
@@ -137,6 +139,16 @@ export default function DetailedLease() {
       </div>
 
       <AddTicketDialog isOpen={showAddTicketDialog} onSelect={handleTicketSelect} onClose={closeDialogs} />
+      <MaintenanceTicketDialog 
+        isOpen={showMaintenanceDialog} 
+        onClose={closeDialogs} 
+        propertyAddress={property?.address} 
+      />
+      <GeneralTicketDialog 
+        isOpen={showGeneralDialog} 
+        onClose={closeDialogs} 
+        propertyAddress={property?.address} 
+      />
 
       {/*Footer*/}
       <Footer />
