@@ -38,17 +38,16 @@ function SamplePrevArrow(props) {
 }
 
 export default function PropertyDetailsCard({ property }) {
-  // image disaplayed if there are no images
+  // image displayed if there are no images
   const defaultImage = "/images/default.jpg";
-
+  console.log(property);
   const [activeMediaType, setActiveMediaType] = useState("images");
-
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   if (!property) {
     return <div className="text-lg text-red-600">Property Not Found!</div>;
   }
-
+  console.log("test1",property);
   const openModal = () => {
     // If there are videos, default to showing images first
     setActiveMediaType("images");
@@ -56,11 +55,37 @@ export default function PropertyDetailsCard({ property }) {
   };
   const closeModal = () => setIsModalOpen(false);
 
-  // Combine all media for carousel (images first, then videos)
-  const allMedia = [
-    ...(property.imageUrls?.map((url) => ({ type: "image", url })) || []),
-    ...(property.videoUrls?.map((url) => ({ type: "video", url })) || [])
-  ];
+  // Transform photo array to media format, filtering out PDFs for display
+  // Handle both new photo structure and legacy imageUrls structure
+  let photoArray = [];
+  
+  if (property.photo && property.photo.length > 0) {
+    // New structure: array of objects with url, name, isPDF
+    photoArray = property.photo;
+  } else if (property.imageUrls && property.imageUrls.length > 0) {
+    // Legacy structure: array of URL strings
+    photoArray = property.imageUrls.map((url, index) => ({
+      url: url,
+      name: `Property Image ${index + 1}`,
+      isPDF: false
+    }));
+  }
+  
+  const allMedia = photoArray
+    .filter(file => !file.isPDF) // Only show images and videos in carousel
+    .map((file) => ({
+      type: "image", // Assuming non-PDF files are images, could add video detection logic
+      url: file.url,
+      name: file.name
+    }));
+
+  // Debug logging to check the data structure
+  console.log('PhotoArray:', photoArray);
+  console.log('All Media:', allMedia);
+  console.log('First image URL:', photoArray?.[0]?.url);
+
+  // Get PDF files separately if needed
+  const pdfFiles = (property.photo || []).filter(file => file.isPDF);
 
   return (
     <>
@@ -71,28 +96,19 @@ export default function PropertyDetailsCard({ property }) {
             <div className="w-full text-right mb-2">
               <button
                 onClick={closeModal}
-                className="text-gray-600 hover:text-black text-xl"
+                className="text-gray-600 hover:text-white text-xl"
               >
-                x
+                ✕
               </button>
             </div>
             {allMedia.length === 1 ? (
-              allMedia[0].type === "image" ? (
-                <div className="flex justify-center items-center">
-                  <img
-                    src={allMedia[0].url}
-                    alt="Property"
-                    className="max-h-[70vh] max-w-full object-contain"
-                  />
-                </div>
-              ) : (
-                <div className="flex justify-center items-center">
-                  <video controls className="max-h-[70vh] max-w-full">
-                    <source src={allMedia[0].url} type="video/mp4" />
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              )
+              <div className="flex justify-center items-center">
+                <img
+                  src={allMedia[0].url}
+                  alt={allMedia[0].name || "Property"}
+                  className="max-h-[70vh] max-w-full object-contain"
+                />
+              </div>
             ) : (
               <Slider
                 dots={true}
@@ -106,18 +122,11 @@ export default function PropertyDetailsCard({ property }) {
               >
                 {allMedia.map((media, index) => (
                   <div key={index} className="flex justify-center items-center">
-                    {media.type === "image" ? (
-                      <img
-                        src={media.url}
-                        alt={`Property ${index}`}
-                        className="max-h-[70vh] max-w-full object-contain"
-                      />
-                    ) : (
-                      <video controls className="max-h-[70vh] max-w-full">
-                        <source src={media.url} type="video/mp4" />
-                        Your browser does not support the video tag.
-                      </video>
-                    )}
+                    <img
+                      src={media.url}
+                      alt={media.name || `Property ${index}`}
+                      className="max-h-[70vh] max-w-full object-contain"
+                    />
                   </div>
                 ))}
               </Slider>
@@ -126,128 +135,145 @@ export default function PropertyDetailsCard({ property }) {
         </div>
       )}
 
-
       {/*Actual content*/}
       <div className="flex flex-col lg:flex-row p-4 gap-10 pt-16">
         {/*Images*/}
         <div className="w-full lg:w-1/2">
+
           <div className="flex flex-col sm:flex-row gap-2">
             <div className="w-full sm:w-2/3 h-96 overflow-hidden rounded-lg relative">
               <img
-                src={property.imageUrls[0] || defaultImage}
-                alt="Property Image"
+                src={photoArray?.[0]?.url || defaultImage}
+                alt={photoArray?.[0]?.name || "Property Image"}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  console.error('Failed to load image:', photoArray?.[0]?.url);
+                  e.target.src = defaultImage;
+                }}
+                onLoad={() => {
+                  console.log('Image loaded successfully:', photoArray?.[0]?.url);
+                }}
               />
               {/* View all media button */}
-              {(property.imageUrls?.length > 1 ||
-                property.videoUrls?.length > 0) && (
+              {allMedia.length > 1 && (
                 <button
                   onClick={openModal}
                   className="absolute bottom-4 right-4 bg-white text-gray-800 px-3 py-1.5 rounded-md shadow-md hover:bg-gray-100 text-sm font-medium"
                 >
-                  View All Media
+                  View All Media ({allMedia.length})
                 </button>
               )}
             </div>
 
-            {/*Thre three images on the thumbnail*/}
+            {/*Three images on the thumbnail*/}
             <div className="hidden sm:flex flex-col gap-2 w-1/3 h-96">
               {[...Array(3)].map((_, index) => {
-                const imageUrl = property.imageUrls[index + 1] || defaultImage;
+                const photo = photoArray?.[index + 1];
+                const imageUrl = photo?.url || defaultImage;
+                const altText = photo?.name || "Property image";
+                
                 return (
                   <div
                     key={index}
                     className="flex-1 overflow-hidden rounded-lg"
                   >
                     <img
-                      key={index}
                       src={imageUrl}
-                      alt={"Property image"}
+                      alt={altText}
                       className="w-full h-full object-cover"
+                      onError={(e) => {
+                        console.error(`Failed to load thumbnail ${index + 1}:`, imageUrl);
+                        e.target.src = defaultImage;
+                      }}
                     />
                   </div>
                 );
               })}
             </div>
           </div>
+          
+          {/* PDF Files Section (if any) */}
+          {photoArray.filter(file => file.isPDF).length > 0 && (
+            <div className="mt-4">
+              <h3 className="text-lg font-medium text-gray-800 mb-2">Documents</h3>
+              <div className="space-y-2">
+                {photoArray.filter(file => file.isPDF).map((pdf, index) => (
+                  <a
+                    key={index}
+                    href={pdf.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 p-2 border rounded-lg hover:bg-gray-50"
+                  >
+                    <span>📄</span>
+                    <span className="text-blue-600 hover:underline">
+                      {pdf.name}
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right hand side- property infor*/}
+        {/* Right hand side - property info */}
         <div className="w-full lg:w-1/2 p-2 space-y-3">
           <div className="text-2xl md:text-3xl font-semibold text-gray-800">
-            ${property.price}{" "}
+            ${property.prop_pricepweek || property.price}{" "}
             <span className="text-lg font-medium">per Week </span>
           </div>
-          <div className="text-3xl text-gray-800">{property.address}</div>
+          <div className="text-3xl text-gray-800">{property.prop_address || property.address}</div>
           <div className="text-1xl text-gray-600">
             Property Type:{" "}
-            <span className="text-gray-700">{property.type}</span>
+            <span className="text-gray-700">{property.prop_type || property.type}</span>
           </div>
+          
+          {/*Display lease start date if its given through the input
+          currently it'll give a lease start date if there are tenants approved
+          if not it will show available date*/}
           <div className="text-1xl text-gray-600">
-            {/*Code used to disaply lease start date based on the status of the property: next milestone*/}
-            {/*
-                  {property.status==='Leased'?(
-                    <>
-                    Leased On: {' '}
-                    <span className="text-gray-700">
-                    {property.leaseStartDate
-                      ? new Date(property.leaseStartDate).toLocaleDateString()
-                      :'N/A'}
-                      </span>
-                      </>
-                  ):(
-                    <>
-                    Available From:  
-                    <span className="text-gray-700">{new Date(property.AvailableDate).toLocaleDateString()}
-                    </span>
-                    </>
-                  )}
-                    */}
-
-            {/*Display lease start date if its given through the input
-            surrenty itll give a lease start date if there are tenants approved
-            if  not it will show vailable date*/}
-            <div className="text-1xl text-gray-600">
-              {property.leaseStartDate ? (
-                <>
-                  Lease Start Date:{" "}
-                  <span className="text-gray-700">
-                    {new Date(property.leaseStartDate).toLocaleDateString()}
-                  </span>
-                </>
-              ) : (
-                <>
-                  Available From:{" "}
-                  <span className="text-gray-700">
-                    {property.AvailableDate
-                      ? new Date(property.AvailableDate).toLocaleDateString()
-                      : "N/A"}
-                  </span>
-                </>
-              )}
-            </div>
+            {property.leaseStartDate ? (
+              <>
+                Lease Start Date:{" "}
+                <span className="text-gray-700">
+                  {new Date(property.leaseStartDate).toLocaleDateString()}
+                </span>
+              </>
+            ) : (
+              <>
+                Available From:{" "}
+                <span className="text-gray-700">
+                  {property.prop_available_date?.$date
+                    ? new Date(property.prop_available_date.$date).toLocaleDateString()
+                    : property.AvailableDate
+                    ? new Date(property.AvailableDate).toLocaleDateString()
+                    : "N/A"}
+                </span>
+              </>
+            )}
           </div>
+          
           <div className="text-1xl text-gray-600">
-            Pets Allowed: <span className="text-gray-700">{property.Pets}</span>
+            Pets Allowed: <span className="text-gray-700">{property.prop_pets ? 'Yes' : 'No'}</span>
           </div>
 
           {/*Icons and data associated*/}
           <div className="grid grid-cols-2 gap-4 pt-4 text-gray-700">
             <div className="flex items-center gap-2">
               <FaBath className="text-gray-600 text-lg" />
-              <span className="text-xl">{property.details.baths}</span>
+              <span className="text-xl">{property.prop_numbaths || property.details?.baths}</span>
             </div>
             <div className="flex items-center gap-2">
               <FaBed className="text-gray-600 text-lg" />
-              <span className="text-xl">{property.details.beds}</span>
+              <span className="text-xl">{property.prop_numbeds || property.details?.beds}</span>
             </div>
             <div className="flex items-center gap-2">
               <FaCar className="text-gray-600 text-lg" />
-              <span className="text-xl">{property.details.carSpots}</span>
+              <span className="text-xl">{property.prop_numcarspots || property.details?.carSpots}</span>
             </div>
             <div className="flex items-center gap-2">
               <FaCouch className="text-gray-600 text-lg" />
-              <span className="text-xl">{property.details.furnished}</span>
+              <span className="text-xl">{property.prop_furnish ? 'Furnished' : 'Unfurnished'}</span>
             </div>
           </div>
         </div>

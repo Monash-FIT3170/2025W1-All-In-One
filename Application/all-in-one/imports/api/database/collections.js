@@ -18,6 +18,11 @@ Properties.schema = new SimpleSchema({
   prop_status: { type: String },
   agent_id: { type: String },
   landlord_id: { type: String },
+  photo: { type: Array, optional: true },
+  "photo.$": { type: String },
+
+  video: { type: Array, optional: true },
+  "video.$": { type: String },
 });
 
 export const Photos = new Mongo.Collection('photos');
