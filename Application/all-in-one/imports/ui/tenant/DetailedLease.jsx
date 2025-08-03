@@ -1,6 +1,6 @@
 import React from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
-import { useParams } from "react-router-dom";
+import {Link, useParams} from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
@@ -100,12 +100,21 @@ export default function DetailedLease() {
 
       {/*Description and buttons*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
-        <div className="p-6 flex space-x-4 mt-4">
-          {/*Add future ticket button*/}
-        </div>
         <p className="font-semibold text-lg text-[#434343]">
           {property.description}
         </p>
+      </div>
+
+      {/*Tickets section*/}
+      <div className="max-w-7xl mx-auto w-full px-6 mt-8 pt-4 border-t border-gray-300">
+        <h2 className="text-4xl mt-8 mb-8 font-bold text-black">Tickets</h2>
+      </div>
+      <div className="flex justify-center">
+        <Link
+          to={`/AddTicketPopUp`}
+          className="w-1/4 mb-8 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+        >Add Ticket
+        </Link>
       </div>
 
       {/*Footer*/}
