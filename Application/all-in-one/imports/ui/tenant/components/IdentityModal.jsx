@@ -6,6 +6,8 @@ function IdentityModal({ open, onClose, onSave, initialData }) {
   const [public_id, setPublicId] = useState('');
   const [description, setDescription] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [imageUrl, setImageUrl] = useState('');
+  const [uploadSuccess, setUploadSuccess] = useState(false);
 
   useEffect(() => {
     if (initialData) {
@@ -21,48 +23,40 @@ function IdentityModal({ open, onClose, onSave, initialData }) {
     }
   }, [initialData]);
 
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
+  const cloudName = 'dcceytydt'; // Replace with your Cloudinary cloud name
+  const uploadPreset = 'q3as54rftg7'; // Replace with your unsigned preset name
+
+  const handleUpload = async (event) => {
+    const file = event.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
-
-    const fileType = file.type;
-    let resourceType = 'image';
-
-    if (fileType.startsWith('video/')) {
-      resourceType = 'video';
-    } else if (fileType === 'application/pdf' || fileType.startsWith('application/')) {
-      resourceType = 'raw';
-    }
-
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', 'All in one');
+    formData.append('upload_preset', uploadPreset);
 
     try {
-      const res = await fetch(`https://api.cloudinary.com/v1_1/dcceytydt/${resourceType}/upload`, {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/upload`, {
         method: 'POST',
         body: formData,
       });
 
       const data = await res.json();
       if (data.secure_url) {
-        setScan(data.secure_url);
-        console.log(data.public_id+ " 1 ")
-        setPublicId(data.public_id);
-
+        setImageUrl(data.secure_url);
+        console.log('Uploaded Image URL:', data.secure_url);
       } else {
-        alert('Upload failed: no URL returned.');
+        console.error('Upload error:', data);
       }
+      setScan(data.secure_url);
+      setPublicId(data.public_id);
     } catch (err) {
-      console.error('Cloudinary upload error:', err);
-      alert('Upload failed, please try again.');
+      console.error('Upload failed:', err);
     } finally {
       setUploading(false);
     }
-  };
 
+  };
   const handleSave = () => {
     if (!type || !scan) {
       alert('Please provide a document type and upload a file.');
@@ -71,6 +65,14 @@ function IdentityModal({ open, onClose, onSave, initialData }) {
     console.log(public_id);
     onSave({ type, scan, description, public_id });
     onClose();
+
+    // Clear fields after save
+    setType('');
+    setDescription('');
+    setScan('');
+    setPublicId('');
+    setImageUrl('');
+    setUploadSuccess(false);
   };
 
   if (!open) return null;
@@ -115,30 +117,40 @@ function IdentityModal({ open, onClose, onSave, initialData }) {
         </div>
 
         {/* Upload Field */}
-        <div className="mb-4">
-          <label className="block font-semibold mb-1">Upload Document</label>
-          <input
-            type="file"
-            accept="image/*,.pdf,video/*"
-            onChange={handleFileUpload}
-            className="w-full text-sm"
-          />
-          {uploading && <p className="text-sm text-gray-600 mt-1">Uploading...</p>}
-          {scan && (
-            <div className="mt-2 space-y-1">
-              <p className="text-sm text-green-700">Uploaded successfully!</p>
-              <a
-                href={scan}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-600 underline text-sm"
-              >
-                View Uploaded Document
-              </a>
-            </div>
-          )}
-        </div>
 
+        <div className="p-6">
+            <label
+              htmlFor="dropzone-file"
+              className="cursor-pointer inline-flex items-center gap-2 px-6 py-2 rounded-full bg-[#9747FF] text-white font-semibold hover:bg-violet-900 transition"
+            >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="h-5 w-5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"
+              />
+            </svg>
+            Upload Image
+          </label>
+          <input
+            id="dropzone-file"
+            type="file"
+            className="hidden"
+            accept="image/*"
+            onChange={handleUpload}
+          />
+
+          {uploading && <p className="mt-4 text-yellow-600">Uploading...</p>}
+
+        </div>
+        {imageUrl && <p className="mt-4 text-green-600">Upload complete!</p>}
         {/* Save Button */}
         <div className="flex justify-end">
           <button
