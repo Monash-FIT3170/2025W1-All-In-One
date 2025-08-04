@@ -141,3 +141,40 @@ Agents.schema = new SimpleSchema({
   agent_password: { type: String },
 });
 
+export const Tickets = new Mongo.Collection('tickets');
+Tickets.schema = new SimpleSchema({
+  ticket_id: {
+    type: String,
+  },
+  ticket_no: {
+    type: SimpleSchema.Integer,
+  },
+  prop_id: {
+    type: String, // Links to the property the ticket is for
+  },
+  ten_id: {
+    type: String, // ID of the tenant who created this ticket
+  },
+  agent_id: {
+    type: String,
+  },
+  title: {
+    type: String,
+  },
+  description: {
+    type: String, // Detailed description of the issue
+  },
+  type: {
+    type: String,
+    allowedValues: ['Maintenance', 'General'], // Type of ticket
+  },
+  issueStartDate: {
+    type: Date,
+    optional: true, // When the issue began, primarily for maintenance tickets
+  },
+  createdAt: {
+    type: Date, // Timestamp when the ticket was created
+  },
+});
+
+
