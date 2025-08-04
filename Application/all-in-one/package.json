@@ -24,7 +24,8 @@
     "react-router-dom": "^6.30.0",
     "react-slick": "^0.30.3",
     "simpl-schema": "^3.4.6",
-    "slick-carousel": "^1.8.1"
+    "slick-carousel": "^1.8.1",
+    "uuid": "^11.1.0"
   },
   "meteor": {
     "mainModule": {
