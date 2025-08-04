@@ -10,6 +10,8 @@ import { Properties, Photos, Videos, RentalApplications } from "../../api/databa
 import {AddTicketDialog} from "./ticketPages/AddTicketDialog";
 import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
 import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
+import { Tickets } from "/imports/api/database/collections";
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a particular property leased by a Tenant (accessed through BasicLeases) //
@@ -20,6 +22,17 @@ export default function DetailedLease() {
   const [showAddTicketDialog, setShowAddTicketDialog] = useState(false);
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
   const [showGeneralDialog, setShowGeneralDialog] = useState(false);
+
+  // Use Meteor's useTracker hook to reactively get tickets for this property
+  const { tickets, isLoading } = useTracker(() => {
+    const handler = Meteor.subscribe('tickets.forProperty', id); // Subscribe to tickets for the current propId
+    const loading = !handler.ready(); // Check if subscription is ready
+    const ticketsData = Tickets.find({ prop_id: id }, { sort: { createdAt: -1 } }).fetch(); // Fetch tickets
+
+    return { tickets: ticketsData, isLoading: loading };
+  }, [id]); // Re-run tracker if propId changes
+
+
 
   const closeDialogs = () => {
     setShowAddTicketDialog(false);
@@ -129,6 +142,20 @@ export default function DetailedLease() {
       <div className="max-w-7xl mx-auto w-full px-6 mt-8 pt-4 border-t border-gray-300">
         <h2 className="text-4xl mt-8 mb-8 font-bold text-black">Tickets</h2>
       </div>
+      {tickets.length === 0 ? (
+        <p>No tickets logged for this property yet.</p>
+      ) : (
+        <ul>
+          {tickets.map((ticket) => (
+            <li key={ticket.ticket_id}>
+              <strong>Ticket No: {ticket.ticket_no}</strong> - {ticket.title} ({ticket.type})
+              <p>Description: {ticket.description}</p>
+              <p>Logged: {ticket.createdAt.toLocaleDateString()}</p>
+            </li>
+          ))}
+        </ul>
+      )}
+
       <div className="flex justify-center">
         <button
           onClick={() => setShowAddTicketDialog(true)}
@@ -142,12 +169,14 @@ export default function DetailedLease() {
       <MaintenanceTicketDialog 
         isOpen={showMaintenanceDialog} 
         onClose={closeDialogs} 
-        propertyAddress={property?.address} 
+        propertyAddress={property?.address}
+        propId={property?.id}
       />
       <GeneralTicketDialog 
         isOpen={showGeneralDialog} 
         onClose={closeDialogs} 
-        propertyAddress={property?.address} 
+        propertyAddress={property?.address}
+        propId={property?.id}
       />
 
       {/*Footer*/}
