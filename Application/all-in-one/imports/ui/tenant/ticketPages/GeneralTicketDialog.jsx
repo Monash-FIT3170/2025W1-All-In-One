@@ -1,14 +1,48 @@
 import React, { useState } from 'react';
 
-export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress }) => {
+export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, onSubmit }) => {
   const [ticketTitle, setTicketTitle] = useState('');
   const [ticketDescription, setTicketDescription] = useState('');
 
   if (!isOpen) return null;
 
   const handleSubmit = () => {
-    //update mongo
+    // Basic validation
+    if (!ticketTitle || !ticketDescription || !propId) {
+      alert('Please fill in all required fields and ensure property ID is available.');
+      return;
+    }
+
+    const tenId = Meteor.userId(); // Get current user's ID as tenant ID
+    const agentId = 'PLACEHOLDER_AGENT_ID'; // Replace with actual agent_id, perhaps fetched dynamically
+
+    const ticketData = {
+      prop_id: propId, // Use the propId passed from DetailedLease
+      ten_id: tenId,
+      agent_id: agentId,
+      title: ticketTitle,
+      description: ticketDescription,
+      type: 'General',
+      // issueStartDate is optional for General tickets, so we don't include it here
+    };
+
+    Meteor.call('tickets.insert', ticketData, (error, result) => {
+      if (error) {
+        console.error('Error inserting general ticket:', error);
+        alert(`Failed to submit ticket: ${error.reason || error.message}`);
+      } else {
+        console.log('General ticket submitted successfully, ID:', result);
+        // Clear form fields
+        setTicketTitle('');
+        setTicketDescription('');
+        onClose(); // Close the dialog
+        if (onSubmit) {
+          onSubmit(); // Trigger the callback provided by the parent (DetailedLease)
+        }
+      }
+    });
   };
+
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
@@ -21,7 +55,7 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress }) => {
           ×
         </button>
 
-        <h2 className="text-3xl font-bold text-black">Ticket Number: 1</h2>
+        <h2 className="text-3xl font-bold text-black">Add Ticket</h2>
 
         {/*Title Input*/}
         <div className="text-left mb-6">
@@ -76,7 +110,8 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress }) => {
         {/*date logged*/}
         <div className="text-left mb-4">
           <label className="text-l font-semibold text-black block mb-1">Date Logged</label>
-          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">replace w/ CURRENT DATE</p>
+          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">{new Date().toDateString()
+          }</p>
         </div>
 
         {/*Submit Button*/}
