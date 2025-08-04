@@ -4,10 +4,10 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e29ea07c-37cf-4939-bd5b-cf8b45323949" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Application/all-in-one/imports/ui/tenant/AddTicketPopUp.jsx" afterDir="false" />
+    <list default="true" id="e29ea07c-37cf-4939-bd5b-cf8b45323949" name="Changes" comment="Add General and Maintenance ticket dialogs. yet to add input details to mongo and query mongo">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Application/all-in-one/imports/ui/tenant/DetailedLease.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/Application/all-in-one/imports/ui/tenant/DetailedLease.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Application/all-in-one/imports/ui/tenant/ticketPages/GeneralTicketDialog.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/Application/all-in-one/imports/ui/tenant/ticketPages/GeneralTicketDialog.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Application/all-in-one/imports/ui/tenant/ticketPages/MaintenanceTicketDialog.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/Application/all-in-one/imports/ui/tenant/ticketPages/MaintenanceTicketDialog.jsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,20 +15,28 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="team-1-Claire" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "clairezhangXD"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;clairezhangXD&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Monash-FIT3170/2025W1-All-In-One.git",
-    "accountId": "afc92146-2b6c-45d1-bb7d-f3ddc4284688"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Monash-FIT3170/2025W1-All-In-One.git&quot;,
+    &quot;accountId&quot;: &quot;afc92146-2b6c-45d1-bb7d-f3ddc4284688&quot;
   }
-}]]></component>
+}</component>
+  <component name="PackageJsonUpdateNotifier">
+    <dismissed value="$PROJECT_DIR$/Application/all-in-one/.meteor/local/build/programs/server/package.json" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 1
@@ -44,6 +52,7 @@
     "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager": "true",
     "RunOnceActivity.git.unshallow": "true",
     "git-widget-placeholder": "team-1-Claire",
+    "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
@@ -55,6 +64,11 @@
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\User\Documents\GitHub\2025W1-All-In-One\Application\all-in-one\imports\ui\tenant\ticketPages" />
+    </key>
+  </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
@@ -71,10 +85,25 @@
       <option name="presentableId" value="Default" />
       <updated>1745892947423</updated>
       <workItem from="1754195252324" duration="7684000" />
+      <workItem from="1754276708415" duration="1113000" />
     </task>
+    <task id="LOCAL-00001" summary="Add General and Maintenance ticket dialogs. yet to add input details to mongo and query mongo">
+      <option name="closed" value="true" />
+      <created>1754234779618</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1754234779618</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Add AddTicketDialog with option of maintenance and general" />
+    <MESSAGE value="Add General and Maintenance ticket dialogs. yet to add input details to mongo and query mongo" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add General and Maintenance ticket dialogs. yet to add input details to mongo and query mongo" />
   </component>
 </project>

@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const MaintenanceTicketDialog = ({ isOpen, onSelect, onClose }) => {
+export const MaintenanceTicketDialog = ({ isOpen, onSelect, onClose, propertyAddress }) => {
   if (!isOpen) return null;
 
   const handleSubmit = () => {
@@ -22,7 +22,7 @@ export const MaintenanceTicketDialog = ({ isOpen, onSelect, onClose }) => {
 
         {/*Title Input*/}
         <div className="text-left mb-4">
-          <label className="text-l font-semibold text-black block mb-1">Title</label>
+          <label className="text-l font-semibold text-black block">Title</label>
           <p className="text-sm font-semibold text-gray-600 mb-1">Max 30 characters</p>
           <input
             type="text"
@@ -43,7 +43,7 @@ export const MaintenanceTicketDialog = ({ isOpen, onSelect, onClose }) => {
         {/*Property address*/}
         <div className="text-left mb-4">
           <label className="text-l font-semibold text-black block mb-1">Property</label>
-          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">replace w/ ADDRESS</p>
+          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">{propertyAddress || 'Address not available'}</p>
         </div>
 
         {/*Agent*/}
