@@ -1,4 +1,4 @@
-import React, {use, useState} from 'react';
+import React, {use, useState, useEffect} from 'react';
 
 export const MaintenanceTicketDialog = ({ isOpen, onClose, propertyAddress, propId, onSubmit, agentId }) => {
   if (!isOpen) return null;
@@ -6,20 +6,20 @@ export const MaintenanceTicketDialog = ({ isOpen, onClose, propertyAddress, prop
   const [ticketTitle, setTicketTitle] = useState('');
   const [issueDescription, setIssueDescription] = useState('');
   const [issueStartDate, setIssueStartDate] = useState('');
-  // const [agentName, setAgentName] = useState('');
+  const [agentName, setAgentName] = useState('');
 
-  // // Fetch agent info when dialog opens
-  // useEffect(() => {
-  //   if (agentId) {
-  //     Meteor.call('agents.getById', agentId, (error, result) => {
-  //       if (error) {
-  //         console.error('Error fetching agent info:', error);
-  //       } else if (result) {
-  //         setAgentName(`${result.agent_fname} ${result.agent_lname}`);
-  //       }
-  //     });
-  //   }
-  // }, [agentId, isOpen]);
+  // Fetch agent info when dialog opens
+useEffect(() => {
+  if (agentId) {
+    Meteor.call('agents.getById', agentId, (error, result) => {
+      if (error) {
+        console.error('Error fetching agent info:', error);
+      } else if (result) {
+        setAgentName(`${result.agent_fname} ${result.agent_lname}`);
+      }
+    });
+  }
+}, [agentId, isOpen]);
 
   const handleSubmit = () => {
     // Basic validation
@@ -29,8 +29,7 @@ export const MaintenanceTicketDialog = ({ isOpen, onClose, propertyAddress, prop
     }
 
     const tenId = Meteor.userId(); // Get current user's ID as tenant ID
-    const agentId = 'PLACEHOLDER_AGENT_ID'; // Replace with actual agent_id, perhaps fetched dynamically
-
+  
     const ticketData = {
       prop_id: propId, // Use the propId passed from DetailedLease
       ten_id: tenId,
@@ -59,8 +58,6 @@ export const MaintenanceTicketDialog = ({ isOpen, onClose, propertyAddress, prop
       }
     });
   };
-
-
 
 
   return (
@@ -106,7 +103,7 @@ export const MaintenanceTicketDialog = ({ isOpen, onClose, propertyAddress, prop
         {/*Agent*/}
         <div className="text-left mb-4">
           <label className="text-l font-semibold text-black block mb-1">Agent</label>
-          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"></p>
+          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">{agentName}</p>
         </div>
 
         {/*Issue Input*/}
