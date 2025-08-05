@@ -1,25 +1,65 @@
-import React, {useState} from 'react';
+import React, {use, useState} from 'react';
 
-export const MaintenanceTicketDialog = ({ isOpen, onSelect, onClose, propertyAddress }) => {
+export const MaintenanceTicketDialog = ({ isOpen, onClose, propertyAddress, propId, onSubmit, agentId }) => {
   if (!isOpen) return null;
 
   const [ticketTitle, setTicketTitle] = useState('');
   const [issueDescription, setIssueDescription] = useState('');
   const [issueStartDate, setIssueStartDate] = useState('');
+  // const [agentName, setAgentName] = useState('');
+
+  // // Fetch agent info when dialog opens
+  // useEffect(() => {
+  //   if (agentId) {
+  //     Meteor.call('agents.getById', agentId, (error, result) => {
+  //       if (error) {
+  //         console.error('Error fetching agent info:', error);
+  //       } else if (result) {
+  //         setAgentName(`${result.agent_fname} ${result.agent_lname}`);
+  //       }
+  //     });
+  //   }
+  // }, [agentId, isOpen]);
 
   const handleSubmit = () => {
-    const newTicket = {
+    // Basic validation
+    if (!ticketTitle || !issueDescription || !propId) {
+      alert('Please fill in all required fields');
+      return;
+    }
+
+    const tenId = Meteor.userId(); // Get current user's ID as tenant ID
+    const agentId = 'PLACEHOLDER_AGENT_ID'; // Replace with actual agent_id, perhaps fetched dynamically
+
+    const ticketData = {
+      prop_id: propId, // Use the propId passed from DetailedLease
+      ten_id: tenId,
+      agent_id: agentId,
       title: ticketTitle,
       type: 'Maintenance',
-      propertyAddress: propertyAddress,
-      agent: 'REPLACE_WITH_ACTUAL_AGENT_NAME', // You might want to get this dynamically
-      issueDescription: issueDescription,
-      issueStartDate: issueStartDate,
-      dateLogged: new Date().toDateString()
+      description: issueDescription,
+      issue_start_date: new Date(issueStartDate),
+      date_logged: new Date().toDateString()
     };
-    onSubmit(newTicket); // Call the onSubmit prop with the new ticket data
-    onClose(); // Close the dialog after submission
+
+    Meteor.call('tickets.insert', ticketData, (error, result) => {
+      if (error) {
+        console.error('Error inserting general ticket:', error);
+        alert(`Failed to submit ticket: ${error.reason || error.message}`);
+      } else {
+        console.log('General ticket submitted successfully, ID:', result);
+        // Clear form fields
+        setTicketTitle('');
+        setIssueDescription('');
+        setIssueStartDate('');
+        onClose(); // Close the dialog
+        if (onSubmit) {
+          onSubmit(); // Trigger the callback provided by the parent (DetailedLease)
+        }
+      }
+    });
   };
+
 
 
 
@@ -66,7 +106,7 @@ export const MaintenanceTicketDialog = ({ isOpen, onSelect, onClose, propertyAdd
         {/*Agent*/}
         <div className="text-left mb-4">
           <label className="text-l font-semibold text-black block mb-1">Agent</label>
-          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">Replace w/ AGENT</p>
+          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5"></p>
         </div>
 
         {/*Issue Input*/}
