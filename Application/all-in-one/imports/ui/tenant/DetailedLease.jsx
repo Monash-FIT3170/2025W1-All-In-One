@@ -103,6 +103,7 @@ export default function DetailedLease() {
         imageUrls: sortedUrls.length>0? sortedUrls:["/images/default.jpg"],
         videoUrls: videoUrls.length > 0 ? videoUrls : null, 
         description: selectedProperty.prop_desc,
+        agent_id: selectedProperty.agent_id,
         details:{
           baths: selectedProperty.prop_numbaths,
           beds: selectedProperty.prop_numbeds,
