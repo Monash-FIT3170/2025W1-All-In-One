@@ -168,11 +168,11 @@ Tickets.schema = new SimpleSchema({
     type: String,
     allowedValues: ['Maintenance', 'General'], // Type of ticket
   },
-  issueStartDate: {
+  issue_start_date: {
     type: Date,
     optional: true, // When the issue began, primarily for maintenance tickets
   },
-  createdAt: {
+  date_logged: {
     type: Date, // Timestamp when the ticket was created
   },
 });
