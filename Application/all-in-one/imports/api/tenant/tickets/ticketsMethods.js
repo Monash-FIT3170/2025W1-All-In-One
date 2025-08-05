@@ -52,6 +52,11 @@ Meteor.methods({
   //get agent's name to display on ticket
   'agents.getById'(agentId) {
     check(agentId, String);
-    return Agents.findOne({ agent_id: agentId }, { fields: { agent_fname: 1, agent_lname: 1 } });
+    const agent = Agents.findOneAsync(
+      { agent_id: agentId },
+      { fields: { agent_fname: 1, agent_lname: 1 } }
+    );
+    if (!agent) throw new Meteor.Error('not-found', 'Agent not found');
+    return agent;
   }
 });
