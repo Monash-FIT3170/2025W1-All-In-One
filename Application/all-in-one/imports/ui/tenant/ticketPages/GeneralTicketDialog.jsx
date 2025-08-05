@@ -1,10 +1,24 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
-export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, onSubmit }) => {
+export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, agentId, onSubmit }) => {
+  if (!isOpen) return null;
+
   const [ticketTitle, setTicketTitle] = useState('');
   const [ticketDescription, setTicketDescription] = useState('');
+  const [agentName, setAgentName] = useState('');
 
-  if (!isOpen) return null;
+    // Fetch agent info when dialog opens
+  useEffect(() => {
+    if (agentId) {
+      Meteor.call('agents.getById', agentId, (error, result) => {
+        if (error) {
+          console.error('Error fetching agent info:', error);
+        } else if (result) {
+          setAgentName(`${result.agent_fname} ${result.agent_lname}`);
+        }
+      });
+    }
+  }, [agentId, isOpen]);
 
   const handleSubmit = () => {
     // Basic validation
@@ -14,7 +28,6 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, 
     }
 
     const tenId = Meteor.userId(); // Get current user's ID as tenant ID
-    const agentId = 'PLACEHOLDER_AGENT_ID'; // Replace with actual agent_id, perhaps fetched dynamically
 
     const ticketData = {
       prop_id: propId, // Use the propId passed from DetailedLease
@@ -91,7 +104,7 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, 
         {/*Agent*/}
         <div className="text-left mb-4">
           <label className="text-l font-semibold text-black block mb-1">Agent</label>
-          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">Replace w/ AGENT</p>
+          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">{agentName}</p>
         </div>
 
         {/*Description Input*/}
