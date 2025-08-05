@@ -5,6 +5,12 @@ import { Tenants, Properties, Photos } from '../database/collections.js'; // adj
 Meteor.methods({
   async registerUser({ email, password, firstName, lastName, role }) {
     try {
+      //  Check if email already exists
+      const existingUser = await Accounts.findUserByEmail(email);
+      if (existingUser) {
+        throw new Meteor.Error("An account with this email already exists.");
+      }
+
       //  Create the Meteor account and await the user ID
       const userId = await Accounts.createUserAsync({
         email,
