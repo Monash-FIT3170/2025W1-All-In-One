@@ -3,7 +3,7 @@ import { check, Match } from 'meteor/check';
 import { v4 as uuidv4 } from 'uuid';
 
 // Import your Tickets collection
-import { Tickets } from '/imports/api/database/collections'; // Adjust path if needed based on your project structure
+import { Tickets, Agents } from '/imports/api/database/collections';
 
 Meteor.methods({
   /**
@@ -21,7 +21,8 @@ Meteor.methods({
       title: String,
       description: String,
       type: String,
-      issueStartDate: Match.Maybe(Date), // Use Match.Maybe for optional Date field
+      issue_start_date: Match.Maybe(Date), // Use Match.Maybe for optional Date field
+      date_logged: String
     });
 
     const propId = ticketData.prop_id;
@@ -47,4 +48,10 @@ Meteor.methods({
 
     return newTicket.ticket_id; // Return the ID of the newly created ticket
   },
+
+  //get agent's name to display on ticket
+  'agents.getById'(agentId) {
+    check(agentId, String);
+    return Agents.findOne({ agent_id: agentId }, { fields: { agent_fname: 1, agent_lname: 1 } });
+  }
 });

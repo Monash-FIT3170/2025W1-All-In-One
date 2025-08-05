@@ -171,12 +171,14 @@ export default function DetailedLease() {
         onClose={closeDialogs} 
         propertyAddress={property?.address}
         propId={property?.id}
+        agentId={property?.agent_id} 
       />
       <GeneralTicketDialog 
         isOpen={showGeneralDialog} 
         onClose={closeDialogs} 
         propertyAddress={property?.address}
         propId={property?.id}
+        agentId={property?.agent_id}
       />
 
       {/*Footer*/}
