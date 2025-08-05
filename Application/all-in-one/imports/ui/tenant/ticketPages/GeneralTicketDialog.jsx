@@ -9,7 +9,7 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, 
   const handleSubmit = () => {
     // Basic validation
     if (!ticketTitle || !ticketDescription || !propId) {
-      alert('Please fill in all required fields and ensure property ID is available.');
+      alert('Please fill in all required fields');
       return;
     }
 
@@ -23,7 +23,7 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, 
       title: ticketTitle,
       description: ticketDescription,
       type: 'General',
-      // issueStartDate is optional for General tickets, so we don't include it here
+      date_logged: new Date().toDateString()
     };
 
     Meteor.call('tickets.insert', ticketData, (error, result) => {
