@@ -14,7 +14,10 @@ export default function BasicPropertyCard ({property}){
         <div className="relative bg-[#FFF8E9] rounded-lg shadow-md overflow-hidden">
           {/* Background Image */}
           <img
-            src={property.photo?.[0]?.url}
+            src={
+              property.photo?.find((file) => !file.isPDF && !file.isVideo)?.url ||
+              "/images/default.jpg"
+            }
             alt={property.prop_address}
             className="w-full h-[375px] object-cover"
           />
