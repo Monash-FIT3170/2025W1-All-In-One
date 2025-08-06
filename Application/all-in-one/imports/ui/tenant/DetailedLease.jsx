@@ -10,8 +10,11 @@ import { Properties, Photos, Videos, RentalApplications } from "../../api/databa
 import {AddTicketDialog} from "./ticketPages/AddTicketDialog";
 import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
 import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
+import { ResolveTicketDialog } from "./ticketPages/ResolveTicketDialog";
 import { Tickets } from "/imports/api/database/collections";
 import { CollapsedTicket } from "./ticketPages/CollapsedTicket";
+
+
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -24,12 +27,12 @@ export default function DetailedLease() {
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
   const [showGeneralDialog, setShowGeneralDialog] = useState(false);
 
+
   // Use Meteor's useTracker hook to reactively get tickets for this property
   const { tickets, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('tickets.forProperty', id); // Subscribe to tickets for the current propId
     const loading = !handler.ready(); // Check if subscription is ready
     const ticketsData = Tickets.find({ prop_id: id }, { sort: { ticket_no: 1 } }).fetch(); // Fetch tickets
-
     return { tickets: ticketsData, isLoading: loading };
   }, [id]); // Re-run tracker if propId changes
 
@@ -144,29 +147,30 @@ export default function DetailedLease() {
       <div className="max-w-7xl mx-auto w-full px-6 mt-8 pt-4 border-t border-gray-300">
         <h2 className="text-4xl mt-8 mb-8 font-bold text-black">Tickets</h2>
       </div>
-      {tickets.length === 0 ? (
-        <p>No tickets logged for this property yet.</p>
-      ) : (
-        <ul>
-          {tickets.map((ticket) => (
-            <li key={ticket.ticket_id} >
-              <CollapsedTicket ticket={ticket} />
-            </li>
-            
-          ))}
-        </ul>
-      )}
+        {tickets.length === 0 ? (
+          <p className="max-w-7xl mx-auto w-full px-6 mb-8">No tickets logged for this property yet.</p>
+        ) : (
+          <div className="max-w-7xl mx-auto w-full px-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+            {tickets.map((ticket) => (
+                <CollapsedTicket ticket={ticket} />
+            ))}
+          </div>
+        )}
 
       <div className="flex justify-center">
         <button
           onClick={() => setShowAddTicketDialog(true)}
-          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md mb-8 transition duration-200"
+          className="w-1/3 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md mb-8 transition duration-200"
         >
           Add Ticket
         </button>
       </div>
 
-      <AddTicketDialog isOpen={showAddTicketDialog} onSelect={handleTicketSelect} onClose={closeDialogs} />
+      <AddTicketDialog 
+        isOpen={showAddTicketDialog} 
+        onSelect={handleTicketSelect} 
+        onClose={closeDialogs} 
+      />
       <MaintenanceTicketDialog 
         isOpen={showMaintenanceDialog} 
         onClose={closeDialogs} 
@@ -181,6 +185,7 @@ export default function DetailedLease() {
         propId={property?.id}
         agentId={property?.agent_id}
       />
+    
 
       {/*Footer*/}
       <Footer />
