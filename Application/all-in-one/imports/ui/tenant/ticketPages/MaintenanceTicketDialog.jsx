@@ -7,6 +7,7 @@ export const MaintenanceTicketDialog = ({ isOpen, onClose, propertyAddress, prop
   const [issueDescription, setIssueDescription] = useState('');
   const [issueStartDate, setIssueStartDate] = useState('');
   const [agentName, setAgentName] = useState('');
+  const [dateLogged, setDateLogged] = useState(new Date().toLocaleDateString());
 
   // Fetch agent info when dialog opens
 useEffect(() => {
@@ -38,7 +39,7 @@ useEffect(() => {
       type: 'Maintenance',
       description: issueDescription,
       issue_start_date: new Date(issueStartDate),
-      date_logged: new Date().toDateString()
+      date_logged: dateLogged
     };
 
     Meteor.call('tickets.insert', ticketData, (error, result) => {
@@ -136,8 +137,7 @@ useEffect(() => {
         {/*date logged*/}
         <div className="text-left mb-4">
           <label className="text-l font-semibold text-black block mb-1">Date Logged</label>
-          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">{new Date().toDateString()
-          }</p>
+          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">{dateLogged}</p>
         </div>
 
         {/*Submit Button*/}

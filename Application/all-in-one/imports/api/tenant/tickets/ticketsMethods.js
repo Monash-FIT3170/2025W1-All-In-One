@@ -10,7 +10,7 @@ Meteor.methods({
    * Inserts a new ticket into the database, generating a unique ticket_id and auto-incrementing ticket_no
    * based on the provided prop_id by finding the maximum existing ticket_no for that property.
    *
-   * @param {Object} ticketData - The data for the new ticket (excluding ticket_id, ticket_no, createdAt).
+   * @param {Object} ticketData - The data for the new ticket (excluding ticket_id, ticket_no).
    * @returns {string} The ID of the newly created ticket.
    */
   'tickets.insert': async function(ticketData) { // Make the method async
@@ -40,7 +40,6 @@ Meteor.methods({
       ...ticketData,
       ticket_id: uuidv4(), // Generate a unique ID for the ticket
       ticket_no: nextTicketNo, // Assign the calculated ticket number
-      createdAt: new Date(), // Set creation timestamp on the server
     };
 
     await Tickets.insertAsync(newTicket); // Changed from insert to insertAsync() and added await
