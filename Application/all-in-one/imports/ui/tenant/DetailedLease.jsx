@@ -11,6 +11,7 @@ import {AddTicketDialog} from "./ticketPages/AddTicketDialog";
 import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
 import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
 import { Tickets } from "/imports/api/database/collections";
+import { CollapsedTicket } from "./ticketPages/CollapsedTicket";
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -27,7 +28,7 @@ export default function DetailedLease() {
   const { tickets, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('tickets.forProperty', id); // Subscribe to tickets for the current propId
     const loading = !handler.ready(); // Check if subscription is ready
-    const ticketsData = Tickets.find({ prop_id: id }, { sort: { createdAt: -1 } }).fetch(); // Fetch tickets
+    const ticketsData = Tickets.find({ prop_id: id }, { sort: { ticket_no: 1 } }).fetch(); // Fetch tickets
 
     return { tickets: ticketsData, isLoading: loading };
   }, [id]); // Re-run tracker if propId changes
@@ -148,11 +149,10 @@ export default function DetailedLease() {
       ) : (
         <ul>
           {tickets.map((ticket) => (
-            <li key={ticket.ticket_id}>
-              <strong>Ticket No: {ticket.ticket_no}</strong> - {ticket.title} ({ticket.type})
-              <p>Description: {ticket.description}</p>
-              <p>Logged: {ticket.createdAt.toLocaleDateString()}</p>
+            <li key={ticket.ticket_id} >
+              <CollapsedTicket ticket={ticket} />
             </li>
+            
           ))}
         </ul>
       )}
