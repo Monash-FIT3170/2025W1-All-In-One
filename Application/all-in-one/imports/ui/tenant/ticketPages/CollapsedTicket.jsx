@@ -6,7 +6,7 @@ import Collapse from '@mui/material/Collapse'; // For smooth collapse animation
 import { ResolveTicketDialog } from './ResolveTicketDialog'; 
 
 
-export const CollapsedTicket = ( { ticket } ) => {
+export const CollapsedTicket = ( { ticket, setShowResolveTicketDialog } ) => {
     
     const [isExpanded, setIsExpanded] = useState(false);
     const isMaintenanceTicket = ticket.type === 'Maintenance';
@@ -15,7 +15,6 @@ export const CollapsedTicket = ( { ticket } ) => {
     setIsExpanded(!isExpanded);
     };
 
-    const [showResolveTicketDialog, setShowResolveTicketDialog] = useState(false);
 
     const closeDialog = () => {
         setShowResolveTicketDialog(false);
@@ -23,8 +22,9 @@ export const CollapsedTicket = ( { ticket } ) => {
 
     return (
         <div className="bg-[#CBADD8] border p-4 rounded-lg shadow-md flex flex-col items-center mx-4 relative">
-            {/* X Close Button */}
+            {/* Resolve Ticket Button */}
             <button
+                type="button"
                 onClick={() => setShowResolveTicketDialog(true)}
                 className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700">
                 ×
@@ -54,10 +54,7 @@ export const CollapsedTicket = ( { ticket } ) => {
                     )}
                 </div>
             </Collapse>
-            <ResolveTicketDialog
-                isOpen={showResolveTicketDialog} 
-                onClose={closeDialog} 
-            />
+            
         </div>
     );
 };

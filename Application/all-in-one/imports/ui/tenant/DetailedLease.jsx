@@ -26,6 +26,7 @@ export default function DetailedLease() {
   const [showAddTicketDialog, setShowAddTicketDialog] = useState(false);
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
   const [showGeneralDialog, setShowGeneralDialog] = useState(false);
+  const [showResolveTicketDialog, setShowResolveTicketDialog] = useState(false);
 
 
   // Use Meteor's useTracker hook to reactively get tickets for this property
@@ -42,6 +43,7 @@ export default function DetailedLease() {
     setShowAddTicketDialog(false);
     setShowMaintenanceDialog(false);
     setShowGeneralDialog(false);
+    setShowResolveTicketDialog(false);
   };
 
   const handleTicketSelect = (ticketType) => {
@@ -152,7 +154,7 @@ export default function DetailedLease() {
         ) : (
           <div className="max-w-7xl mx-auto w-full px-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
             {tickets.map((ticket) => (
-                <CollapsedTicket ticket={ticket} />
+                <CollapsedTicket ticket={ticket} setShowResolveTicketDialog={setShowResolveTicketDialog}/>
             ))}
           </div>
         )}
@@ -184,6 +186,10 @@ export default function DetailedLease() {
         propertyAddress={property?.address}
         propId={property?.id}
         agentId={property?.agent_id}
+      />
+      <ResolveTicketDialog
+        isOpen={showResolveTicketDialog} 
+        onClose={closeDialogs} 
       />
     
 
