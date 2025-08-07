@@ -28,7 +28,7 @@ export default function BasicPropertyCard ({property}){
               <h2 className="text-3xl font-medium text-gray-500">
                 ${property.prop_pricepweek} <span className="text-3xl font-medium text-gray-500">per week</span>
               </h2>
-              <p className="text-gray-600 text-right">{property.location}</p>
+              <p className="text-gray-600 text-right">{property.prop_address}</p>
             </div>
 
             <div className="px-4 pb-4 mt-4 flex justify-between text-gray-600 text-sm">
