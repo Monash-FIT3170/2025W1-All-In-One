@@ -20,6 +20,13 @@ const callAsync = (methodName, ...args) => {
   });
 };
 
+function toDatetimeLocal(date) {
+  if (!date) return '';
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,16);
+}
+
 export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showDialog, setShowDialog] = useState(false);
@@ -29,6 +36,8 @@ export const Calendar = () => {
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null); 
+  const [editEvent, setEditEvent] = useState(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const closeDialogs = () => {
     setShowDialog(false);
@@ -188,7 +197,7 @@ export const Calendar = () => {
           events={[
             ...availabilities.map(slot => ({
               ...slot,
-              id: slot._id,
+              id: slot._id, // This is the real Mongo _id
               title: slot.status === 'booked'
                 ? 'Booked'
                 : `${slot.type} Availability`,
@@ -225,15 +234,19 @@ export const Calendar = () => {
             })),
           ]}                   
           eventClick={(info) => {
-            const clicked = info.event.extendedProps;
-            if (clicked.type === 'Open House') {
-              setSelectedEvent({
-                title: info.event.title,
-                start: info.event.start,
-                end: info.event.end,
-                ...clicked,
-              });
-            } 
+            // Only allow editing if the event has a Mongo _id
+            if (!info.event.id || info.event.id.length !== 17 && info.event.id.length !== 24) {
+              alert('You can only edit saved availabilities.');
+              return;
+            }
+            setEditEvent({
+              id: info.event.id,
+              title: info.event.title,
+              start: info.event.start,
+              end: info.event.end,
+              ...info.event.extendedProps,
+            });
+            setShowEditDialog(true);
           }}          
           headerToolbar={{
             left: 'prev today next',
@@ -265,6 +278,73 @@ export const Calendar = () => {
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
         />
+      )}
+
+      {showEditDialog && editEvent && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit Availability</h2>
+            <label className="block mb-2">Start Time</label>
+            <input
+              type="datetime-local"
+              className="w-full mb-4 border rounded p-2"
+              value={toDatetimeLocal(editEvent.start)}
+              onChange={e => setEditEvent(ev => ({ ...ev, start: new Date(e.target.value) }))}
+            />
+            <label className="block mb-2">End Time</label>
+            <input
+              type="datetime-local"
+              className="w-full mb-4 border rounded p-2"
+              value={toDatetimeLocal(editEvent.end)}
+              onChange={e => setEditEvent(ev => ({ ...ev, end: new Date(e.target.value) }))}
+            />
+            {/* Add more fields as needed */}
+            <div className="flex justify-end gap-2">
+              <button
+                className="bg-gray-300 px-4 py-2 rounded"
+                onClick={() => setShowEditDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={async () => {
+                  try {
+                    const id = String(editEvent.id);
+                    await callAsync('agentAvailabilities.remove', id);
+                    setShowEditDialog(false);
+                    setEditEvent(null);
+                  } catch (error) {
+                    alert('Delete failed: ' + error.reason);
+                    console.error('Failed to delete availability:', error);
+                  }
+                }}
+              >
+                Delete
+              </button>
+              <button
+                className="bg-purple-500 text-white px-4 py-2 rounded"
+                onClick={async () => {
+                  try {
+                    const id = String(editEvent.id);
+                    const updateData = {
+                      start: editEvent.start instanceof Date ? editEvent.start.toISOString() : editEvent.start,
+                      end: editEvent.end instanceof Date ? editEvent.end.toISOString() : editEvent.end,
+                    };
+                    await callAsync('agentAvailabilities.update', id, updateData);
+                    setShowEditDialog(false);
+                    setEditEvent(null);
+                  } catch (error) {
+                    alert('Update failed: ' + error.reason);
+                    console.error('Failed to update availability:', error);
+                  }
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="flex justify-between max-w-6xl mx-auto mt-6">

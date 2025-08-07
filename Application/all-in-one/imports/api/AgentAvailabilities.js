@@ -90,4 +90,9 @@ Meteor.methods({
     }
     return result;
   },
+
+  async 'agentAvailabilities.remove'(availabilityId) {
+    check(availabilityId, String);
+    return await AgentAvailabilities.removeAsync({ _id: availabilityId });
+  },
 });
