@@ -1,5 +1,23 @@
 import React from 'react';
 
+/**
+ * ConfirmDialog Component
+ * 
+ * A modal dialog component used to confirm user actions, specifically
+ * for confirming the creation of inspection availabilities in the calendar.
+ * 
+ * Features:
+ * - Modal overlay with backdrop
+ * - Confirmation message
+ * - Cancel and confirm buttons
+ * - Consistent styling with the application theme
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the dialog is open
+ * @param {Function} props.onConfirm - Function to call when user confirms
+ * @param {Function} props.onCancel - Function to call when user cancels
+ * @returns {JSX.Element|null} The rendered dialog component or null if not open
+ */
 export const ConfirmDialog = ({ isOpen, onConfirm, onCancel }) => {
   if (!isOpen) return null;
 

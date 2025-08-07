@@ -2,11 +2,26 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+/**
+ * HomePage Component
+ * 
+ * This is the main landing page of the real estate application. It serves as the entry point
+ * for users and provides navigation to key features like login, signup, and property search.
+ * 
+ * Features:
+ * - Gradient background with purple theme
+ * - Login and Sign Up buttons in the top right
+ * - Main application title "All In One"
+ * - Search functionality for properties, agents, or locations
+ * - Application logo display
+ * 
+ * @returns {JSX.Element} The rendered home page component
+ */
 export const HomePage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-[#C7A4E0] via-[#E2D4F5] via-[#E2D4F5] to-[#C7A4E0] relative">
       
-      {/* Top right buttons */}
+      {/* Top right navigation buttons - Login and Sign Up */}
       <div className="absolute top-6 right-6 flex gap-4">
         <Link to="/login">
           <button className="bg-[#B57FE6] hover:bg-[#A260D1] text-white font-bold py-2 px-5 rounded-full">
@@ -20,17 +35,17 @@ export const HomePage = () => {
         </Link>
       </div>
 
-      {/* Tagline */}
+      {/* Application tagline */}
       <div className="text-center mb-4">
         <p className="text-2xl text-[#4B2B62] font-semibold">Your One Stop for Rental Solutions</p>
       </div>
 
-      {/* Main Title */}
+      {/* Main application title */}
       <h1 className="text-7xl font-extrabold text-[#6E3BAA] uppercase tracking-wide drop-shadow-md mb-6">
         All In One
       </h1>
 
-      {/* Search Bar + Link Button */}
+      {/* Search functionality - Search bar with enter button */}
       <div className="w-full max-w-xl px-6 mb-6 flex gap-3">
         <input
           type="text"
@@ -45,7 +60,7 @@ export const HomePage = () => {
         </Link>
       </div>
 
-      {/* Logo */}
+      {/* Application logo */}
       <img src="/images/logo.png" alt="Logo" className="w-40 h-40 mb-8" />
     </div>
   );

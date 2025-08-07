@@ -1,5 +1,25 @@
 import React from 'react';
 
+/**
+ * ClearDialog Component
+ * 
+ * A modal dialog component used to confirm the clearing of all availabilities
+ * from the calendar. This component provides a warning to users before
+ * they clear all their scheduled availabilities.
+ * 
+ * Features:
+ * - Modal overlay with backdrop
+ * - Warning message about clearing all availabilities
+ * - Cancel and confirm buttons
+ * - Consistent styling with the application theme
+ * - Red confirm button to indicate destructive action
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.isOpen - Whether the dialog is open
+ * @param {Function} props.onConfirm - Function to call when user confirms clearing
+ * @param {Function} props.onCancel - Function to call when user cancels
+ * @returns {JSX.Element|null} The rendered dialog component or null if not open
+ */
 export const ClearDialog = ({ isOpen, onConfirm, onCancel }) => {
   if (!isOpen) return null;
 
