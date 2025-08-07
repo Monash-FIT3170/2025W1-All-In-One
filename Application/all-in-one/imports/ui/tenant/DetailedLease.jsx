@@ -12,7 +12,7 @@ import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
 import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
 import { ResolveTicketDialog } from "./ticketPages/ResolveTicketDialog";
 import { Tickets } from "/imports/api/database/collections";
-import { CollapsedTicket } from "./ticketPages/CollapsedTicket";
+import { CollapsedTicket } from "./ticketPages/Ticket";
 
 
 
@@ -152,7 +152,7 @@ export default function DetailedLease() {
         {tickets.length === 0 ? (
           <p className="max-w-7xl mx-auto w-full px-6 mb-8">No tickets logged for this property yet.</p>
         ) : (
-          <div className="max-w-7xl mx-auto w-full px-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="max-w-7xl mx-auto w-full px-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             {tickets.map((ticket) => (
                 <CollapsedTicket ticket={ticket} setShowResolveTicketDialog={setShowResolveTicketDialog}/>
             ))}
@@ -162,7 +162,7 @@ export default function DetailedLease() {
       <div className="flex justify-center">
         <button
           onClick={() => setShowAddTicketDialog(true)}
-          className="w-1/3 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md mb-8 transition duration-200"
+          className="w-1/6 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-3xl shadow-md mb-8 transition duration-200"
         >
           Add Ticket
         </button>

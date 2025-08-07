@@ -62,12 +62,12 @@ useEffect(() => {
 
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-      <div className="bg-[#CBADD8] p-6 rounded-[2rem] shadow-lg w-[440px] text-center space-y-6 relative">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50 ">
+      <div className="bg-[#CBADD8] p-6 rounded-[2rem] shadow-lg w-[440px] text-center space-y-6 relative max-h-[80vh] overflow-y-auto">
         {/* X Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
+          className="absolute top-4 right-6 text-2xl font-bold text-black hover:text-gray-700"
         >
           ×
         </button>
@@ -130,21 +130,21 @@ useEffect(() => {
             placeholder="DD/MM/YYYY"
             value={issueStartDate}
             onChange={(e) => setIssueStartDate(e.target.value)}
-            className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-2.5 mb-5 w-lg"
+            className="text-l bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5 mb-5 w-[200px]"
           />
         </div>
 
         {/*date logged*/}
         <div className="text-left mb-4">
           <label className="text-l font-semibold text-black block mb-1">Date Logged</label>
-          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">{dateLogged}</p>
+          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block p-2.5 w-[200px]">{dateLogged}</p>
         </div>
 
         {/*Submit Button*/}
         <div className="flex justify-center mt-6">
           <button
             onClick={handleSubmit}
-            className="bg-[#9747FF] hover:bg-violet-900 text-white font-base py-2 px-8 rounded-md shadow-md transition duration-200"
+            className="bg-[#9747FF] hover:bg-violet-900 text-white font-base py-2 px-8 rounded-3xl shadow-md transition duration-200"
           >
             Submit Ticket
           </button>

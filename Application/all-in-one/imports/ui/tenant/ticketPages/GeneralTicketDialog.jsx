@@ -64,7 +64,7 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, 
         {/* X Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
+          className="absolute top-4 right-6 text-2xl font-bold text-black hover:text-gray-700"
         >
           ×
         </button>
@@ -124,14 +124,14 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, 
         {/*date logged*/}
         <div className="text-left mb-4">
           <label className="text-l font-semibold text-black block mb-1">Date Logged</label>
-          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5">{dateLogged}</p>
+          <p className="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block p-2.5 w-[200px]">{dateLogged}</p>
         </div>
 
         {/*Submit Button*/}
         <div className="flex justify-center mt-6">
           <button
             onClick={handleSubmit}
-            className="bg-[#9747FF] hover:bg-violet-900 text-white font-base py-2 px-8 rounded-md shadow-md transition duration-200"
+            className="bg-[#9747FF] hover:bg-violet-900 text-white font-base py-2 px-8 rounded-3xl shadow-md transition duration-200"
           >
             Submit Ticket
           </button>
