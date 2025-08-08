@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch, FaStar, FaRegStar  } from "react-icons/fa";
 import { useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
@@ -210,10 +210,36 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
 
         {/* Right hand side- property infor*/}
         <div className="w-full lg:w-1/2 p-2 space-y-3">
+        <div className="flex justify-between items-center">
           <div className="text-2xl md:text-3xl font-semibold text-gray-800">
             ${property.price}{" "}
             <span className="text-lg font-medium">per Week </span>
           </div>
+          {showSaveButton && (
+      <>
+        <button
+          onClick={toggleSave}
+          disabled={loading}
+          aria-label={saved ? "Unsave property" : "Save property"}
+    className="focus:outline-none"
+    style={{ background: "none", border: "none", padding: 0, marginLeft: 8, cursor: loading ? "not-allowed" : "pointer" }}
+  >
+    {loading ? (
+      <span className="text-gray-400">...</span>
+    ) : saved ? (
+      <FaStar size={24} className="text-yellow-500" />
+    ) : (
+      <FaRegStar size={24} className="text-gray-400" />
+    )}
+  </button>
+        {error && (
+          <div className="text-red-600 mt-2 text-sm font-medium">
+            {error}
+          </div>
+        )}
+      </>
+    )}
+  </div>
           <div className="text-3xl text-gray-800">{property.address}</div>
           <div className="text-1xl text-gray-600">
             Property Type:{" "}
@@ -286,34 +312,6 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
               <span className="text-xl">{property.details.furnished}</span>
             </div>
           </div>
-
-          {/* Save Listing button */}
-          {showSaveButton && (
-            <>
-            <button
-              onClick={toggleSave}
-              disabled={loading}
-              className={`mt-6 px-5 py-2 rounded-md shadow-md font-semibold text-white transition-colors duration-200 ${
-                property.starred
-                  ? "bg-green-600 hover:bg-green-700"
-                  : "bg-gray-400 hover:bg-gray-500"
-              } ${loading? "opacity-50 cursor-not-allowed":""}`}
-            >
-              {loading
-    ? property.starred
-      ? "Removing..."
-      : "Saving..."
-    : property.starred
-    ? "Saved Listing"
-    : "Save Listing"}
-            </button>
-            {error && (
-                <div className="text-red-600 mt-2 text-sm font-medium">
-                  {error}
-                </div>
-              )}
-            </>
-          )}
         </div>
       </div>
     
