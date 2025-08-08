@@ -2,7 +2,7 @@
   "name": "meteor-app",
   "private": true,
   "scripts": {
-    "start": "meteor run",
+    "start:atlas": "dotenv -e .env -- meteor",
     "test": "meteor test --once --driver-package meteortesting:mocha",
     "test-app": "TEST_WATCH=1 meteor test --full-app --driver-package meteortesting:mocha",
     "visualize": "meteor --production --extra-packages bundle-visualizer"
@@ -20,6 +20,7 @@
     "clone": "^2.1.2",
     "cloudinary": "^2.7.0",
     "dayjs": "^1.11.13",
+    "dotenv": "^17.2.1",
     "lucide-react": "^0.510.0",
     "meteor-node-stubs": "^1.2.5",
     "next": "^15.4.5",
@@ -42,6 +43,7 @@
   "devDependencies": {
     "@types/node": "^24.1.0",
     "autoprefixer": "^10.4.21",
+    "dotenv-cli": "^10.0.0",
     "postcss": "^8.5.3",
     "tailwindcss": "^3.4.17"
   }

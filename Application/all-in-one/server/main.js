@@ -1,4 +1,25 @@
 import { Meteor } from 'meteor/meteor';
+import { Accounts } from 'meteor/accounts-base';
+function maskMongoUrl(uri) {
+  if (!uri) return '(not set)';
+  try {
+    // Only mask the password part in mongodb:// or mongodb+srv:// URIs
+    const match = uri.match(/^(mongodb(?:\+srv)?:\/\/)([^:@]+):([^@]+)@(.+)$/);
+    if (!match) return uri; // unexpected format, return as-is
+    const [, prefix, user, _pw, rest] = match;
+    return `${prefix}${user}:***@${rest}`;
+  } catch (e) {
+    return '(unable to parse MONGO_URL)';
+  }
+}
+
+function logDbTarget() {
+  const uri = process.env.MONGO_URL;
+  console.log('🗄️  MONGO_URL =>', maskMongoUrl(uri));
+  if (!uri) {
+    console.warn('⚠️  MONGO_URL is not set. The app will use the default local Meteor Mongo.');
+  }
+}
 import {
   Properties,
   Photos,
@@ -20,8 +41,12 @@ import { LinksCollection } from '/imports/api/links';
 import '/imports/api/AgentAvailabilities';
 import '/imports/api/TenantBookings.js';
 
+import 'dotenv/config';
+
 
 Meteor.startup(async () => { 
+
+  logDbTarget();
 
   // Insert mock data only if collections are empty
   if ((await Properties.find().countAsync()) === 0) {
