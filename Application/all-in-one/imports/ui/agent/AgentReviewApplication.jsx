@@ -127,7 +127,10 @@ export default function ReviewApplication() {
                                 <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden ">
                                     {/* Property Image as Background */}
                                     <img
-                                        src={`/images/properties/${property.prop_id}/main.jpg`}
+                                        src={
+                                            property.photo?.find((file) => !file.isPDF && !file.isVideo)?.url ||
+                                            "/images/default.jpg"
+                                            }
                                         alt="Property"
                                         className="absolute inset-0 w-full h-full object-cover"
                                     />

@@ -40,14 +40,16 @@ import LandlordDetailedProp from "./landlord/LandLordDetailedProp.jsx";
 import LandlordDetailedPropListing from "./landlord/LandlordDetailedPropListing.jsx";
 import LandlordProperties from "./landlord/LandlordProperties.jsx";
 
+import UploadImage from './UploadImage.jsx';
+import MultiFileUpload from './MultiFileUpload.jsx';
 
 const App = () => (
   <BrowserRouter>
     <div>
       <Routes>
 
-
-
+        <Route path="/U" element={<UploadImage />} />
+        <Route path="/M" element={<MultiFileUpload />} />
         {/* Home Page */}
         <Route path="/" element={<HomePage />} />
 

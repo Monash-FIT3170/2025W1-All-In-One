@@ -7,13 +7,18 @@ import { Link } from 'react-router-dom';
 ////////////////////////////////////////////////////////////////////////////
 
 
-export default function PropertyCard ({property}){
+
+export default function BasicPropertyCard ({property}){
+  console.log(property);
     return (
         <div className="relative bg-[#FFF8E9] rounded-lg shadow-md overflow-hidden">
           {/* Background Image */}
           <img
-            src={property.image}
-            alt={property.location}
+            src={
+              property.photo?.find((file) => !file.isPDF && !file.isVideo)?.url ||
+              "/images/default.jpg"
+            }
+            alt={property.prop_address}
             className="w-full h-[375px] object-cover"
           />
 
@@ -21,26 +26,26 @@ export default function PropertyCard ({property}){
           <div className="absolute bottom-0 left-0 right-0 bg-white/85 p-4">
             <div className="mt-2 flex justify-between items-center">
               <h2 className="text-3xl font-medium text-gray-500">
-                {property.price} <span className="text-3xl font-medium text-gray-500">per week</span>
+                ${property.prop_pricepweek} <span className="text-3xl font-medium text-gray-500">per week</span>
               </h2>
-              <p className="text-gray-600 text-right">{property.location}</p>
+              <p className="text-gray-600 text-right">{property.prop_address}</p>
             </div>
 
             <div className="px-4 pb-4 mt-4 flex justify-between text-gray-600 text-sm">
               <div className="flex items-center gap-2">
                 <FaBath size={24} />
-                <span className="text-xl">{property.beds}</span>
+                <span className="text-xl">{property.prop_numbeds}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FaBed size={24} />
-                <span className="text-xl">{property.baths}</span>
+                <span className="text-xl">{property.prop_numbaths}</span>
               </div>
               <div className="flex items-center gap-2">
                 <FaCar size={24} />
-                <span className="text-xl">{property.cars}</span>
-                                  </div>
-                                </div>
-                            </div>
+                <span className="text-xl">{property.prop_numcarspots}</span>
+              </div>
+            </div>
+        </div>
         </div>                      
     );
 }

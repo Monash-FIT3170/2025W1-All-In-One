@@ -34,20 +34,9 @@ export default function AgentBasicPropListing() {
     (p)=> p.prop_status==="Available"
   );
 
-  const propertyCards= availableProperties.map((p)=>{
-    const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
-    return{
-      id: p.prop_id,
-      location: p.prop_address,
-      price:`$${p.prop_pricepweek}`,
-      image:photo?.photo_url ||
-      "/images/default.jpg",
-      beds: p.prop_numbeds,
-      baths: p.prop_numbaths,
-      cars:p.prop_numcarspots,
-    };
-  });
+const propertyCards = availableProperties.map((p) => p);
 
+  console.log(propertyCards);
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
@@ -105,7 +94,7 @@ export default function AgentBasicPropListing() {
           {propertyCards.map((property) => (
             <Link
               key={property.id}
-              to={`/AgentDetailedPropListing/${property.id}`}
+              to={`/AgentDetailedPropListing/${property.prop_id}`}
             >
               <BasicPropertyCard property={property} />
             </Link>

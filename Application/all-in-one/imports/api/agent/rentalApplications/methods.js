@@ -52,7 +52,8 @@ Meteor.methods({
       rental_app_id: String,
       inc_type: String,
       inc_amt: Number,
-      inc_supporting_doc: String,
+      inc_supporting_doc: Match.Optional(String), // Changed to optional
+      inc_public_id: Match.Optional(String),      // Added this field
     });
 
     console.log('[METHOD] incomes.insert called with:', incomeData);
@@ -63,7 +64,7 @@ Meteor.methods({
     check(incId, String);
     check(updateData, Object);
 
-    const allowedFields = ['inc_type', 'inc_amt', 'inc_supporting_doc'];
+    const allowedFields = ['inc_type', 'inc_amt', 'inc_supporting_doc', 'inc_public_id']; // Added inc_public_id
 
     const sanitizedUpdate = Object.fromEntries(
       Object.entries(updateData).filter(([key]) => allowedFields.includes(key))
@@ -73,7 +74,7 @@ Meteor.methods({
     return await Incomes.updateAsync({ inc_id: incId }, { $set: sanitizedUpdate });
   },
 
-  async 'incomes.remove'(incId) {
+   async 'incomes.remove'(incId) {
     check(incId, String);
     console.log(`[METHOD] incomes.remove called for inc_id: ${incId}`);
     return await Incomes.removeAsync({ inc_id: incId });
@@ -85,7 +86,9 @@ Meteor.methods({
       identity_id: String,
       rental_app_id: String,
       identity_type: String,
-      identity_scan: String,
+      identity_public_id: Match.Optional(String),
+      identity_scan: Match.Optional(String),
+      identity_desc: Match.Optional(String),
     });
 
     console.log('[METHOD] identities.insert called with:', identityDoc);
@@ -95,8 +98,31 @@ Meteor.methods({
   async 'identities.remove'(identityId) {
     check(identityId, String);
     console.log(`[METHOD] identities.remove called for identity_id: ${identityId}`);
-    return await Identities.removeAsync({ identity_id: identityId });
+
+    const identity = await Identities.findOneAsync({ identity_id: identityId });
+    console.log('Fetched identity:', identity);
+
+    if (!identity) {
+      throw new Meteor.Error('not-found', 'Identity not found');
+    }
+
+    // Remove from Cloudinary
+    if (identity.identity_public_id) {
+      try {
+        const result = await cloudinary.uploader.destroy(identity.identity_public_id);
+        console.log(`Cloudinary asset delete result:`, result);
+      } catch (err) {
+        console.error('Error deleting Cloudinary asset:', err);
+      }
+    } else {
+      console.warn('No identity_public_id found on identity document.');
+    }
+
+    // Remove from Mongo (based on internal _id)
+    return await Identities.removeAsync({ _id: identity._id });
   },
+
+  
 
   // Tenants
   async 'tenants.update'(tenId, updateData) {

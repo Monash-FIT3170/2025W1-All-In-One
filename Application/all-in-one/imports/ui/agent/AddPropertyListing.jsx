@@ -33,7 +33,7 @@ export default function AddPropertyListing() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
+    console.log("Files being submitted:", uploadedFiles); // <-- DEBUG LOG
     const agentId= Meteor.userId();
 
     Meteor.call(
@@ -53,6 +53,7 @@ export default function AddPropertyListing() {
         landlordEmail,
         status: "Available",  // I assume if you are putting a new property, it would be available right??
         agentId,
+        photo: uploadedFiles,
       },
       (err) => {
         if (err) {
@@ -66,7 +67,66 @@ export default function AddPropertyListing() {
     );
   }
 
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
 
+  const cloudName = 'dcceytydt'; // replace with your Cloudinary cloud name
+  const uploadPreset = 'ml_default'; // replace with your unsigned preset name
+
+const handleUpload = async (event) => {
+  const files = event.target.files;
+  if (!files || files.length === 0) return;
+
+  setUploading(true);
+
+  const uploaded = [];
+
+  for (const file of files) {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+
+    const isPDF = file.type === 'application/pdf';
+    const isVideo = file.type.startsWith('video/');
+    const uploadType = isPDF
+      ? 'raw'
+      : isVideo
+      ? 'video'
+      : 'image';
+
+    try {
+      const res = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${uploadType}/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (data.secure_url) {
+        const fileType = isPDF ? 'pdf' : isVideo ? 'video' : 'image';
+        const transformedUrl = isPDF
+          ? `https://res.cloudinary.com/${cloudName}/raw/upload/fl_attachment/${data.public_id}`
+          : data.secure_url;
+
+        uploaded.push({
+          name: file.name,
+          url: transformedUrl,
+          isPDF,
+          isVideo,
+        });
+      } else {
+        console.error('Upload error:', data);
+      }
+    } catch (err) {
+      console.error('Upload failed:', err);
+    }
+  }
+
+  setUploadedFiles((prev) => [...prev, ...uploaded]);
+  setUploading(false);
+};
+
+
+  
   return (     
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
@@ -82,36 +142,60 @@ export default function AddPropertyListing() {
           <form className="max-w-l mx-auto" onSubmit={handleSubmit}>
 
             {/*Photo Dropbox*/}
-            <label className="text-xl font-semibold text-gray-600"> Add Photo/s </label>
-            <div class="flex items-center justify-center w-full mb-5">
-              <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-[#CEF4F1]">
-                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                  <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                  </svg>
-                  <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Upload up to 20 photos (JPG, JPEG, PNG)</p>
-                </div>
-                <input id="dropzone-file" type="file" class="hidden"/>
+            <div className="p-6 space-y-4">
+              <label
+                htmlFor="multi-upload"
+                className="cursor-pointer px-4 py-2 bg-blue-600 text-white rounded inline-block"
+              >
+                Upload Files
               </label>
-            </div> 
+              <input
+                id="multi-upload"
+                type="file"
+                multiple
+                className="hidden"
+                accept="image/*,.pdf"
+                onChange={handleUpload}
+              />
 
-            {/*Video Dropbox*/}
-            <label className="text-xl font-semibold text-gray-600"> Add Video/s </label>
-            <div class="flex items-center justify-center w-full mb-10">
-              <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-40 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-[#CEF4F1]">
-                <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                  <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
-                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
-                  </svg>
-                  <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">Upload a video up to 200MB (MP4)</p>
+              {uploading && <p className="text-yellow-600">Uploading...</p>}
+
+              {uploadedFiles.length > 0 && (
+                <div className="flex flex-wrap gap-6 max-w-full">
+                  {uploadedFiles.map((file, idx) => (
+                    <div key={idx} className="text-base w-72">
+                      {file.isPDF ? (
+                        <a
+                          href={file.url}
+                          download
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-blue-700 underline block truncate"
+                        >
+                          {file.name} (Download PDF)
+                        </a>
+                      ) : file.isVideo ? (
+                        <video
+                          controls
+                          className="w-full rounded shadow"
+                          src={file.url}
+                        >
+                          Your browser does not support the video tag.
+                        </video>
+                      ) : (
+                        <img
+                          src={file.url}
+                          alt={file.name}
+                          className="w-full rounded shadow"
+                        />
+                      )}
+                    </div>
+                  ))}
                 </div>
-                <input id="dropzone-file" type="file" class="hidden"/>
-              </label>
-            </div> 
+              )}
 
-
+            </div>
+            
             {/*Key Information*/}
             <div className="text-xl font-semibold text-gray-800"> Add Key Information </div>
             <div className="text-l text-gray-600 mb-3"> Enter key information about the new property to be displayed on the search page </div>

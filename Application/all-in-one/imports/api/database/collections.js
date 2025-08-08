@@ -18,6 +18,11 @@ Properties.schema = new SimpleSchema({
   prop_status: { type: String },
   agent_id: { type: String },
   landlord_id: { type: String },
+  photo: { type: Array, optional: true },
+  "photo.$": { type: String },
+
+  video: { type: Array, optional: true },
+  "video.$": { type: String },
 });
 
 export const Photos = new Mongo.Collection('photos');
@@ -112,7 +117,8 @@ Incomes.schema = new SimpleSchema({
   rental_app_id: { type: String },
   inc_type: { type: String },
   inc_amt: { type: Number },
-  inc_supporting_doc: { type: String },
+  inc_supporting_doc: { type: String , optional: true },
+  inc_public_id: { type: String , optional: true },
 });
 
 export const Identities = new Mongo.Collection('identities');
@@ -120,7 +126,9 @@ Identities.schema = new SimpleSchema({
   identity_id: { type: String },
   rental_app_id: { type: String },
   identity_type: { type: String },
-  identity_scan: { type: String },
+  identity_public_id: { type: String , optional: true },
+  identity_desc: { type: String, optional: true },
+  identity_scan: { type: String, optional: true },
 });
 
 export const Households = new Mongo.Collection('households');

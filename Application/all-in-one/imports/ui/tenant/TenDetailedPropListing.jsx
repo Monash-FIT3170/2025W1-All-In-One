@@ -75,7 +75,7 @@ export default function TenDetailedPropListing() {
 
       {/*Main content and butons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={propertyData} />
+        <PropertyDetailsCard property={property} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
           <Link
           to={`/InspectionBooking/${id}`} // TBD: replace with actual link to inspection booking page
@@ -98,7 +98,7 @@ export default function TenDetailedPropListing() {
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
 
         <p className="font-semibold text-lg text-[#434343]">
-          {propertyData.description}
+          {property.prop_desc}
         </p>
       </div>
 
