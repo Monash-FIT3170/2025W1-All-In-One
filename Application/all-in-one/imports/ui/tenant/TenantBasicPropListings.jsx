@@ -93,6 +93,66 @@ export default function TenantBasicPropListings() {
               </div>
             </div>
 
+      {/* Filter section */}
+            <div className="mt-4 flex justify-center">
+              <div
+                className="bg-[#CBADD8] py-10 px-10 rounded-lg flex flex-col gap-6 w-full min-h-[400px]"
+                style={{ maxWidth: '1100px' }}
+              >
+                {/* Furnished checkbox */}
+                <label className="flex items-center gap-2">
+                  <input type="checkbox" className="w-5 h-5" />
+                  Furnished
+                </label>
+
+                {/* Number inputs */}
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <label className="block mb-1 font-semibold">Rooms</label>
+                    <input type="number" className="w-full p-2 rounded border" />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold">Car Spots</label>
+                    <input type="number" className="w-full p-2 rounded border" />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold">Bathrooms</label>
+                    <input type="number" className="w-full p-2 rounded border" />
+                  </div>
+                </div>
+
+                {/* Price range */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block mb-1 font-semibold">Min Price</label>
+                    <input type="number" className="w-full p-2 rounded border" />
+                  </div>
+                  <div>
+                    <label className="block mb-1 font-semibold">Max Price</label>
+                    <input type="number" className="w-full p-2 rounded border" />
+                  </div>
+                </div>
+
+                {/* Property type dropdown */}
+                <div>
+                  <label className="block mb-1 font-semibold">Property Type</label>
+                  <select className="w-full p-2 rounded border">
+                    <option value="">Select type</option>
+                    <option value="house">House</option>
+                    <option value="apartment">Apartment</option>
+                    <option value="unit">Unit</option>
+                    <option value="townhouse">Townhouse</option>
+                  </select>
+                </div>
+
+                {/* Date input */}
+                <div>
+                  <label className="block mb-1 font-semibold">Available From</label>
+                  <input type="date" className="w-full p-2 rounded border" />
+                </div>
+              </div>
+            </div>
+
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
