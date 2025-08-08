@@ -37,13 +37,18 @@ function SamplePrevArrow(props) {
   );
 }
 
-export default function PropertyDetailsCard({ property }) {
+export default function PropertyDetailsCard({ property, showSaveButton= false }) {
   // image disaplayed if there are no images
   const defaultImage = "/images/default.jpg";
 
   const [activeMediaType, setActiveMediaType] = useState("images");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Local saved state, init from property.starred or false
+  const [saved, setSaved] = useState(property.starred ?? false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   if (!property) {
     return <div className="text-lg text-red-600">Property Not Found!</div>;
@@ -55,6 +60,37 @@ export default function PropertyDetailsCard({ property }) {
     setIsModalOpen(true);
   };
   const closeModal = () => setIsModalOpen(false);
+
+  React.useEffect(() => {
+    setSaved(property.starred ?? false);
+  }, [property.starred]);
+
+   const toggleSave = () => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+
+    if (!saved) {
+      // Simulate saving the property
+      Meteor.call("starredProperties.add", property.id, (err) => {
+        setLoading(false);
+        if (err) {
+          setError(err.reason || "Error saving listing");
+        } else {
+          setSaved(true);
+        }
+      });
+    } else {
+      Meteor.call("starredProperties.remove", property.id, (err) => {
+        setLoading(false);
+        if (err) {
+          setError(err.reason || "Error removing listing");
+        } else {
+          setSaved(false);
+        }
+      }); 
+    }
+  };
 
   // Combine all media for carousel (images first, then videos)
   const allMedia = [
@@ -250,8 +286,37 @@ export default function PropertyDetailsCard({ property }) {
               <span className="text-xl">{property.details.furnished}</span>
             </div>
           </div>
+
+          {/* Save Listing button */}
+          {showSaveButton && (
+            <>
+            <button
+              onClick={toggleSave}
+              disabled={loading}
+              className={`mt-6 px-5 py-2 rounded-md shadow-md font-semibold text-white transition-colors duration-200 ${
+                property.starred
+                  ? "bg-green-600 hover:bg-green-700"
+                  : "bg-gray-400 hover:bg-gray-500"
+              } ${loading? "opacity-50 cursor-not-allowed":""}`}
+            >
+              {loading
+    ? property.starred
+      ? "Removing..."
+      : "Saving..."
+    : property.starred
+    ? "Saved Listing"
+    : "Save Listing"}
+            </button>
+            {error && (
+                <div className="text-red-600 mt-2 text-sm font-medium">
+                  {error}
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
+    
     </>
   );
 }
