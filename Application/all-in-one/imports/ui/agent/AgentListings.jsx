@@ -127,10 +127,16 @@ export default function AgentListings() {
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {propertyCards.map((property) => (
-            <Link key={property.id} to={`/AgentDetailedListing/${property.id}`}>
-              <BasicPropertyCard property={property} />
-            </Link>
-          ))}
+                      
+                        <BasicPropertyCard 
+                        key={property.id}
+                        property={property} 
+                        showFav={false} 
+                        onFavourite={(p)=> console.log("Favourited:",p)} 
+                        linkTo={`/AgentDetailedListing/${property.id}`}
+                        />
+              
+                    ))}
         </div>
       </div>
 

@@ -2,7 +2,7 @@ import React from "react";
 import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useTracker } from "meteor/react-meteor-data";
-import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, StarredProperties } from "../../api/database/collections"; // importing mock for now
 import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
@@ -14,15 +14,17 @@ import { Meteor } from "meteor/meteor";
 ////////////////////////////////////////////////////////////////////
 
 export default function AgentBasicPropListing() {
-  const { isReady, properties, photos }=  useTracker(()=>{
+  const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
     const subPhotos= Meteor.subscribe("photos");
+    const subStarred= Meteor.subscribe("starredProperties");
 
     const isReady= subProps.ready() && subPhotos.ready();
     const properties= isReady ? Properties.find().fetch(): [];
     const photos= isReady ? Photos.find().fetch(): [];
-
-    return { isReady, properties, photos};
+    const starredProperties= isReady ? StarredProperties.find({userId: Meteor.userId()}).fetch(): [];
+      
+    return { isReady, properties, photos, starredProperties };
 
   });
 
@@ -30,9 +32,30 @@ export default function AgentBasicPropListing() {
     return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
   }
 
+  function toggleFavourite(property) {
+        if (property.starred){
+          Meteor.call("starredProperties.remove", property.id, (err) => {
+            if (err){
+              console.error('Remove star error:', err);
+              alert(err.reason || err.message);
+            }
+            });
+        } else {
+          Meteor.call("starredProperties.add", property.id, (err) => {
+            if (err){
+              console.error('Add star error:', err);
+              alert(err.reason || err.message);
+            }
+          });
+        }
+      }
+  
+
   const availableProperties= properties.filter(
     (p)=> p.prop_status==="Available"
   );
+
+  const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
 
   const propertyCards= availableProperties.map((p)=>{
     const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
@@ -45,6 +68,7 @@ export default function AgentBasicPropListing() {
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
       cars:p.prop_numcarspots,
+      starred: starredSet.has(p.prop_id)
     };
   });
 
@@ -103,12 +127,15 @@ export default function AgentBasicPropListing() {
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {propertyCards.map((property) => (
-            <Link
+            
+              <BasicPropertyCard 
               key={property.id}
-              to={`/AgentDetailedPropListing/${property.id}`}
-            >
-              <BasicPropertyCard property={property} />
-            </Link>
+              property={property} 
+              showFav={true} 
+              onFavourite={toggleFavourite}  
+              linkTo={`/AgentDetailedPropListing/${property.id}`}
+              />
+    
           ))}
         </div>
       </div>
