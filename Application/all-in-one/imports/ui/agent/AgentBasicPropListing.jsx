@@ -32,25 +32,6 @@ export default function AgentBasicPropListing() {
     return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
   }
 
-  function toggleFavourite(property) {
-        if (property.starred){
-          Meteor.call("starredProperties.remove", property.id, (err) => {
-            if (err){
-              console.error('Remove star error:', err);
-              alert(err.reason || err.message);
-            }
-            });
-        } else {
-          Meteor.call("starredProperties.add", property.id, (err) => {
-            if (err){
-              console.error('Add star error:', err);
-              alert(err.reason || err.message);
-            }
-          });
-        }
-      }
-  
-
   const availableProperties= properties.filter(
     (p)=> p.prop_status==="Available"
   );
@@ -131,8 +112,7 @@ export default function AgentBasicPropListing() {
               <BasicPropertyCard 
               key={property.id}
               property={property} 
-              showFav={true} 
-              onFavourite={toggleFavourite}  
+              showFav={false} 
               linkTo={`/AgentDetailedPropListing/${property.id}`}
               />
     

@@ -30,24 +30,6 @@ const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
   if (!isReady){
     return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
   }
-
-  function toggleFavourite(property) {
-          if (property.starred){
-            Meteor.call("starredProperties.remove", property.id, (err) => {
-              if (err){
-                console.error('Remove star error:', err);
-                alert(err.reason || err.message);
-              }
-              });
-          } else {
-            Meteor.call("starredProperties.add", property.id, (err) => {
-              if (err){
-                console.error('Add star error:', err);
-                alert(err.reason || err.message);
-              }
-            });
-          }
-        }
     
   
 
@@ -129,8 +111,7 @@ const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
                         <BasicPropertyCard 
                         key={property.id}
                         property={property} 
-                        showFav={true} 
-                        onFavourite={toggleFavourite}  
+                        showFav={false}  
                         linkTo={`/LandlordDetailedPropListing/${property.id}`}
                         />
               
