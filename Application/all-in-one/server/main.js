@@ -204,9 +204,12 @@ Meteor.startup(async () => {
     return Landlord.find();
   });
 
-  Meteor.publish('starredProperties', function () {
+  Meteor.publish('starredProperties', async function () {
   if (!this.userId) return this.ready();
-  return StarredProperties.find({ userId: this.userId });
+  const tenant = await Tenants.findOneAsync({ ten_id: this.userId });
+  if (!tenant) return this.ready();
+  
+  return StarredProperties.find({ ten_id: tenant.ten_id });
 });
 
 });
