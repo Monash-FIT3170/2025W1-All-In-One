@@ -1,5 +1,5 @@
 import React from "react";
-import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter} from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter, FaStar} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
@@ -9,6 +9,8 @@ import { Meteor } from "meteor/meteor";
 import { Properties, Photos, StarredProperties, Tenants } from "../../api/database/collections"; // importing mock for now
 
 export default function TenantBasicPropListings() {
+  const [showOnlySaved, setShowOnlySaved]= React.useState(false); // used to show only the saved properties
+
   const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
@@ -26,7 +28,7 @@ export default function TenantBasicPropListings() {
       
       return { isReady, properties, photos, starredProperties };
   
-    });
+    }, [showOnlySaved]);
   
     if (!isReady){
       return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
@@ -40,7 +42,9 @@ export default function TenantBasicPropListings() {
   const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
   console.log("Starred properties:", starredProperties.map(sp => sp.prop_id));
   
-    const propertyCards= availableProperties.map((p)=>{
+    const propertyCards= availableProperties
+    .filter(p=> showOnlySaved ? starredSet.has(p.prop_id) : true)
+    .map((p)=>{
       const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
       return{
         id: p.prop_id,
@@ -54,6 +58,9 @@ export default function TenantBasicPropListings() {
         starred: starredSet.has(p.prop_id)
       };
     });
+
+    console.log("All property IDs:", availableProperties.map(p => p.prop_id));
+console.log("Starred set:", [...starredSet]);
 
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
@@ -76,7 +83,27 @@ export default function TenantBasicPropListings() {
       {/* Search + Filters */}
             <div className="mt-4 flex justify-center">
               <div className="bg-[#CBADD8] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
-      
+                {/* saved listings toggle button*/}
+                <button
+                onClick={() => setShowOnlySaved(!showOnlySaved)}
+               className={`flex items-center justify-center ${
+  showOnlySaved ? 'bg-[#7d3dd1]' : 'bg-[#9747FF]'
+} hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md`}
+                >
+                  {showOnlySaved ? (
+                    <>
+                    <FaStar className="mr-2" />
+                    Show All
+                    </>
+                  ) : (
+                    <>
+                    <FaStar className="mr-2" />
+                    Saved Only 
+                    </>
+                  )
+                  }
+                  </button>
+                
                 {/* Search field */}
                 <div className="flex items-center bg-white px-3 py-2 rounded-md w-full">
                   <FaSearch className="text-gray-500 mr-2" />
