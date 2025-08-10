@@ -9,23 +9,51 @@ import { Link } from "react-router-dom";
 export default function PropertyCard({
   property,
   showFav = false,
-  onFavourite,
   linkTo,
 }) {
+
+  const [isStarred, setIsStarred] = React.useState(property.starred);
+
+  function toggleFavourite(e){
+    e.preventDefault();
+    e.stopPropagation();
+
+    const newStarredState = !isStarred;
+    setIsStarred(newStarredState);
+
+    if (newStarredState) {
+      Meteor.call("starredProperties.add", property.id, (err) => {
+        if (err) {
+          console.error('Add star error:', err);
+          alert(err.reason || err.message);
+          setIsStarred(!newStarredState);
+        }
+      });
+    } else {
+      Meteor.call("starredProperties.remove", property.id, (err) => {
+        if (err) {
+          console.error('remove star error:', err);
+          alert(err.reason || err.message);
+          setIsStarred(!newStarredState);
+        }
+      });
+    }
+  }
+
+  React.useEffect(() => {
+    setIsStarred(property.starred);
+  }, [property.starred]);
+
+
   const starButton= showFav?(
 
   <button
-      onClick={(e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        onFavourite(property);
-      }}
+      onClick={toggleFavourite}
       aria-label="Add to favourites"
       className="absolute top-4 right-0 z-10 flex items-center bg-white/75 rounded-l-md px-2 py-1 shadow-md hover:bg-white"
-      
       style={{ minWidth: '40px'}}
     >
-              {property.starred ? <FaStar size={24} className="text-yellow-500"/> : <FaRegStar size={24} />}
+              {isStarred ? <FaStar size={24} className="text-yellow-500"/> : <FaRegStar size={24} />}
             </button>
           ) : null;
   const cardContent = (
