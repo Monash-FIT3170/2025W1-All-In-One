@@ -6,20 +6,24 @@ import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, StarredProperties } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, StarredProperties, Tenants } from "../../api/database/collections"; // importing mock for now
 
 export default function TenantBasicPropListings() {
   const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
       const subStarred= Meteor.subscribe("starredProperties");
+      const subTenants= Meteor.subscribe("tenants");
   
-      const isReady= subProps.ready() && subPhotos.ready() && subStarred.ready();
+      const isReady= subProps.ready() && subPhotos.ready() && subStarred.ready() && subTenants.ready();
       
       const properties= isReady ? Properties.find().fetch(): [];
       const photos= isReady ? Photos.find().fetch(): [];
-      const starredProperties= isReady ? StarredProperties.find({userId: Meteor.userId()}).fetch(): [];
-  
+      const tenant= Tenants.findOne({ ten_id: Meteor.userId() });
+
+      const starredProperties= isReady && tenant ?
+        StarredProperties.find({ ten_id: tenant.ten_id }).fetch() : [];
+      
       return { isReady, properties, photos, starredProperties };
   
     });
@@ -28,29 +32,13 @@ export default function TenantBasicPropListings() {
       return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
     }
 
-    function toggleFavourite(property) {
-      if (property.starred){
-        Meteor.call("starredProperties.remove", property.id, (err) => {
-          if (err){
-            console.error('Remove star error:', err);
-            alert(err.reason || err.message);
-          }
-          });
-      } else {
-        Meteor.call("starredProperties.add", property.id, (err) => {
-          if (err){
-            console.error('Add star error:', err);
-            alert(err.reason || err.message);
-          }
-        });
-      }
-    }
 
     const availableProperties= properties.filter(
     (p)=> p.prop_status==="Available"
   );
 
   const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
+  console.log("Starred properties:", starredProperties.map(sp => sp.prop_id));
   
     const propertyCards= availableProperties.map((p)=>{
       const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
@@ -126,7 +114,6 @@ export default function TenantBasicPropListings() {
               key={property.id}
               property={property} 
               showFav={true} 
-              onFavourite={toggleFavourite} 
               linkTo={`/TenDetailedPropListing/${property.id}`}
               />
     
