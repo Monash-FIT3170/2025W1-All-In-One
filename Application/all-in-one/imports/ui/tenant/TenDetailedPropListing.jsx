@@ -35,7 +35,10 @@ export default function TenDetailedPropListing() {
           property= Properties.findOne({prop_id: id});
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
           videos= Videos.find({prop_id: id}).fetch();
-          starredProperties = StarredProperties.find({ userId: tenantID }).fetch();
+          starredProperties = StarredProperties.find({ 
+    ten_id: tenantID, 
+    prop_id: id        
+  }).fetch();
         }
   
         return {isReady, property, photos, videos, starredProperties};
@@ -50,7 +53,7 @@ export default function TenDetailedPropListing() {
         return (<div className="min-h-screen flex items-center justify-center text-xl text-red-600">Property Not Found!</div>);
       }
 
-      const isStarred = starredProperties.some(sp => sp.prop_id === id);
+      const isStarred = starredProperties.length>0;
     
       // data passed on to propertyDetailsCard
       const propertyData= {
