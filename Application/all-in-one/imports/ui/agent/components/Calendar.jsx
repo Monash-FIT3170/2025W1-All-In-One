@@ -37,6 +37,7 @@ export const Calendar = () => {
     setShowClearDialog(false);
     setShowActivityTypeDialog(false);
     setShowAvailabilityTypeDialog(false);
+    setShowTicketTypeDialog(false);
     setShowOpenHouseDialog(false);
     setPendingSlot(null);
     setSelectedEvent(null);
