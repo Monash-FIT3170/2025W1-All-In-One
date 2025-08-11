@@ -1,17 +1,13 @@
-// TenantApplications.jsx
-import React from 'react';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
-import Navbar from './components/TenNavbar'; // Adjust if you're using a different navbar
+import Navbar from './components/TenNavbar';
 import { useLocation } from "react-router-dom";
 
 export default function TenantApplications() {
-
     const location = useLocation();
     const tenantID = Meteor.userId();
-
-    console.log("Tenant ID:", tenantID);
 
     const { isReady, applications, tenants, properties, employments } = useTracker(() => {
         const sub1 = Meteor.subscribe('rentalApplications');
@@ -21,7 +17,6 @@ export default function TenantApplications() {
 
         const isReady = sub1.ready() && sub2.ready() && sub3.ready() && sub4.ready();
 
-        // Filter applications by tenantID here
         return {
             isReady,
             applications: isReady ? RentalApplications.find({ ten_id: tenantID }).fetch() : [],
@@ -31,9 +26,23 @@ export default function TenantApplications() {
         };
     });
 
+    const [searchTerms, setSearchTerms] = useState({});
+
     if (!isReady) {
         return <div className="p-8 text-gray-600">Loading applications...</div>;
     }
+
+    const handleTenantAdd = (appId, tenId) => {
+        Meteor.call('rentalApplications.addTenant', appId, tenId, (err) => {
+            if (err) alert(err.reason);
+        });
+    };
+
+    const handleTenantRemove = (appId, tenId) => {
+        Meteor.call('rentalApplications.removeTenant', appId, tenId, (err) => {
+            if (err) alert(err.reason);
+        });
+    };
 
     return (
         <div className="bg-[#FFF8EB] min-h-screen pb-20">
@@ -45,9 +54,13 @@ export default function TenantApplications() {
 
                 <div className="grid grid-cols-1 gap-6 mt-6">
                     {applications.map(app => {
-                        const tenant = tenants.find(t => t.ten_id === app.ten_id);
                         const property = properties.find(p => p.prop_id === app.prop_id);
                         const employment = employments.find(e => e.employment_id === app.employment_id);
+
+                        const searchTerm = searchTerms[app._id] || '';
+                        const filteredTenants = tenants.filter(t =>
+                            `${t.ten_fn} ${t.ten_ln}`.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
 
                         return (
                             <div key={app._id} className="flex overflow-hidden gap-8">
@@ -81,7 +94,7 @@ export default function TenantApplications() {
                                 <div className="w-3/4 p-8 bg-[#CBADD8] rounded-2xl flex flex-col justify-between">
                                     <div>
                                         <h3 className="text-xl font-bold text-white mb-1">
-                                            {tenant?.ten_fn || 'Unknown'} {tenant?.ten_ln || ''}
+                                            Rental Application
                                         </h3>
                                         <p className="text-white text-sm italic mb-2">
                                             "{app.app_desc || 'No description'}"
@@ -89,6 +102,56 @@ export default function TenantApplications() {
                                         <p className="text-white text-sm">
                                             Occupation: {employment?.emp_job_title || 'N/A'}
                                         </p>
+
+                                        {/* Search Tenants */}
+                                        <div className="mt-4">
+                                            <input
+                                                type="text"
+                                                placeholder="Search tenants..."
+                                                className="p-2 rounded w-full text-black"
+                                                value={searchTerm}
+                                                onChange={(e) =>
+                                                    setSearchTerms(prev => ({ ...prev, [app._id]: e.target.value }))
+                                                }
+                                            />
+                                            {searchTerm && (
+                                                <div className="bg-white rounded shadow mt-2 max-h-32 overflow-y-auto">
+                                                    {filteredTenants
+                                                        .filter(t => !app.tenants?.some(added => added.ten_id === t.ten_id)) // prevent duplicates
+                                                        .map(t => (
+                                                            <div
+                                                                key={t.ten_id}
+                                                                className="p-2 hover:bg-gray-100 cursor-pointer"
+                                                                onClick={() => handleTenantAdd(app._id, t.ten_id)}
+                                                            >
+                                                                {t.ten_fn} {t.ten_ln}
+                                                            </div>
+                                                        ))
+                                                    }
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Scrollable Selected Tenants */}
+                                        <div className="mt-4 bg-white bg-opacity-80 rounded p-2 max-h-28 overflow-y-auto divide-y divide-gray-300">
+                                            {app.tenants && app.tenants.length > 0 ? (
+                                                app.tenants.map((t) => (
+                                                    <div key={t.ten_id} className="flex justify-between items-center py-1">
+                                                        <span className="text-gray-800">
+                                                            {t.ten_fn} {t.ten_ln}
+                                                        </span>
+                                                        <button
+                                                            className="text-red-500 hover:underline text-sm"
+                                                            onClick={() => handleTenantRemove(app._id, t.ten_id)}
+                                                        >
+                                                            Remove
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="text-gray-500 text-sm">No tenants added</div>
+                                            )}
+                                        </div>
                                     </div>
                                     <div className="mt-4">
                                         <span
