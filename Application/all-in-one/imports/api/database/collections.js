@@ -141,3 +141,10 @@ Agents.schema = new SimpleSchema({
   agent_password: { type: String },
 });
 
+export const StarredProperties = new Mongo.Collection('starred_properties');
+StarredProperties.schema = new SimpleSchema({
+  tent_id: { type: String }, // assuming only tenant gets to star properties
+  prop_id: { type: String },
+  starredAt: { type: Date, defaultValue: new Date() },
+});
+
