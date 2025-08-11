@@ -68,6 +68,13 @@ export default function TenantBasicPropListings() {
         setLocallyStarred(prev => {
           const newSet = new Set(prev);
           newStarred ? newSet.add(propId) : newSet.delete(propId);
+          // Log the change for debugging. If propety numbers are duplicated, there lies theproblem with the UI gliteches when filtering
+          console.log('Updating locallyStarred:', { 
+      action: newStarred ? 'ADD' : 'REMOVE', 
+      propId,
+      before: Array.from(prev), 
+      after: Array.from(newSet) 
+    });
           return newSet;
         });
       }
