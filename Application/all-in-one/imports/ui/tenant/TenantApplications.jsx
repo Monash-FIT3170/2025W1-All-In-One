@@ -121,10 +121,21 @@ export default function TenantApplications() {
                                                         .map(t => (
                                                             <div
                                                                 key={t.ten_id}
-                                                                className="p-2 hover:bg-gray-100 cursor-pointer"
+                                                                className="flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer"
                                                                 onClick={() => handleTenantAdd(app._id, t.ten_id)}
                                                             >
-                                                                {t.ten_fn} {t.ten_ln}
+                                                                {t.ten_avatar ? (
+                                                                    <img
+                                                                        src={t.ten_avatar}
+                                                                        alt={`${t.ten_fn} ${t.ten_ln}`}
+                                                                        className="w-8 h-8 rounded-full object-cover"
+                                                                    />
+                                                                ) : (
+                                                                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold text-gray-700">
+                                                                        {t.ten_fn?.[0]}{t.ten_ln?.[0]}
+                                                                    </div>
+                                                                )}
+                                                                <span>{t.ten_fn} {t.ten_ln}</span>
                                                             </div>
                                                         ))
                                                     }
