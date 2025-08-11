@@ -28,7 +28,14 @@ export default function TenantBasicPropListings() {
       
       return { isReady, properties, photos, starredProperties };
   
-    }, [showOnlySaved]);
+    }, [showOnlySaved, Meteor.userId()]);
+
+    // Track starred properties in state for instant updates
+  const [locallyStarred, setLocallyStarred] = React.useState(new Set());
+  React.useEffect(() => {
+    // Sync with server data when it changes
+    setLocallyStarred(new Set(starredProperties.map(sp => sp.prop_id)));
+  }, [starredProperties]);
   
     if (!isReady){
       return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
@@ -43,7 +50,7 @@ export default function TenantBasicPropListings() {
   console.log("Starred properties:", starredProperties.map(sp => sp.prop_id));
   
     const propertyCards= availableProperties
-    .filter(p=> showOnlySaved ? starredSet.has(p.prop_id) : true)
+    .filter(p=> showOnlySaved ? locallyStarred.has(p.prop_id) : true)
     .map((p)=>{
       const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
       return{
@@ -55,8 +62,16 @@ export default function TenantBasicPropListings() {
         beds: p.prop_numbeds,
         baths: p.prop_numbaths,
         cars:p.prop_numcarspots,
-        starred: starredSet.has(p.prop_id)
-      };
+        starred: locallyStarred.has(p.prop_id),
+      onStarToggle: (propId, newStarred) => {
+        // Optimistic local update
+        setLocallyStarred(prev => {
+          const newSet = new Set(prev);
+          newStarred ? newSet.add(propId) : newSet.delete(propId);
+          return newSet;
+        });
+      }
+    };
     });
 
     console.log("All property IDs:", availableProperties.map(p => p.prop_id));
@@ -142,6 +157,7 @@ console.log("Starred set:", [...starredSet]);
               property={property} 
               showFav={true} 
               linkTo={`/TenDetailedPropListing/${property.id}`}
+              onStarToggle={property.onStarToggle}
               />
     
           ))}

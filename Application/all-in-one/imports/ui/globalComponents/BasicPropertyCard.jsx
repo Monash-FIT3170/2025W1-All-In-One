@@ -10,39 +10,61 @@ export default function PropertyCard({
   property,
   showFav = false,
   linkTo,
+  onStarToggle,
 }) {
 
-  const [isStarred, setIsStarred] = React.useState(property.starred);
+  //const [isStarred, setIsStarred] = React.useState(property.starred);
 
   function toggleFavourite(e){
     e.preventDefault();
     e.stopPropagation();
 
-    const newStarredState = !isStarred;
-    setIsStarred(newStarredState);
+    //const newStarredState = !isStarred;
+    //setIsStarred(newStarredState);
 
-    if (newStarredState) {
-      Meteor.call("starredProperties.add", property.id, (err) => {
+    const newStarredState = !property.starred; // Use prop instead of local state
+    
+    // Optimistic UI update
+    onStarToggle(property.id, newStarredState);
+
+  //   if (newStarredState) {
+  //     Meteor.call("starredProperties.add", property.id, (err) => {
+  //       if (err) {
+  //         console.error('Add star error:', err);
+  //         alert(err.reason || err.message);
+  //         setIsStarred(!newStarredState);
+  //       }
+  //     });
+  //   } else {
+  //     Meteor.call("starredProperties.remove", property.id, (err) => {
+  //       if (err) {
+  //         console.error('remove star error:', err);
+  //         alert(err.reason || err.message);
+  //         setIsStarred(!newStarredState);
+  //       }
+  //     });
+  //   }
+  // }
+
+  // Sync with server
+    Meteor.call(
+      newStarredState ? "starredProperties.add" : "starredProperties.remove",
+      property.id,
+      (err) => {
         if (err) {
-          console.error('Add star error:', err);
+          console.error('Star error:', err);
           alert(err.reason || err.message);
-          setIsStarred(!newStarredState);
+          // Revert on error
+          onStarToggle(property.id, !newStarredState);
         }
-      });
-    } else {
-      Meteor.call("starredProperties.remove", property.id, (err) => {
-        if (err) {
-          console.error('remove star error:', err);
-          alert(err.reason || err.message);
-          setIsStarred(!newStarredState);
-        }
-      });
-    }
+      }
+    );
   }
+  
 
-  React.useEffect(() => {
-    setIsStarred(property.starred);
-  }, [property.starred]);
+  // React.useEffect(() => {
+  //   setIsStarred(property.starred);
+  // }, [property.starred]);
 
 
   const starButton= showFav?(
@@ -53,7 +75,7 @@ export default function PropertyCard({
       className="absolute top-4 right-0 z-10 flex items-center bg-white/75 rounded-l-md px-2 py-1 shadow-md hover:bg-white"
       style={{ minWidth: '40px'}}
     >
-              {isStarred ? <FaStar size={24} className="text-yellow-500"/> : <FaRegStar size={24} />}
+              {property.starred ? <FaStar size={24} className="text-yellow-500"/> : <FaRegStar size={24} />}
             </button>
           ) : null;
   const cardContent = (
