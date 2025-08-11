@@ -47,7 +47,7 @@ export default function TenantBasicPropListings() {
   );
 
   const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
-  console.log("Starred properties:", starredProperties.map(sp => sp.prop_id));
+  //console.log("Starred properties:", starredProperties.map(sp => sp.prop_id));
   
     const propertyCards= availableProperties
     .filter(p=> showOnlySaved ? locallyStarred.has(p.prop_id) : true)
@@ -81,8 +81,8 @@ export default function TenantBasicPropListings() {
     };
     });
 
-    console.log("All property IDs:", availableProperties.map(p => p.prop_id));
-console.log("Starred set:", [...starredSet]);
+    //console.log("All property IDs:", availableProperties.map(p => p.prop_id));
+//console.log("Starred set:", [...starredSet]);
 
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
