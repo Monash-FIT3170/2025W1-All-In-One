@@ -7,7 +7,8 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { AgentAvailabilities } from '../../../api/AgentAvailabilities.js';
 import { ClearDialog } from './ClearDialog.jsx'; 
-import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
+import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx';
+import { TicketTypeDialog } from './TicketTypeDialog.jsx';  
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
 import { EventDetailModal } from './EventDetailModal.jsx'; 
 
@@ -28,7 +29,8 @@ export const Calendar = () => {
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
-  const [selectedEvent, setSelectedEvent] = useState(null); 
+  const [selectedEvent, setSelectedEvent] = useState(null);
+  const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false); 
 
   const closeDialogs = () => {
     setShowDialog(false);
@@ -58,6 +60,10 @@ export const Calendar = () => {
     if (activity_type === 'Availability') {
       setShowActivityTypeDialog(false);
       setShowAvailabilityTypeDialog(true);
+    }
+    if (activity_type === 'Ticket') {
+      setShowActivityTypeDialog(false);
+      setShowTicketTypeDialog(true);
     }
   };
 
@@ -257,6 +263,10 @@ export const Calendar = () => {
           pendingSlot={pendingSlot}
           onSelect={handleAvailabilityTypeSelect}
           onClose={closeDialogs} 
+        />
+        <TicketTypeDialog
+          isOpen={showTicketTypeDialog}
+          onClose={closeDialogs}
         />
       </div>
 
