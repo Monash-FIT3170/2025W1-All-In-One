@@ -39,7 +39,8 @@ useEffect(() => {
       type: 'Maintenance',
       description: issueDescription,
       issue_start_date: new Date(issueStartDate),
-      date_logged: dateLogged
+      date_logged: dateLogged,
+      status: 'Active'
     };
 
     Meteor.call('tickets.insert', ticketData, (error, result) => {
