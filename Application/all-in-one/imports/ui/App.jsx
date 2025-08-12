@@ -33,6 +33,7 @@ import AgentDetailedPropListing from "./agent/AgentDetailedPropListing.jsx"
 import AgentListings from "./agent/AgentListings.jsx"
 import ReviewApplication from "./agent/AgentReviewApplication.jsx"
 import AgentDashboard from './agent/AgentDashboard.jsx';
+import EditPropertyDetails from './agent/EditPropertyDetails.jsx';
 
 // importing landlord pages 
 import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx";
@@ -109,6 +110,7 @@ const App = () => (
                   <Route path="/AgentDetailedPropListing/:id" element={<AgentDetailedPropListing/>}/>
                   <Route path="/AgentListings" element={<AgentListings/>}/>
                   <Route path="/AgentReviewApplication" element={<ReviewApplication/>}/>
+                  <Route path="/EditPropertyDetails" element={<EditPropertyDetails/>}/>
           
           
         
