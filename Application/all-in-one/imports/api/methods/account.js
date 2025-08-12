@@ -92,4 +92,34 @@ Meteor.methods({
     }
   },
 
+  async "EditPropertyListing" ({propId, propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordEmail, status, agentId}) {
+      
+    const landlord = await Meteor.users.findOneAsync({ "emails.address": landlordEmail });
+      
+    if (!landlord) {
+      throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
+    };
+    
+    const date = new Date(dateAvailable);
+
+    await Properties.updateAsync({
+      prop_id: propId,
+      prop_address: propAddress,
+      prop_pricepweek: pricePerWeek,
+      prop_numbeds: numBeds,
+      prop_numbaths: numBaths,
+      prop_numcarspots: numParkSpots,
+      prop_type: propType,
+      prop_desc: description,
+      prop_available_date: date,
+      prop_furnish: isFurnished,
+      prop_pets: petsAllowed,
+      prop_bond: bond,
+      prop_status: status,
+      agent_id: agentId,   // to be changed
+      landlord_id: landlord._id
+    });
+
+  },
+
 });
