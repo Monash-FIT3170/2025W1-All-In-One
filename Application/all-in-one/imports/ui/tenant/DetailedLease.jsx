@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
+import { FaFilter } from "react-icons/fa";
 import {Link, useParams} from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
@@ -12,7 +13,7 @@ import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
 import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
 import { ResolveTicketDialog } from "./ticketPages/ResolveTicketDialog";
 import { Tickets } from "/imports/api/database/collections";
-import { CollapsedTicket } from "./ticketPages/Ticket";
+import { Ticket } from "./ticketPages/Ticket";
 
 
 
@@ -27,6 +28,7 @@ export default function DetailedLease() {
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
   const [showGeneralDialog, setShowGeneralDialog] = useState(false);
   const [showResolveTicketDialog, setShowResolveTicketDialog] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
 
 
   // Use Meteor's useTracker hook to reactively get tickets for this property
@@ -145,16 +147,32 @@ export default function DetailedLease() {
         </p>
       </div>
 
-      {/*Tickets section*/}
+      {/*Tickets section with Filter button aligned right below heading*/}
       <div className="max-w-7xl mx-auto w-full px-6 mt-8 pt-4 border-t border-gray-300">
         <h2 className="text-4xl mt-8 mb-8 font-bold text-black">Tickets</h2>
+        <div className="flex justify-end mb-4">
+          <button
+            className="w-1/6 bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+          >
+            <div className="flex items-center justify-center">
+              <FaFilter className="mr-2" />
+              Filter
+            </div>
+          </button>
+        </div>
       </div>
         {tickets.length === 0 ? (
           <p className="max-w-7xl mx-auto w-full px-6 mb-8">No tickets logged for this property yet.</p>
         ) : (
           <div className="max-w-7xl mx-auto w-full px-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             {tickets.map((ticket) => (
-                <CollapsedTicket ticket={ticket} setShowResolveTicketDialog={setShowResolveTicketDialog}/>
+              <Ticket 
+                ticket={ticket} 
+                setShowResolveTicketDialog={(ticketId) => {
+                  setSelectedTicketId(ticketId);
+                  setShowResolveTicketDialog(true);
+                }}
+              />
             ))}
           </div>
         )}
@@ -190,6 +208,7 @@ export default function DetailedLease() {
       <ResolveTicketDialog
         isOpen={showResolveTicketDialog} 
         onClose={closeDialogs} 
+        ticketId={selectedTicketId}
       />
     
 

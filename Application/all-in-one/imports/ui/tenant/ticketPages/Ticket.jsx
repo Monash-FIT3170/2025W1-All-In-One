@@ -6,7 +6,7 @@ import Collapse from '@mui/material/Collapse'; // For smooth collapse animation
 import { ResolveTicketDialog } from './ResolveTicketDialog'; 
 
 
-export const CollapsedTicket = ( { ticket, setShowResolveTicketDialog } ) => {
+export const Ticket = ( { ticket, setShowResolveTicketDialog } ) => {
     
     const [isExpanded, setIsExpanded] = useState(false);
     const isMaintenanceTicket = ticket.type === 'Maintenance';
@@ -22,7 +22,7 @@ export const CollapsedTicket = ( { ticket, setShowResolveTicketDialog } ) => {
 
     return (
         <div className="bg-[#CBADD8] border rounded-3xl shadow-md flex flex-col relative  px-4 pt-4 pb-8" title={isExpanded ? "Collapse Ticket" : "Expand Ticket"}>
-            <IconButton onClick={handleToggleExpand} aria-label="toggle expand" className="absolute top-3 right-3 text-2xl font-bold text-black hover:text-gray-700">
+            <IconButton onClick={handleToggleExpand} aria-label="toggle expand" className="!absolute !top-3 !right-3 text-2xl font-bold text-black hover:text-gray-700">
                 {isExpanded ? <ExpandLessIcon/> : <ExpandMoreIcon />}
                 
             </IconButton>
@@ -31,6 +31,7 @@ export const CollapsedTicket = ( { ticket, setShowResolveTicketDialog } ) => {
                 <p><strong className="font-bold font-sans">Title: </strong>{ticket.title}</p>
                 <p><strong className="font-bold font-sans">Type: </strong>{ticket.type}</p>
                 <p><strong className="font-bold font-sans">Date Logged: </strong>{ticket.date_logged}</p>
+                <p><strong className="font-bold font-sans">Status: </strong>{ticket.status}</p>
             </div>
             
             <Collapse in={isExpanded}>
@@ -51,14 +52,15 @@ export const CollapsedTicket = ( { ticket, setShowResolveTicketDialog } ) => {
                 </div>
             </Collapse>
             {/* Resolve Ticket Button */}
-            <button
-                type="button"
-                onClick={() => setShowResolveTicketDialog(true)}
-                className="mt-8 mb-2 self-center w-1/3 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-3xl shadow-md transition duration-200"
-                >
-                Resolved
-            </button>
-            
+            {ticket.status === 'Active' && (
+                <button
+                    type="button"
+                    onClick={() => setShowResolveTicketDialog(ticket.ticket_id)}
+                    className="mt-8 mb-2 self-center w-1/3 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-3xl shadow-md transition duration-200"
+                    >
+                    Resolved
+                </button>
+            )}
         </div>
     );
 };
