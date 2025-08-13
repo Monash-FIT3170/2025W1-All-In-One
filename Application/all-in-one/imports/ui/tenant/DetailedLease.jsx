@@ -14,6 +14,7 @@ import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
 import { ResolveTicketDialog } from "./ticketPages/ResolveTicketDialog";
 import { Tickets } from "/imports/api/database/collections";
 import { Ticket } from "./ticketPages/Ticket";
+import { FilterTicketsDialog } from "./ticketPages/FilterTicketsDialog.jsx"; // Import the FilterTicketsDialog component
 
 
 
@@ -24,12 +25,15 @@ import { Ticket } from "./ticketPages/Ticket";
 
 export default function DetailedLease() {
   const { id } = useParams();
+
+  //ticket states
   const [showAddTicketDialog, setShowAddTicketDialog] = useState(false);
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
   const [showGeneralDialog, setShowGeneralDialog] = useState(false);
   const [showResolveTicketDialog, setShowResolveTicketDialog] = useState(false);
   const [selectedTicketId, setSelectedTicketId] = useState(null);
-
+  const [showFilterTicketsDialog, setShowFilterTicketsDialog] = useState(false);
+  const [filterStatuses, setFilterStatuses] = useState([]);
 
   // Use Meteor's useTracker hook to reactively get tickets for this property
   const { tickets, isLoading } = useTracker(() => {
@@ -39,6 +43,9 @@ export default function DetailedLease() {
     return { tickets: ticketsData, isLoading: loading };
   }, [id]); // Re-run tracker if propId changes
 
+  // Store filtered tickets based on selected statuses
+  // If no filter is applied, show all tickets
+  const filteredTickets = filterStatuses.length > 0 ? tickets.filter(ticket => filterStatuses.includes(ticket.status)) : tickets;
 
 
   const closeDialogs = () => {
@@ -46,6 +53,7 @@ export default function DetailedLease() {
     setShowMaintenanceDialog(false);
     setShowGeneralDialog(false);
     setShowResolveTicketDialog(false);
+    setShowFilterTicketsDialog(false);
   };
 
   const handleTicketSelect = (ticketType) => {
@@ -151,21 +159,30 @@ export default function DetailedLease() {
       <div className="max-w-7xl mx-auto w-full px-6 mt-8 pt-4 border-t border-gray-300">
         <h2 className="text-4xl mt-8 mb-8 font-bold text-black">Tickets</h2>
         <div className="flex justify-end mb-4">
-          <button
-            className="w-1/6 bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
-          >
-            <div className="flex items-center justify-center">
-              <FaFilter className="mr-2" />
-              Filter
-            </div>
-          </button>
+          <div className="relative"> 
+            <button
+              className="bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+              onClick={() => setShowFilterTicketsDialog(!showFilterTicketsDialog)}
+            >
+              <div className="flex items-center justify-center">
+                <FaFilter className="mr-2" />
+                Filter
+              </div>
+            </button>
+            <FilterTicketsDialog
+              isOpen={showFilterTicketsDialog}
+              onApply={closeDialogs}
+              filterStatuses={filterStatuses}
+              setFilterStatuses={setFilterStatuses}
+            />
+          </div>
         </div>
       </div>
-        {tickets.length === 0 ? (
+        {filteredTickets.length === 0 ? (
           <p className="max-w-7xl mx-auto w-full px-6 mb-8">No tickets logged for this property yet.</p>
         ) : (
           <div className="max-w-7xl mx-auto w-full px-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-            {tickets.map((ticket) => (
+            {filteredTickets.map((ticket) => (
               <Ticket 
                 ticket={ticket} 
                 setShowResolveTicketDialog={(ticketId) => {
@@ -210,7 +227,8 @@ export default function DetailedLease() {
         onClose={closeDialogs} 
         ticketId={selectedTicketId}
       />
-    
+      
+      
 
       {/*Footer*/}
       <Footer />
