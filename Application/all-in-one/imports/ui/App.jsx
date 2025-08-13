@@ -24,6 +24,7 @@ import Apply from './tenant/TenantApply.jsx';
 import { PropertyListing } from './tenant/PropertyListing.jsx';
 import { InspectionBooking } from './tenant/InspectionBooking.jsx';
 import TenantApplications from './tenant/TenantApplications.jsx';
+import { UpcomingInspections } from './tenant/UpcomingInspections.jsx';
 
 // importing agent pages
 import AddPropertyListing from "./agent/AddPropertyListing.jsx";
@@ -78,6 +79,7 @@ const App = () => (
           {/* Inspection Booking Page */}
           <Route path="/InspectionListing" element={<PropertyListing />}/>
           <Route path="/InspectionBooking/:id" element={<InspectionBooking/>}/>
+          <Route path="/UpcomingInspections" element={<UpcomingInspections />}/>
           
           {/* Tenant Routes - team-2*/}
                   <Route path="/BasicLeases" element={<BasicLeases />} />

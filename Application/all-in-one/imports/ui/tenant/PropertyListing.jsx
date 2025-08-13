@@ -6,6 +6,8 @@ import { TenantBookings } from '../../api/TenantBookings';
 import { AgentAvailabilities } from '../../api/AgentAvailabilities';
 import { Properties, Agents, Photos } from "../../api/database/collections";
 import Navbar from "./components/TenNavbar";
+import { Link } from "react-router-dom";
+import { UpcomingInspections } from './UpcomingInspections.jsx';
 
 // Group events by date
 const groupEventsByDate = (events) => {
@@ -356,7 +358,7 @@ export const PropertyListing = () => {
               }
             </p>
           </div>
-        ) : (
+          ) : (
           <div className="space-y-8">
             {Object.keys(eventsByDate).map(date => (
               <div key={date}>
@@ -451,6 +453,13 @@ export const PropertyListing = () => {
             ))}
           </div>
         )}
+        <div className="w-full flex flex-row gap-4 mb-8 pt-10 justify-center">
+          <Link 
+          to = "/UpcomingInspections"
+          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200 justify-center">
+            View All Upcoming Inspections
+          </Link>
+        </div>
       </main> 
       <div className="h-16 bg-[#CBADD8]" />
     </div>
