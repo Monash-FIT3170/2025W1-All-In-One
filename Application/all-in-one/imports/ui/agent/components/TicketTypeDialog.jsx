@@ -6,61 +6,62 @@ import React, {
   useRef,
   useLayoutEffect,
 } from "react";
+import { Meteor } from "meteor/meteor";
+import { useTracker } from "meteor/react-meteor-data";
+import {
+  Tickets,
+  Tenants,
+  Properties,
+} from "/imports/api/database/collections"; // adjust path if needed
+
 import Collapse from "@mui/material/Collapse";
 import IconButton from "@mui/material/IconButton";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
 export const TicketTypeDialog = ({ isOpen, onClose }) => {
-  const DUMMY_TICKETS = [
-    {
-      id: 1,
-      title: "Tap is leaking",
-      tenant: "Iron Man",
-      ticketNumber: 1,
-      type: "Maintenance",
-      propertyAddress: "123 Main Street, Melton South, 3338 , VIC",
-      description: "Outdoor tap won’t stop leaking.",
-      issueStartDate: "2025-05-07",
-      dateLogged: "2025-05-07",
-    },
-    {
-      id: 2,
-      title: "Add on tenant",
-      tenant: "Iron Man",
-      ticketNumber: 2,
-      type: "Tenancy",
-      propertyAddress: "12 Stark Ave",
-      description: "Request to add an additional tenant to the lease.",
-      issueStartDate: "2025-05-02",
-      dateLogged: "2025-05-03",
-    },
-    {
-      id: 5,
-      title: "Broken lightbulb",
-      tenant: "Bruce Wayne",
-      ticketNumber: 5,
-      type: "Maintenance",
-      propertyAddress: "100 Wayne Manor",
-      description: "Kitchen downlight keeps flickering and is now dead.",
-      issueStartDate: "2025-05-05",
-      dateLogged: "2025-05-06",
-    },
-    {
-      id: 6,
-      title: "Wall peeling",
-      tenant: "James Charles",
-      ticketNumber: 1,
-      type: "Maintenance",
-      propertyAddress: "9 Beauty Blvd",
-      description: "Paint peeling in the living room due to damp.",
-      issueStartDate: "2025-05-04",
-      dateLogged: "2025-05-04",
-    },
-  ];
-
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
+
+  // Subscribe to server pubs you already have, then filter client-side for the logged-in agent
+  const { ready, ticketsForAgent, tenantsMap, propertiesMap } = useTracker(() => {
+    const subTickets = Meteor.subscribe("tickets");
+    const subTenants = Meteor.subscribe("tenants");
+    const subProps = Meteor.subscribe("properties");
+
+    const allReady = subTickets.ready() && subTenants.ready() && subProps.ready();
+    const uid = Meteor.userId();
+
+    if (!allReady || !uid) {
+      return { ready: allReady, ticketsForAgent: [], tenantsMap: {}, propertiesMap: {} };
+    }
+
+    const agentTickets = Tickets.find(
+      { agent_id: uid },
+      { sort: { date_logged: -1 } }
+    ).fetch();
+
+    const allTenants = Tenants.find({}).fetch();
+    const tenantsMapLocal = allTenants.reduce((acc, t) => {
+      acc[t.ten_id] = {
+        fullName: [t.ten_fn, t.ten_ln].filter(Boolean).join(" ").trim(),
+      };
+      return acc;
+    }, {});
+
+    const allProps = Properties.find({}).fetch();
+    const propertiesMapLocal = allProps.reduce((acc, p) => {
+      acc[p.prop_id] = { address: p.prop_address };
+      return acc;
+    }, {});
+
+    return {
+      ready: allReady,
+      ticketsForAgent: agentTickets,
+      tenantsMap: tenantsMapLocal,
+      propertiesMap: propertiesMapLocal,
+    };
+  }, []);
 
   // Lock background scroll when dialog is open
   useEffect(() => {
@@ -79,21 +80,39 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
+  // Decorate tickets with tenant name + property address so UI matches your original dummy version
+  const decorated = useMemo(() => {
+    return ticketsForAgent.map((t) => {
+      const tenantName = tenantsMap[t.ten_id]?.fullName || "—";
+      const propertyAddress = propertiesMap[t.prop_id]?.address || "—";
+      return {
+        ...t,
+        tenant: tenantName,
+        propertyAddress,
+        ticketNumber: t.ticket_no,
+        issueStartDate: t.issue_start_date,
+        dateLogged: t.date_logged,
+      };
+    });
+  }, [ticketsForAgent, tenantsMap, propertiesMap]);
+
+  // Search over the same fields you used previously
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return DUMMY_TICKETS;
-    return DUMMY_TICKETS.filter((t) =>
+    if (!q) return decorated;
+    return decorated.filter((t) =>
       [t.title, t.tenant, t.ticketNumber?.toString(), t.propertyAddress, t.type]
         .filter(Boolean)
         .join(" ")
         .toLowerCase()
         .includes(q)
     );
-  }, [query]);
+  }, [query, decorated]);
 
   // Measure the yellow box height ONCE (on open, when nothing is expanded)
   const listRef = useRef(null);
   const [maxListHeightPx, setMaxListHeightPx] = useState(null);
+  const HEIGHT_BUFFER = 96; // 👈 extra height to make the yellow box a bit taller
 
   useLayoutEffect(() => {
     if (!isOpen) return;
@@ -103,7 +122,7 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
     const rAF = requestAnimationFrame(() => {
       if (listRef.current) {
         const h = listRef.current.clientHeight;
-        if (h > 0) setMaxListHeightPx(h);
+        if (h > 0) setMaxListHeightPx(h + HEIGHT_BUFFER); // 👈 add buffer
       }
     });
     return () => cancelAnimationFrame(rAF);
@@ -151,6 +170,7 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
             <button
               className="grid h-11 w-11 place-items-center rounded-xl bg-[#9747FF] hover:opacity-90"
               aria-label="Search"
+              type="button"
             >
               <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <circle cx="11" cy="11" r="7" stroke="white" strokeWidth="2" />
@@ -159,58 +179,68 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          {/* Yellow list: scrolls once it exceeds the captured height */}
+          {/* Yellow list: now slightly taller due to buffer */}
           <div
             ref={listRef}
             className="rounded-2xl bg-[#FAEEDA] p-5 overflow-y-auto overscroll-contain"
             style={
-              maxListHeightPx != null ? { maxHeight: `${maxListHeightPx}px` } : undefined
+              maxListHeightPx != null
+                ? { maxHeight: `${maxListHeightPx}px`, minHeight: "260px" }
+                : { minHeight: "260px" }
             }
           >
-            {filtered.length === 0 ? (
+            {!ready ? (
               <div className="py-10 text-center text-sm text-black/70">
-                No tickets match “{query}”.
+                Loading tickets…
+              </div>
+            ) : filtered.length === 0 ? (
+              <div className="py-10 text-center text-sm text-black/70">
+                {Meteor.userId()
+                  ? `No tickets match “${query}”.`
+                  : "Please sign in as an agent to view your tickets."}
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
                 {filtered.map((t) => {
-                  const expanded = selectedId === t.id;
+                  const expanded = selectedId === t.ticket_id;
                   return (
                     <div
-                      key={t.id}
+                      key={t.ticket_id}
                       className={`relative rounded-2xl border px-5 pt-4 pb-4 transition hover:shadow cursor-pointer self-start
-                        ${
-                          expanded
-                            ? "bg-[#CBADD8] border-black/30"
-                            : "bg-white border-black/20"
-                        }`}
-                      onClick={() => setSelectedId(expanded ? null : t.id)}
+                        ${expanded ? "bg-[#CBADD8] border-black/30" : "bg-white border-black/20"}`}
+                      onClick={() => setSelectedId(expanded ? null : t.ticket_id)}
                     >
-                      {/* Expand/collapse icon styled like your example */}
-                      <IconButton
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedId(expanded ? null : t.id);
-                        }}
-                        aria-label="toggle expand"
-                        className="absolute top-3 right-3 text-2xl font-bold text-black hover:text-gray-700"
-                      >
-                        {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
-                      </IconButton>
+                      {/* Arrow in TOP-RIGHT (hard-positioned wrapper to avoid drift) */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <IconButton
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setSelectedId(expanded ? null : t.ticket_id);
+                          }}
+                          aria-label="toggle expand"
+                          className="text-2xl font-bold text-black hover:text-gray-700"
+                          sx={{ position: "relative" }} // keep root predictable
+                        >
+                          {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
+                        </IconButton>
+                      </div>
 
+                      {/* Summary content (same styling as before) */}
                       <div className="space-y-1 pr-10">
                         <div className="text-sm font-bold">
-                          <span className="font-semibold">Title:</span> {t.title}
+                          <span className="font-semibold">Title:</span> {t.title || "—"}
                         </div>
                         <div className="text-sm">
                           <span className="font-semibold">Tenant:</span> {t.tenant}
                         </div>
                         <div className="text-sm">
                           <span className="font-semibold">Ticket number:</span>{" "}
-                          {t.ticketNumber}
+                          {t.ticketNumber ?? "—"}
                         </div>
                       </div>
 
+                      {/* Expanded details (same layout as before) */}
                       <Collapse in={expanded}>
                         <div className="mt-4 rounded-2xl bg-[#B997C6]/40 p-4">
                           <div className="mb-3">
@@ -219,10 +249,11 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
                             </label>
                             <input
                               readOnly
-                              value={t.type}
+                              value={t.type || ""}
                               className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
                             />
                           </div>
+
                           <div className="mb-3">
                             <label className="mb-1 block text-xs font-semibold">
                               Property
@@ -233,36 +264,45 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
                               className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
                             />
                           </div>
+
                           <div className="mb-3">
                             <label className="mb-1 block text-xs font-semibold">
                               What is the issue?
                             </label>
                             <textarea
                               readOnly
-                              value={t.description}
+                              value={t.description || ""}
                               rows={3}
                               className="w-full resize-none rounded-lg border bg-white px-3 py-2 text-sm"
                             />
                           </div>
+
                           <div className="mb-3">
                             <label className="mb-1 block text-xs font-semibold">
                               When did the issue commence?
                             </label>
                             <input
                               readOnly
-                              value={new Date(
+                              value={
                                 t.issueStartDate
-                              ).toLocaleDateString()}
+                                  ? new Date(t.issueStartDate).toLocaleDateString()
+                                  : ""
+                              }
                               className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
                             />
                           </div>
+
                           <div className="mb-3">
                             <label className="mb-1 block text-xs font-semibold">
                               Date logged
                             </label>
                             <input
                               readOnly
-                              value={new Date(t.dateLogged).toLocaleDateString()}
+                              value={
+                                t.dateLogged
+                                  ? new Date(t.dateLogged).toLocaleDateString()
+                                  : ""
+                              }
                               className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
                             />
                           </div>
@@ -280,8 +320,8 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
             <button
               disabled={!selectedId}
               onClick={() => {
-                const chosen = DUMMY_TICKETS.find((t) => t.id === selectedId);
-                console.log("Selected dummy ticket:", chosen);
+                const chosen = decorated.find((t) => t.ticket_id === selectedId);
+                console.log("Selected ticket:", chosen);
                 onClose();
               }}
               className={`w-[360px] rounded-full px-6 py-3 text-lg font-semibold
