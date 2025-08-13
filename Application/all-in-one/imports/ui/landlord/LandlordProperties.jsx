@@ -39,8 +39,7 @@ export default function LandlordProperties() {
         id: p.prop_id,
         location: p.prop_address,
         price:`$${p.prop_pricepweek}`,
-        image:photo?.photo_url ||
-        "/images/default.jpg",
+        image:`/images/properties/${p.prop_id}/main.jpg`,
         beds: p.prop_numbeds,
         baths: p.prop_numbaths,
         cars:p.prop_numcarspots,
