@@ -5,6 +5,10 @@ import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
 export const EventDetailModal = ({ event, onClose }) => {
   if (!event) return null;
 
+  // Extract property and tenant info if available
+  const property = event.property || {};
+  const tenant = event.tenant || {};
+
   const formatDate = (date) => {
     const day = date.getDate();
     const month = date.toLocaleString('default', { month: 'long' });
@@ -26,59 +30,23 @@ export const EventDetailModal = ({ event, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="relative bg-[#CBADD8] p-6 rounded-xl w-[800px] shadow-lg flex gap-6">
-        <button
-          className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
-          onClick={onClose}
-          aria-label="Close"
-        >
-          ×
-        </button>
-        {/* Left: Property Info */}
-        <div className="flex-1">
-          <h2 className="text-3xl text-center font-semibold text-gray-800 mb-2 tracking-wide">
-            {event.type || ''}
-          </h2>
-
-          <img
-            src={event.image || '/images/default.jpg'}
-            alt="Property"
-            className="rounded-xl mb-2 w-full h-48 object-cover"
-            onError={(e) => {
-              e.target.onerror = null; // prevent infinite loop
-              e.target.src = '/images/default.jpg'; // fallback
-            }}
-          />
-
-          <div className="bg-[#FFF8E9] p-4 rounded-xl">
-            {event.property ? (
-              <>
-              
-                <p className="text-center text-gray-700">
-                  {event.property?.address || 'No address available'}
-                </p>
-
-                <p className="text-center text-sm text-gray-700">${event.property.price} per week</p>
-
-                <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
-                  <div className="flex items-center gap-1">
-                    <BedDouble className="w-4 h-4" />
-                    {event.property.bedrooms || '—'}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <ShowerHead className="w-4 h-4" />
-                    {event.property.bathrooms || '—'}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <CarFront className="w-4 h-4" />
-                    {event.property.parking || '—'}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <p className="text-center text-gray-700">No property information</p>
-            )}
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">{event.title}</h2>
+        <div className="mb-2">
+          <strong>Start:</strong> {event.start ? new Date(event.start).toLocaleString() : ''}
+        </div>
+        <div className="mb-2">
+          <strong>End:</strong> {event.end ? new Date(event.end).toLocaleString() : ''}
+        </div>
+        {property.address && (
+          <div className="mb-2">
+            <strong>Property Address:</strong> {property.address}
+          </div>
+        )}
+        {tenant.name && (
+          <div className="mb-2">
+            <strong>Tenant Name:</strong> {tenant.name}
           </div>
 
         </div>
