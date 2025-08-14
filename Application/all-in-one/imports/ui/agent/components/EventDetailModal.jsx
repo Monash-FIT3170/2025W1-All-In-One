@@ -106,12 +106,13 @@ export const EventDetailModal = ({ event, onClose }) => {
               No tenant information.
             </div>
           )}
-          {/* {event.notes?.trim() && (
+          {/* Notes */}
+          {event.note?.trim() && (
             <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
-              <p className="font-semibold mb-1">Note</p>
-              <p className="whitespace-pre-line">{event.notes}</p>
+              <p className="font-semibold mb-1">Notes</p>
+              <p className="whitespace-pre-line">{event.note}</p>
             </div>
-          )} */}
+          )}
         </div>
       </div>
     </div>

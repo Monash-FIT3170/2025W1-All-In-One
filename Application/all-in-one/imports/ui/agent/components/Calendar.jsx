@@ -229,14 +229,12 @@ export const Calendar = () => {
           ]}                   
           eventClick={(info) => {
             const clicked = info.event.extendedProps;
-            if (clicked.type === 'Open House') {
-              setSelectedEvent({
-                title: info.event.title,
-                start: info.event.start,
-                end: info.event.end,
-                ...clicked,
-              });
-            } 
+            setSelectedEvent({
+              title: info.event.title,
+              start: info.event.start,
+              end: info.event.end,
+              ...clicked,
+            }); 
           }}          
           headerToolbar={{
             left: 'prev today next',
