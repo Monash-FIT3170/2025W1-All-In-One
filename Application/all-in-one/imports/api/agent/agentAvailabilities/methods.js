@@ -15,6 +15,7 @@ Meteor.methods({
     parking,
     image,
     status,
+    notes,
   ) {
     try {
       console.log('[DEBUG] insert args:', {
@@ -28,7 +29,8 @@ Meteor.methods({
         bathrooms,
         parking,
         image,
-        status
+        status,
+        notes
       });
   
       check(start, String);
@@ -42,6 +44,7 @@ Meteor.methods({
       check(parking, Match.Optional(String)); 
       check(image, Match.Optional(String));
       check(status, Match.Optional(String));
+      check(notes, Match.Optional(String));
   
       const result = await AgentAvailabilities.insertAsync({
         start,
@@ -57,6 +60,7 @@ Meteor.methods({
         parking,
         image,
         status,
+        notes,
         createdAt: new Date(),
       });
   
