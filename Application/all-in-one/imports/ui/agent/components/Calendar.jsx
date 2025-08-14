@@ -134,6 +134,7 @@ export const Calendar = () => {
         String(bathrooms ?? ''),
         String(parking ?? ''),
         String(image ?? ''),
+        String(note ?? ''),
         'confirmed'
       );
     } catch (error) {
