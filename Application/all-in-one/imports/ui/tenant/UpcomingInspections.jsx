@@ -8,7 +8,7 @@ import { Properties, Agents, Photos } from "../../api/database/collections";
 import Navbar from "./components/TenNavbar";
 import { Link } from "react-router-dom";
 
-// Group events by date
+// Group events by Availability Type
 const groupEventsByType = (events) => {
   const grouped = {};
   events.forEach(event => {
@@ -23,8 +23,9 @@ const groupEventsByType = (events) => {
 // Format date for display
 const formatDisplayDate = (dateString) => {
   const date = new Date(dateString);
-  const options = { month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('en-US', options) + getOrdinalSuffix(date.getDate());
+  const options = { month: 'long', day: 'numeric'}
+  const options_year = {year: 'numeric'};
+  return date.toLocaleDateString('en-US', options) + getOrdinalSuffix(date.getDate()) + ", " + date.toLocaleDateString('en-us', options_year);
 };
 
 // Get ordinal suffix for date
@@ -58,26 +59,23 @@ export const UpcomingInspections = () => {
   const [searchTerm, setSearchTerm] = useState('');
     const [showFilters, setShowFilters] = useState(false);
     const [selectedAgents, setSelectedAgents] = useState(['All Agents']);
-    const [selectedProperties, setSelectedProperties] = useState(['All Properties']);
+    const [selectedAvailabilities, setSelectedAvailabilities] = useState(['All Availabilities']);
     const [selectedDates, setSelectedDates] = useState(['All Dates']);
     const [loading, setLoading] = useState(true);
   
     // Subscribe to data - only get current user's bookings
-    const { myBookings, availabilities, properties, agents, photos, isReady } = useTracker(() => {
-      const bookingsHandle = Meteor.subscribe('tenantBookings');
+    const { availabilities, properties, agents, photos, isReady } = useTracker(() => {
       const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
       const propertiesHandle = Meteor.subscribe('properties');
       const agentsHandle = Meteor.subscribe('agents');
       const photosHandle = Meteor.subscribe('photos');
       
-      const ready = bookingsHandle.ready() && 
-                    availabilitiesHandle.ready() && 
+      const ready = availabilitiesHandle.ready() && 
                     propertiesHandle.ready() && 
                     agentsHandle.ready() &&
                     photosHandle.ready();
   
       return {
-        myBookings: TenantBookings.find({ tenantId: Meteor.userId() }).fetch(),
         availabilities: AgentAvailabilities.find({}).fetch(),
         properties: Properties.find({}).fetch(),
         agents: Agents.find({}).fetch(),
@@ -91,19 +89,17 @@ export const UpcomingInspections = () => {
     }, [isReady]);
   
     // Transform booked data for display 
-    const transformedEvents = myBookings.map(booking => {
-      // Find the corresponding availability
-      const availability = availabilities.find(a => a._id === booking.agentAvailabilityId) || {};
+    const transformedEvents = availabilities.map(booking => {
       
       let property = {};
       
-      // Try to find property by availability.property first
-      if (availability.property && availability.property !== "") {
-        property = properties.find(p => p.prop_id === availability.property) || {};
+      // Try to find property by booking.property first
+      if (booking.property && booking.property !== "") {
+        property = properties.find(p => p.prop_address === booking.property.address) || {};
       }
       
       // If no property found, try to get from booking.property if it exists
-      if (!property.prop_id && booking.property) {
+      if (!property.prop_id && booking.property.id) {
         // Check if booking.property has property info directly
         if (typeof booking.property === 'object' && booking.property.address) {
           // Use property data directly from booking
@@ -123,7 +119,7 @@ export const UpcomingInspections = () => {
         }
       }
       
-      // If still no property, use first available property as fallback
+      // If still no property, use first available property as fallback (this is the case for inspections since no property is specified)
       if (!property.prop_id && properties.length > 0) {
         property = properties[0]; // Use first property as fallback
       }
@@ -142,7 +138,7 @@ export const UpcomingInspections = () => {
         type: property.prop_type || 'Property',
         AvailableDate: property.prop_available_date || new Date(),
         Pets: property.prop_pets ? "True" : "False",
-        imageUrls: propertyPhotos.length ? propertyPhotos.map((photo) => photo.photo_url) : ["/images/default.jpg"],
+        imageUrls: propertyPhotos.length ? propertyPhotos.map((photo) => `/images/properties/${property.prop_id}/main.jpg`) : ["/images/default.jpg"],
         details: {
           beds: property.prop_numbeds ?? "N/A",
           baths: property.prop_numbaths ?? "N/A",
@@ -159,8 +155,8 @@ export const UpcomingInspections = () => {
         time: formatTime(booking.start, booking.end),
         agent: `${agent.agent_fname || 'Unknown'} ${agent.agent_lname || 'Agent'}`,
         image: propertyData.imageUrls[0],
-        activityType: availability.activity_type || 'Inspection',
-        availabilityType: availability.availability_type || 'Standard',
+        activityType: booking.activity_type || 'Standard',
+        availabilityType: booking.availability_type || 'Inspection',
         status: booking.status,
         bookingDate: booking.createdAt,
         propertyDetails: {
@@ -169,15 +165,16 @@ export const UpcomingInspections = () => {
           bathrooms: propertyData.details.baths,
           parking: propertyData.details.carSpots
         },
-        fullPropertyData: propertyData
+        fullPropertyData: propertyData,
+        property_id: propertyData.id
       };
     });
   
     // Filter events based on selected filters
     const filteredEvents = transformedEvents.filter(event => {
       const agentMatch = selectedAgents.includes('All Agents') || selectedAgents.includes(event.agent);
-      const propertyMatch = selectedProperties.includes('All Properties') || 
-        selectedProperties.some(prop => event.property.toLowerCase().includes(prop.toLowerCase()));
+      const propertyMatch = selectedAvailabilities.includes('All Availabilities') || 
+        selectedAvailabilities.some(availabilityType => event.availabilityType.toLowerCase().includes(availabilityType.toLowerCase()));
       const dateMatch = selectedDates.includes('All Dates') || 
         selectedDates.some(date => event.date.includes(date));
       const searchMatch = searchTerm === '' || 
@@ -193,7 +190,7 @@ export const UpcomingInspections = () => {
     
     // Generate filter options from actual data
     const agentOptions = ['All Agents', ...new Set(transformedEvents.map(e => e.agent))];
-    const propertyOptions = ['All Properties', ...new Set(transformedEvents.map(e => e.property))];
+    const availabilityOptions = ['All Availabilities', ...new Set(transformedEvents.map(e => e.availabilityType))];
     const dateOptions = ['All Dates', ...new Set(transformedEvents.map(e => e.date))];
   
     const handleCheckboxChange = (value, type, setterFunction, currentValues) => {
@@ -257,8 +254,8 @@ export const UpcomingInspections = () => {
           >
             <Filter size={18} />
             Filters
-            {(selectedAgents.length > 1 || selectedProperties.length > 1 || selectedDates.length > 1 || 
-              !selectedAgents.includes('All Agents') || !selectedProperties.includes('All Properties') || 
+            {(selectedAgents.length > 1 || selectedAvailabilities.length > 1 || selectedDates.length > 1 || 
+              !selectedAgents.includes('All Agents') || !selectedAvailabilities.includes('All Properties') || 
               !selectedDates.includes('All Dates')) && (
               <span className="bg-purple-500 text-white text-xs rounded-full px-2 py-1 ml-1">
                 Active
@@ -297,22 +294,22 @@ export const UpcomingInspections = () => {
                 </div>
               </div>
               
-              {/* Property Filter */}
+              {/* Availability Filter */}
               <div className="mb-6">
                 <h4 className="font-medium mb-3 flex items-center justify-between">
-                  Property ({propertyOptions.length - 1} available)
+                  Availability ({availabilityOptions.length - 1} available)
                   <ChevronDown size={16} />
                 </h4>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
-                  {propertyOptions.map(property => (
-                    <label key={property} className="flex items-center gap-2">
+                  {availabilityOptions.map(availabilityType => (
+                    <label key={availabilityType} className="flex items-center gap-2">
                       <input
                         type="checkbox"
-                        checked={selectedProperties.includes(property)}
-                        onChange={() => handleCheckboxChange(property, 'Properties', setSelectedProperties, selectedProperties)}
+                        checked={selectedAvailabilities.includes(availabilityType)}
+                        onChange={() => handleCheckboxChange(availabilityType, 'Properties', setSelectedAvailabilities, selectedAvailabilities)}
                         className="w-4 h-4 text-purple-600 rounded"
                       />
-                      <span className="text-sm truncate">{property}</span>
+                      <span className="text-sm truncate">{availabilityType}</span>
                     </label>
                   ))}
                 </div>
@@ -358,36 +355,41 @@ export const UpcomingInspections = () => {
           </div>
           ) : (
           <div className="space-y-8">
-            {Object.keys(eventsByType).map(availabilityType => (
-              <div key={availabilityType}>
-                <div className="flex items-center mb-6">
-                  <div className="border-t border-gray-400 flex-grow"></div>
-                  <h3 className="text-xl text-gray-600 font-medium px-4">{availabilityType}</h3>
-                  <div className="border-t border-gray-400 flex-grow"></div>
-                </div>
-                
-                {eventsByType[availabilityType].map(event => (
-                  <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
-                    <div className="w-48 h-32 flex-shrink-0">
-                      <img src={event.image} alt="Property" className="w-full h-full object-cover" />
-                    </div>
-                    
-                    <div className="p-6 flex-grow">
-                      <h4 className="text-xl underline font-extrabold text-gray-800">insert address here</h4>
-                      <div className="flex items-start justify-between mb-2">
-                        <h4 className="text-lg font-semibold text-gray-800">{event.date}</h4>
-                      </div>
-                      <p className="text-gray-700 font-medium mb-3">{event.time}</p>
 
-                    </div>
-                    
-                    <div className="bg-white rounded-lg m-4 p-6 w-64">
-                      <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
-                    </div>
+              {Object.keys(eventsByType).map(availabilityType => (
+                <div key={availabilityType}>
+                  <div className="flex items-center mb-6">
+                    <div className="border-t border-gray-400 flex-grow"></div>
+                    <h3 className="text-xl text-gray-600 font-medium px-4">{availabilityType}</h3>
+                    <div className="border-t border-gray-400 flex-grow"></div>
                   </div>
-                ))}
-              </div>
-            ))}
+                  
+                  {eventsByType[availabilityType].map(event => (
+                    <Link
+                      key={event.property_id}
+                      to={`/TenDetailedPropListing/${event.property_id}`}>
+                      <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
+                        <div className="w-48 h-32 flex-shrink-0">
+                          <img src={event.image} alt="Property" className="w-full h-full object-cover" />
+                        </div>
+                        
+                        <div className="p-6 flex-grow">
+                          <h4 className="text-xl underline font-extrabold text-gray-800">{event.property}</h4>
+                          <div className="flex items-start justify-between mb-2">
+                            <h4 className="text-lg font-semibold text-gray-800">{event.date}</h4>
+                          </div>
+                          <p className="text-gray-700 font-medium mb-3">{event.time}</p>
+
+                        </div>
+                        
+                        <div className="bg-white rounded-lg m-4 p-6 w-64">
+                          <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
+                        </div>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              ))}
           </div>
         )}
       </main> 
