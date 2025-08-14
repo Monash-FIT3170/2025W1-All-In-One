@@ -134,8 +134,8 @@ export const Calendar = () => {
         String(bathrooms ?? ''),
         String(parking ?? ''),
         String(image ?? ''),
-        String(note ?? ''),
-        'confirmed'
+        'confirmed',
+        String(note ?? '')
       );
     } catch (error) {
       alert('Insert failed: ' + error.reason);
@@ -168,7 +168,7 @@ export const Calendar = () => {
           String(event.parking ?? ''),
           String(event.image ?? ''),
           'confirmed',
-          String(event.note ?? '')
+          String(event.note ?? ''),
         );
       }
 
