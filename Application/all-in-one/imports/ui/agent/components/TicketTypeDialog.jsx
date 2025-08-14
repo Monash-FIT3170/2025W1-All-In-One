@@ -137,6 +137,10 @@ export const TicketTypeDialog = ({ isOpen, onClose, onSelect }) => {
 
   if (!isOpen) return null;
 
+  // New: explicit empty states
+  const noTicketsAssigned = ready && Meteor.userId() && decorated.length === 0;
+  const noMatches = ready && decorated.length > 0 && filtered.length === 0;
+
   return (
     <div className="fixed inset-0 z-50 bg-black/30">
       <div className="min-h-full flex items-center justify-center p-6">
@@ -200,11 +204,17 @@ export const TicketTypeDialog = ({ isOpen, onClose, onSelect }) => {
               <div className="py-10 text-center text-sm text-black/70">
                 Loading tickets…
               </div>
-            ) : filtered.length === 0 ? (
+            ) : !Meteor.userId() ? (
               <div className="py-10 text-center text-sm text-black/70">
-                {Meteor.userId()
-                  ? `No tickets match “${query}”.`
-                  : "Please sign in as an agent to view your tickets."}
+                Please sign in as an agent to view your tickets.
+              </div>
+            ) : noTicketsAssigned ? (
+              <div className="py-10 text-center text-sm text-black/70">
+                You currently have no tickets assigned.
+              </div>
+            ) : noMatches ? (
+              <div className="py-10 text-center text-sm text-black/70">
+                No tickets match “{query}”.
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
