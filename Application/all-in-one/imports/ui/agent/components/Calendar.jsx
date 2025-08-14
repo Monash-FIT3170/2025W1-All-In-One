@@ -95,7 +95,7 @@ export const Calendar = () => {
     });
   };
 
-  const handleBookingSelect = ({ type, start, end, address, price, bedrooms, bathrooms, parking, image, note }) => {
+  const handleBookingSelect = async ({ type, start, end, address, price, bedrooms, bathrooms, parking, image, note }) => {
     const tempEvent = {
       id: Date.now(),
       start,

@@ -44,44 +44,37 @@ export const EventDetailModal = ({ event, onClose }) => {
             <strong>Property Address:</strong> {property.address}
           </div>
         )}
-        {tenant.name && (
-          <div className="mb-2">
-            <strong>Tenant Name:</strong> {tenant.name}
-          </div>
+        {/* Wrap the following in a fragment */}
+        <>
+          {/* Right: Booking Info */}
+          <div className="flex-1">
+            <h2 className="text-2xl font-bold mb-2">
+              {formatDate(new Date(event.start))}
+            </h2>
+            <p className="text-lg font-medium text-gray-700">
+              {formatTime(new Date(event.start), new Date(event.end))}
+            </p>
 
-        </div>
-
-        {/* Right: Booking Info */}
-        <div className="flex-1">
-          <h2 className="text-2xl font-bold mb-2">
-            {formatDate(event.start)}
-          </h2>
-          <p className="text-lg font-medium text-gray-700">
-            {formatTime(event.start, event.end)}
-          </p>
-
-          {event.tenant ? (
-            <>
+            {tenant.name ? (
               <div className="bg-white p-4 rounded-xl space-y-2 mt-4">
-                <p className="font-semibold text-lg">{event.tenant}</p>
-                <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
-                <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
+                <p className="font-semibold text-lg">{tenant.name}</p>
+                <p className="text-sm text-gray-600">Age: {tenant.age || '—'}</p>
+                <p className="text-sm text-gray-600">Occupation: {tenant.occupation || '—'}</p>
               </div>
-            </>
-
-          ) : (
-            <div className="text-sm text-gray-600 mt-4 italic">
-              No tenant information.
-            </div>
-          )}
-          {/* Notes */}
-          {event.note?.trim() && (
-            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
-              <p className="font-semibold mb-1">Notes</p>
-              <p className="whitespace-pre-line">{event.note}</p>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div className="text-sm text-gray-600 mt-4 italic">
+                No tenant information.
+              </div>
+            )}
+            {/* Notes */}
+            {event.note?.trim() && (
+              <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
+                <p className="font-semibold mb-1">Notes</p>
+                <p className="whitespace-pre-line">{event.note}</p>
+              </div>
+            )}
+          </div>
+        </>
       </div>
     </div>
   );
