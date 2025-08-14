@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, RentalApplications, Landlord } from "../../api/database/collections"; // importing mock for now
 
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,18 +16,20 @@ import { Properties, Photos, Videos, RentalApplications } from "../../api/databa
 export default function AgentDetailedListing() {
   const { id } = useParams();
   
-const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=>{
+const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
         const subApps= Meteor.subscribe("rentalApplications");
         const subVideos = Meteor.subscribe("videos");
+        const subLandlords = Meteor.subscribe("landlords");
     
-        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready();
+        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready() && subLandlords.ready();
   
         let property= null;
         let photos= [];
         let videos = [];
         let approvedLeaseStart=null;
+        let landlord = null;
   
         // find property, photos and videos corresponding to the property ID passed.     
         if (isReady){
@@ -36,25 +38,31 @@ const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=
           videos = Videos.find({ prop_id: id }).fetch();
         }
 
-        // code for next milestone: display lease date of properties whhich are maked as Leased in Property
-        // if (property && property.prop_status==="Leased"){
-        //   const approvedApp= RentalApplications.findOne({
-        //     prop_id: id,
-        //     status: "Approved",
-        //   });
+        
+        if (property && property.prop_status==="Leased"){
+          const approvedApp= RentalApplications.findOne({
+            prop_id: id,
+            status: "Approved",
+          });
 
-        //   if (approvedApp && approvedApp.lease_start_date){
-        //     approvedLeaseStart= approvedApp.lease_start_date;
-        //   }
-        // }
+          if (approvedApp && approvedApp.lease_start_date){
+            approvedLeaseStart= approvedApp.lease_start_date;
+          }
+        }
 
         // get lease date of properties with approved tenant
-        approvedLeaseStart = RentalApplications.findOne({ 
-          prop_id: id, 
-          status: "Approved" 
-        })?.lease_start_date || null;
+        // code from milestone 2: display lease date of properties whhich are maked as Leased in Property
+        // approvedLeaseStart = RentalApplications.findOne({ 
+        //   prop_id: id, 
+        //   status: "Approved" 
+        // })?.lease_start_date || null;
+
+        // fetch landlord information
+                if (property?.landlord_id) {
+                  landlord = Landlord.findOne({ ll_id: property.landlord_id });
+                }
   
-        return {isReady, property, photos, videos, approvedLeaseStart};
+        return {isReady, property, photos, videos, approvedLeaseStart, landlord};
   
     
       }, [id]);
@@ -108,6 +116,22 @@ const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=
           {propertyData.description}
         </p>
       </div>
+
+      {/* Agent information */}
+      {landlord && (
+        <div className="max-w-7xl max-auto p-6 mt-4 rounded shadow-md text-gray-800">
+          <h3 className="text-xl font-semibold mb-4">Landlord Information</h3>
+          <p>
+            <span className="text-1xl text-gray-700">Name: </span> {landlord.ll_fn} {landlord.ll_ln}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Email: </span> {landlord.ll_email}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Phone: </span> {landlord.ll_pn}
+          </p>
+        </div>
+      )}
 
       {/*Footer*/}
       <Footer />
