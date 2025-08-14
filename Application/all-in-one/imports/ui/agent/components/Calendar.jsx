@@ -162,6 +162,37 @@ export const Calendar = () => {
     });
   };
 
+  // Add this function to extract details for booked events
+  const handleEventClick = (info) => {
+    // Only allow editing if the event has a Mongo _id
+    if (!info.event.id || (info.event.id.length !== 17 && info.event.id.length !== 24)) {
+      alert('You can only edit saved availabilities.');
+      return;
+    }
+
+    // If the event is booked, show detailed info
+    if (info.event.extendedProps.status === 'booked') {
+      setSelectedEvent({
+        id: info.event.id,
+        title: info.event.title,
+        start: info.event.start,
+        end: info.event.end,
+        ...info.event.extendedProps,
+      });
+      return;
+    }
+
+    // Otherwise, open edit dialog as before
+    setEditEvent({
+      id: info.event.id,
+      title: info.event.title,
+      start: info.event.start,
+      end: info.event.end,
+      ...info.event.extendedProps,
+    });
+    setShowEditDialog(true);
+  };
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       <div className="text-center mb-6">
@@ -220,21 +251,7 @@ export const Calendar = () => {
               borderColor: '#000000',
             })),
           ]}                   
-          eventClick={(info) => {
-            // Only allow editing if the event has a Mongo _id
-            if (!info.event.id || info.event.id.length !== 17 && info.event.id.length !== 24) {
-              alert('You can only edit saved availabilities.');
-              return;
-            }
-            setEditEvent({
-              id: info.event.id,
-              title: info.event.title,
-              start: info.event.start,
-              end: info.event.end,
-              ...info.event.extendedProps,
-            });
-            setShowEditDialog(true);
-          }}          
+          eventClick={handleEventClick}
           headerToolbar={{
             left: 'prev today next',
             center: '',
@@ -259,6 +276,7 @@ export const Calendar = () => {
         />
       </div>
 
+      {/* Show event detail modal for booked events */}
       {selectedEvent && (
         <EventDetailModal
           event={selectedEvent}
