@@ -20,6 +20,9 @@ export default function ReviewApplication() {
     const [selectedApplicants, setSelectedApplicants] = useState([]);
     const [selectedProperties, setSelectedProperties] = useState([]);
 
+    const agent = Meteor.user();
+    const agentId = agent?._id;
+
     // Subscribe to and fetch all necessary collections from the database
     const { isReady, applications, tenants, properties, employments } = useTracker(() => {
         const sub1 = Meteor.subscribe('rentalApplications');
@@ -29,12 +32,27 @@ export default function ReviewApplication() {
 
         const isReady = sub1.ready() && sub2.ready() && sub3.ready() && sub4.ready();
 
+        if (!isReady) {
+            return {
+                isReady: false,
+                properties: [],
+                applications: [],
+                tenants: [],
+                employments: []
+            };
+        }
+
+        const properties = Properties.find({ agent_id: agentId }).fetch();
+        const applications = RentalApplications.find({prop_id: { $in: properties.map(p => p.prop_id) }}).fetch();
+        const tenants = Tenants.find().fetch();
+        const employments = Employment.find().fetch();
+
         return {
-            isReady,
-            applications: isReady ? RentalApplications.find().fetch() : [],
-            tenants: isReady ? Tenants.find().fetch() : [],
-            properties: isReady ? Properties.find().fetch() : [],
-            employments: isReady ? Employment.find().fetch() : []
+            isReady: true,
+            properties,
+            applications,
+            tenants,
+            employments
         };
     });
 
