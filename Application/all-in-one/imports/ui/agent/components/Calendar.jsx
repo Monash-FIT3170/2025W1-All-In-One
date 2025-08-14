@@ -2,7 +2,6 @@ import React, { useState , useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { ConfirmDialog } from './ConfirmDialog.jsx'; 
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { AgentAvailabilities } from '../../../api/AgentAvailabilities.js';
@@ -29,7 +28,6 @@ function toDatetimeLocal(date) {
 
 export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
-  const [showDialog, setShowDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
@@ -40,7 +38,6 @@ export const Calendar = () => {
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   const closeDialogs = () => {
-    setShowDialog(false);
     setShowClearDialog(false);
     setShowActivityTypeDialog(false);
     setShowAvailabilityTypeDialog(false);
@@ -97,7 +94,7 @@ export const Calendar = () => {
     });
   };
 
-  const handleBookingSelect = ({ type, start, end, address, price, bedrooms, bathrooms, parking, image }) => {
+  const handleBookingSelect = async ({ type, start, end, address, price, bedrooms, bathrooms, parking, image }) => {
     const tempEvent = {
       id: Date.now(),
       start,
@@ -120,46 +117,36 @@ export const Calendar = () => {
       image,
       allDay: false,
     };
-  
-    setNewEvents((prev) => [...prev, tempEvent]);
+
+    // Immediately insert into DB
+    try {
+      await callAsync(
+        'agentAvailabilities.insert',
+        start.toISOString(),
+        end.toISOString(),
+        'Availability',
+        type,
+        tempEvent.property,
+        String(price ?? ''),
+        String(bedrooms ?? ''),
+        String(bathrooms ?? ''),
+        String(parking ?? ''),
+        String(image ?? ''),
+        'confirmed'
+      );
+    } catch (error) {
+      alert('Insert failed: ' + error.reason);
+      console.error('Failed to create availability:', error.reason);
+      return;
+    }
+
     setPendingSlot(null);
     setShowOpenHouseDialog(false);
   };
   
 
-  const handleConfirmButtonClick = () => {
-    setShowDialog(true); 
-  };
-
   const handleClearButtonClick = () => {
     setShowClearDialog(true);   
-  };
-
-  const handleConfirm = async () => {
-    try {
-      for (const event of newEvents) {
-        await callAsync(
-          'agentAvailabilities.insert',
-          event.start.toISOString(),
-          event.end.toISOString(),
-          'Availability',
-          event.type,
-          event.property, // ✅ now guaranteed to be an object
-          String(event.price ?? ''),
-          String(event.bedrooms ?? ''),
-          String(event.bathrooms ?? ''),
-          String(event.parking ?? ''),
-          String(event.image ?? ''),
-          'confirmed'
-        );
-      }
-
-      setNewEvents([]);
-      setShowDialog(false);
-    } catch (error) {
-      alert('Insert failed: ' + error.reason);
-      console.error('Failed to create availability:', error.reason);
-    }
   };
 
   const handleClearConfirm = () => {
@@ -262,7 +249,6 @@ export const Calendar = () => {
           height="auto"
         />
 
-        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={closeDialogs} />
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={closeDialogs} />
         <ActivityTypeDialog isOpen={showActivityTypeDialog} onSelect={handleActivityTypeSelect} onClose={closeDialogs} />
         <AvailabilityTypeDialog 
@@ -348,9 +334,6 @@ export const Calendar = () => {
       )}
 
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
-        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0} className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#9747FF] hover:bg-purple-200 text-white'}`}>
-          Confirm 
-        </button>
         <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
           Clear
         </button>
