@@ -44,9 +44,10 @@ export const TicketTypeDialog = ({ isOpen, onClose, onSelect }) => {
 
     // tickets for the logged-in agent (client-side filtering)
     const agentTickets = Tickets.find(
-      { agent_id: uid },
+      { agent_id: uid, status: { $ne: "Resolved" } },
       { sort: { date_logged: -1 } }
     ).fetch();
+
 
     // Build quick lookups
     const tMap = {};
