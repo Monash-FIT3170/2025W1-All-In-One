@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Search, Filter, ChevronDown, X } from 'lucide-react';
-import { TenantBookings } from '../../api/TenantBookings';
 import { AgentAvailabilities } from '../../api/AgentAvailabilities';
 import { Properties, Agents, Photos } from "../../api/database/collections";
 import Navbar from "./components/TenNavbar";

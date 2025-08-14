@@ -1,8 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import SimpleSchema from 'simpl-schema';
-import { AgentAvailabilities } from '../../../api/AgentAvailabilities';
-import { Tenants, Agents, Properties } from '../../../api/database/collections';
-import { Meteor } from 'meteor/meteor';
 
 
 const openHouseBookings = new SimpleSchema({
@@ -40,6 +37,17 @@ const formatTime = (start, end) => {
   return `${startTime} - ${endTime}`;
 };
 
+// Get ordinal suffix for date
+const getOrdinalSuffix = (day) => {
+  if (day > 3 && day < 21) return 'th';
+  switch (day % 10) {
+    case 1: return 'st';
+    case 2: return 'nd';
+    case 3: return 'rd';
+    default: return 'th';
+  }
+};
+
 function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
 
   {/* Used to close modal when outside is clicked */}
@@ -66,12 +74,12 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
 
   return (
     <div ref={modalRef} onClick={closeModal} className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-      <div className="bg-[#CBADD8] rounded-xl px-20 py-10 flex flex-col gap-5 mx-4">
+      <div className="bg-[#CBADD8] rounded-xl px-20 py-5 flex flex-col gap-5 mx-4 shadow-lg w-[90%] max-w-2xl">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="text-gray-600 hover:text-black text-xl font-bold focus:outline-none place-self-end"
+          className="text-gray-600 hover:text-black text-2xl font-bold focus:outline-none place-self-end"
           aria-label="Close modal"
         >
           &times;
@@ -87,12 +95,13 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
 
         {/* Open House Times */}
         <div className="w-full flex justify-center">
-          {openHouses.map((openHouse) => (
-            <div className="bg-white rounded-lg m-4 p-6 w-64 items-center">
-              <h5 className="font-semibold text-gray-600 mb-1 justify-center items-center">{openHouse.start}</h5>
+          {openHouses.map(openHouse => (
+            <div className="bg-white rounded-lg m-4 p-6 w-64 items-center flex flex-col">
+              <h5 className="text-lg font-semibold text-gray-600 mb-1 justify-center items-center">{formatDisplayDate(openHouse.start)}</h5>
+              <p className="text-sm text-gray-600 mb-1 justify-center items-center"> {formatTime(openHouse.start, openHouse.end)} </p>
               <button 
               // onClick={handleSelect}
-              className="w-1/1 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 px-2 rounded-md shadow-md transition duration-200">
+              className="w-1/1 bg-[#9747FF] mt-3 justify-center hover:bg-violet-900 text-white font-base text-center py-2 px-2 rounded-md shadow-md transition duration-200">
                 Select
               </button>
             </div>
