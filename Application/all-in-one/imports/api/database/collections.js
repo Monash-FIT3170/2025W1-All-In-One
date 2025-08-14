@@ -175,6 +175,11 @@ Tickets.schema = new SimpleSchema({
   date_logged: {
     type: Date, // Timestamp when the ticket was created
   },
+  status: {
+    type: String,
+    allowedValues: ['Active','Resolved']
+  }
+
 });
 
 

@@ -22,7 +22,8 @@ Meteor.methods({
       description: String,
       type: String,
       issue_start_date: Match.Maybe(Date), // Use Match.Maybe for optional Date field
-      date_logged: String
+      date_logged: String,
+      status: String
     });
 
     const propId = ticketData.prop_id;
@@ -44,7 +45,6 @@ Meteor.methods({
 
     await Tickets.insertAsync(newTicket); // Changed from insert to insertAsync() and added await
 
-
     return newTicket.ticket_id; // Return the ID of the newly created ticket
   },
 
@@ -57,5 +57,19 @@ Meteor.methods({
     );
     if (!agent) throw new Meteor.Error('not-found', 'Agent not found');
     return agent;
+  },
+
+  //turn status into resolved
+  'tickets.resolve': async function (ticket_id){
+    check(ticket_id, String);
+
+    const updateCount = await Tickets.updateAsync(
+      { ticket_id },
+      { $set: { status: 'Resolved' } }
+    );
+
+    if (updateCount === 0) {
+      throw new Meteor.Error('not-found', 'Ticket not found');
+    }    
   }
 });

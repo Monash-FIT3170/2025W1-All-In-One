@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 
-export const ResolveTicketDialog = ({ isOpen, onClose, ticket }) => {
+export const ResolveTicketDialog = ({ isOpen, onClose, ticketId }) => {
   if (!isOpen) return null;
 
   const handleResolve = () => {
     // Logic to resolve the ticket
-    console.log(`Ticket ${ticket.ticket_no} resolved`);
+    console.log('Resolving ticket:', ticketId);
+    Meteor.call('tickets.resolve', ticketId);
     onClose(); // Close the dialog after resolving
   };
+  
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50">
