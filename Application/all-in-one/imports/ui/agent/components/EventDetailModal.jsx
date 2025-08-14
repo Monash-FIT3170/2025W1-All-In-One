@@ -1,5 +1,5 @@
 import React from 'react';
-import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
+import { BedDouble, ShowerHead, CarFront, X } from 'lucide-react';
 
 
 export const EventDetailModal = ({ event, onClose }) => {
@@ -31,7 +31,15 @@ export const EventDetailModal = ({ event, onClose }) => {
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+      <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md relative">
+        {/* Close (X) button in the top right */}
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 text-gray-400 hover:text-gray-700"
+          aria-label="Close"
+        >
+          <X size={24} />
+        </button>
         <h2 className="text-xl font-bold mb-4">{event.title}</h2>
         <div className="mb-2">
           <strong>Start:</strong> {event.start ? new Date(event.start).toLocaleString() : ''}
