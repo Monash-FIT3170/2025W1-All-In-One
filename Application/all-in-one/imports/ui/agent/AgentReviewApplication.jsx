@@ -128,7 +128,7 @@ export default function ReviewApplication() {
                                     {/* Property Image as Background */}
                                     <img
                                         src={
-                                            property.photo?.find((file) => !file.isPDF && !file.isVideo)?.url ||
+                                            property?.photo?.find((file) => !file.isPDF && !file.isVideo)?.url ||
                                             "/images/default.jpg"
                                             }
                                         alt="Property"
