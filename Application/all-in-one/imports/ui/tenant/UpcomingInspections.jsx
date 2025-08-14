@@ -119,10 +119,10 @@ export const UpcomingInspections = () => {
         }
       }
       
-      // If still no property, use first available property as fallback (this is the case for inspections since no property is specified)
-      if (!property.prop_id && properties.length > 0) {
-        property = properties[0]; // Use first property as fallback
-      }
+      // // If still no property, use first available property as fallback (this is the case for inspections since no property is specified)
+      // if (!property.prop_id && properties.length > 0) {
+      //   property = properties[0]; // Use first property as fallback
+      // }
       
       // Find corresponding agent details
       const agent = agents.find(a => a.agent_id === property.agent_id) || {};
@@ -133,7 +133,7 @@ export const UpcomingInspections = () => {
       // Create propertyData object
       const propertyData = {
         id: property.prop_id,
-        address: property.prop_address || 'Property Address',
+        address: property.prop_address || 'Select to Choose Property',
         price: property.prop_pricepweek || 0,
         type: property.prop_type || 'Property',
         AvailableDate: property.prop_available_date || new Date(),
@@ -180,7 +180,8 @@ export const UpcomingInspections = () => {
       const searchMatch = searchTerm === '' || 
         event.agent.toLowerCase().includes(searchTerm.toLowerCase()) ||
         event.property.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.activityType.toLowerCase().includes(searchTerm.toLowerCase());
+        event.activityType.toLowerCase().includes(searchTerm.toLowerCase())||
+        event.availabilityType.toLowerCase().includes(searchTerm.toLowerCase());
       
       return agentMatch && propertyMatch && dateMatch && searchMatch;
     });
@@ -231,8 +232,8 @@ export const UpcomingInspections = () => {
       {/* Main Content */}
       <main className="flex-1 container mx-auto p-8">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">All Upcoming Inspections</h2>
-          <p className="text-gray-600">All upcoming property inspections in one place!</p>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">All Upcoming Open Houses and Inspections</h2>
+          <p className="text-gray-600">All upcoming property open houses and inspections in one place!</p>
         </div>
 
         {/* Search and Filter */}
@@ -347,7 +348,7 @@ export const UpcomingInspections = () => {
             </div>
             <h3 className="text-xl font-medium text-gray-600 mb-2">No upcoming inspections found</h3>
             <p className="text-gray-500">
-              {myBookings.length === 0 
+              {availabilities.length === 0 
                 ? "You haven't booked any inspections yet" 
                 : "Try adjusting your search or filter criteria"
               }
