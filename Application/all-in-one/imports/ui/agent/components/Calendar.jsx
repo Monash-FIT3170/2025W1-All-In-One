@@ -1,25 +1,24 @@
-import React, { useState , useEffect } from 'react';
+// imports/ui/agent/Calendar.jsx
+import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { ConfirmDialog } from './ConfirmDialog.jsx'; 
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { AgentAvailabilities } from '../../../api/AgentAvailabilities.js';
-import { ClearDialog } from './ClearDialog.jsx'; 
-import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx';
-import { TicketTypeDialog } from './TicketTypeDialog.jsx';  
-import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
-import { EventDetailModal } from './EventDetailModal.jsx'; 
 
-const callAsync = (methodName, ...args) => {
-  return new Promise((resolve, reject) => {
-    Meteor.call(methodName, ...args, (err, res) => {
-      if (err) reject(err);
-      else resolve(res);
-    });
+import { ConfirmDialog } from './ConfirmDialog.jsx';
+import { ClearDialog } from './ClearDialog.jsx';
+import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx';
+import { ActivityTypeDialog } from './ActivityTypeDialog.jsx';
+import { TicketTypeDialog } from './TicketTypeDialog.jsx';
+import { TicketActivityDialog } from './TicketActivityDialog.jsx';
+import { EventDetailModal } from './EventDetailModal.jsx';
+import { AgentAvailabilities } from '../../../api/AgentAvailabilities.js';
+
+const callAsync = (methodName, ...args) =>
+  new Promise((resolve, reject) => {
+    Meteor.call(methodName, ...args, (err, res) => (err ? reject(err) : resolve(res)));
   });
-};
 
 export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
@@ -28,10 +27,16 @@ export const Calendar = () => {
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
+
+  // 👇 these are for the ticket flow
+  const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false);
+  const [showTicketActivityDialog, setShowTicketActivityDialog] = useState(false);
+  const [selectedTicketForActivity, setSelectedTicketForActivity] = useState(null);
+
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false); 
 
+  // This closes EVERYTHING and clears the slot — use it only when you truly want to reset all.
   const closeDialogs = () => {
     setShowDialog(false);
     setShowClearDialog(false);
@@ -39,54 +44,47 @@ export const Calendar = () => {
     setShowAvailabilityTypeDialog(false);
     setShowTicketTypeDialog(false);
     setShowOpenHouseDialog(false);
-    setPendingSlot(null);
+    setShowTicketActivityDialog(false);
+    setPendingSlot(null);                 // ← this clears the slot!
     setSelectedEvent(null);
+    setSelectedTicketForActivity(null);
   };
+
+  // 👇 helper: close only the ticket picker (KEEP the slot)
+  const closeTicketPicker = () => setShowTicketTypeDialog(false);
 
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('agentAvailabilities');
     const data = AgentAvailabilities.find().fetch();
-    return {
-      availabilities: data,
-      isLoading: !handler.ready(),
-    };
+    return { availabilities: data, isLoading: !handler.ready() };
   });
 
+  // When the user drags/clicks a slot on the calendar
   const handleSelect = (info) => {
-    setPendingSlot({ start: info.start, end: info.end });
-    setShowActivityTypeDialog(true);
+    setPendingSlot({ start: info.start, end: info.end }); // keep the slot
+    setShowActivityTypeDialog(true);                      // open "choose activity" dialog
   };
 
+  // From the "choose activity" dialog
   const handleActivityTypeSelect = (activity_type) => {
+    setShowActivityTypeDialog(false);
     if (activity_type === 'Availability') {
-      setShowActivityTypeDialog(false);
       setShowAvailabilityTypeDialog(true);
-    }
-    if (activity_type === 'Ticket') {
-      setShowActivityTypeDialog(false);
-      setShowTicketTypeDialog(true);
+    } else if (activity_type === 'Ticket') {
+      setShowTicketTypeDialog(true); // open the ticket picker (do NOT clear pendingSlot)
     }
   };
 
+  // Availability flow (unchanged)
   const handleAvailabilityTypeSelect = (type, start, end, propertyInfo) => {
     setShowAvailabilityTypeDialog(false);
-
-    const {
-      address,
-      price,
-      bedrooms,
-      bathrooms,
-      parking,
-      image,
-    } = propertyInfo;
-
-    console.log('[Calendar] propertyInfo:', propertyInfo);
+    const { address, price, bedrooms, bathrooms, parking, image } = propertyInfo;
 
     handleBookingSelect({
       type,
       start,
       end,
-      address, 
+      address,
       price,
       bedrooms,
       bathrooms,
@@ -103,35 +101,19 @@ export const Calendar = () => {
       type,
       status: 'pending',
       title: `Pending: ${type} Availability`,
-      property: {
-        address,
-        price,
-        bedrooms,
-        bathrooms,
-        parking,
-        image,
-      },
-      price,
-      bedrooms,
-      bathrooms,
-      parking,
-      image,
+      property: { address, price, bedrooms, bathrooms, parking, image },
+      price, bedrooms, bathrooms, parking, image,
       allDay: false,
     };
-  
+
     setNewEvents((prev) => [...prev, tempEvent]);
-    setPendingSlot(null);
     setShowOpenHouseDialog(false);
-  };
-  
-
-  const handleConfirmButtonClick = () => {
-    setShowDialog(true); 
+    // keep pendingSlot if you want to keep editing; or clear it here if done
   };
 
-  const handleClearButtonClick = () => {
-    setShowClearDialog(true);   
-  };
+  // Confirm/clear buttons for availability flow (unchanged)
+  const handleConfirmButtonClick = () => setShowDialog(true);
+  const handleClearButtonClick = () => setShowClearDialog(true);
 
   const handleConfirm = async () => {
     try {
@@ -142,7 +124,7 @@ export const Calendar = () => {
           event.end.toISOString(),
           'Availability',
           event.type,
-          event.property, // ✅ now guaranteed to be an object
+          event.property,
           String(event.price ?? ''),
           String(event.bedrooms ?? ''),
           String(event.bathrooms ?? ''),
@@ -151,12 +133,11 @@ export const Calendar = () => {
           'confirmed'
         );
       }
-
       setNewEvents([]);
       setShowDialog(false);
     } catch (error) {
-      alert('Insert failed: ' + error.reason);
-      console.error('Failed to create availability:', error.reason);
+      alert('Insert failed: ' + (error.reason || error.message));
+      console.error('Failed to create availability:', error);
     }
   };
 
@@ -165,19 +146,50 @@ export const Calendar = () => {
       if (error) {
         console.error('Failed to clear availabilities: ' + error.reason);
       } else {
-        console.log('All availabilities cleared!');
-        setNewEvents([]); 
+        setNewEvents([]);
         setShowClearDialog(false);
-        Meteor.subscribe('agentAvailabilities'); 
+        Meteor.subscribe('agentAvailabilities');
       }
     });
+  };
+
+  // 👇 Ticket flow handlers
+  const handleTicketChosen = (ticket) => {
+    // called by TicketTypeDialog.onSelect
+    setSelectedTicketForActivity(ticket);
+    setShowTicketTypeDialog(false);      // close the picker
+    setShowTicketActivityDialog(true);   // open Ticket Activity, WITH the same pendingSlot
+    // NOTE: do NOT clear pendingSlot here
+  };
+
+  const handleCreateTicketActivity = ({ start, end, notes, ticket }) => {
+    // TODO: insert your server-side method here if needed
+    // Example: create a local pending event so it shows on the calendar immediately
+    setNewEvents((prev) => [
+      ...prev,
+      {
+        id: Date.now(),
+        start,
+        end,
+        type: 'Ticket',
+        status: 'pending',
+        title: `Ticket: ${ticket?.title ?? 'Activity'}`,
+        ticket,
+        allDay: false,
+      },
+    ]);
+    setShowTicketActivityDialog(false);
+    // Optionally clear slot after creation:
+    setPendingSlot(null);
   };
 
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
-        <p className="text-gray-500 mt-2">Click empty timeslot to schedule an activity - an availability (inspection or open house) or maintenance (to be added in Milestone 3).</p>
+        <p className="text-gray-500 mt-2">
+          Click empty timeslot to schedule an activity - an availability (inspection or open house) or maintenance (to be added in Milestone 3).
+        </p>
       </div>
 
       <div className="border-t border-gray-300 max-w-6xl mx-auto mb-6"></div>
@@ -190,8 +202,8 @@ export const Calendar = () => {
           slotMaxTime="18:00:00"
           scrollTime="07:00:00"
           allDaySlot={false}
-          selectable={true}          
-          select={handleSelect}      
+          selectable={true}
+          select={handleSelect}
           events={[
             ...availabilities.map(slot => ({
               ...slot,
@@ -200,29 +212,20 @@ export const Calendar = () => {
                 ? 'Booked'
                 : `${slot.type} Availability`,
               backgroundColor:
-                slot.status === 'booked'
-                  ? '#e5e7eb'
-                  : slot.status === 'pending'
-                  ? '#F2F2F2'
-                  : slot.type === 'Open House'
-                  ? '#DCFFCD'
-                  : '#CEF4F1',
+                slot.status === 'booked' ? '#e5e7eb'
+                : slot.status === 'pending' ? '#F2F2F2'
+                : slot.type === 'Open House' ? '#DCFFCD'
+                : '#CEF4F1',
               textColor:
-                slot.status === 'booked'
-                  ? '#6b7280'
-                  : slot.status === 'pending'
-                  ? '#000000'
-                  : slot.type === 'Open House'
-                  ? '#68A44F'
-                  : '#24A89E',
+                slot.status === 'booked' ? '#6b7280'
+                : slot.status === 'pending' ? '#000000'
+                : slot.type === 'Open House' ? '#68A44F'
+                : '#24A89E',
               borderColor:
-                slot.status === 'booked'
-                  ? '#9ca3af'
-                  : slot.status === 'pending'
-                  ? '#000000'
-                  : slot.type === 'Open House'
-                  ? '#A98A22'
-                  : '#24A89E',
+                slot.status === 'booked' ? '#9ca3af'
+                : slot.status === 'pending' ? '#000000'
+                : slot.type === 'Open House' ? '#A98A22'
+                : '#24A89E',
             })),
             ...newEvents.map(event => ({
               ...event,
@@ -230,7 +233,7 @@ export const Calendar = () => {
               textColor: '#000000',
               borderColor: '#000000',
             })),
-          ]}                   
+          ]}
           eventClick={(info) => {
             const clicked = info.event.extendedProps;
             if (clicked.type === 'Open House') {
@@ -240,49 +243,69 @@ export const Calendar = () => {
                 end: info.event.end,
                 ...clicked,
               });
-            } 
-          }}          
-          headerToolbar={{
-            left: 'prev today next',
-            center: '',
-            right: 'title'
+            }
           }}
-          buttonText={{
-            today: 'Today'
-          }}
-          titleFormat={{ 
-            year: 'numeric', month: 'long' 
-          }}
+          headerToolbar={{ left: 'prev today next', center: '', right: 'title' }}
+          buttonText={{ today: 'Today' }}
+          titleFormat={{ year: 'numeric', month: 'long' }}
           height="auto"
         />
 
+        {/* Existing dialogs */}
         <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={closeDialogs} />
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={closeDialogs} />
-        <ActivityTypeDialog isOpen={showActivityTypeDialog} onSelect={handleActivityTypeSelect} onClose={closeDialogs} />
-        <AvailabilityTypeDialog 
-          isOpen={showAvailabilityTypeDialog} 
+        <AvailabilityTypeDialog
+          isOpen={showAvailabilityTypeDialog}
           pendingSlot={pendingSlot}
           onSelect={handleAvailabilityTypeSelect}
-          onClose={closeDialogs} 
+          onClose={closeDialogs}
         />
+        <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+
+        {/* Choose activity type (Availability vs Ticket) */}
+        <ActivityTypeDialog
+          isOpen={showActivityTypeDialog}
+          onSelect={handleActivityTypeSelect}
+          onClose={closeDialogs}
+        />
+
+        {/* Ticket picker — DO NOT use closeDialogs here or you'll lose pendingSlot */}
         <TicketTypeDialog
           isOpen={showTicketTypeDialog}
-          onClose={closeDialogs}
+          onClose={closeTicketPicker}          // 👈 keep slot
+          onSelect={handleTicketChosen}        // 👈 opens next dialog with slot
+        />
+
+        {/* Ticket activity — receives the SAME slot selected on the calendar */}
+        <TicketActivityDialog
+          isOpen={showTicketActivityDialog}
+          ticket={selectedTicketForActivity}
+          pendingSlot={pendingSlot}            // 👈 pass the slot here
+          onCreate={handleCreateTicketActivity}
+          onChangeTicket={() => {
+            setShowTicketActivityDialog(false);
+            setShowTicketTypeDialog(true);     // allow re-pick; still keeping slot
+          }}
+          onClose={() => setShowTicketActivityDialog(false)} // keep slot if they just close
         />
       </div>
 
-      {selectedEvent && (
-        <EventDetailModal
-          event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-        />
-      )}
-
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
-        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0} className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#9747FF] hover:bg-purple-200 text-white'}`}>
-          Confirm 
+        <button
+          onClick={handleConfirmButtonClick}
+          disabled={newEvents.length === 0}
+          className={`font-bold py-3 px-6 rounded-md ${
+            newEvents.length === 0
+              ? 'bg-gray-300 cursor-not-allowed'
+              : 'bg-[#9747FF] hover:bg-purple-200 text-white'
+          }`}
+        >
+          Confirm
         </button>
-        <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
+        <button
+          onClick={handleClearButtonClick}
+          className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md"
+        >
           Clear
         </button>
       </div>

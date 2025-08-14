@@ -12,18 +12,24 @@ import {
   Tickets,
   Tenants,
   Properties,
-} from "/imports/api/database/collections"; // adjust path if needed
+} from "/imports/api/database/collections"; // ← adjust path if needed
 
 import Collapse from "@mui/material/Collapse";
 import IconButton from "@mui/material/IconButton";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
 
-export const TicketTypeDialog = ({ isOpen, onClose }) => {
+/**
+ * Props:
+ * - isOpen: boolean
+ * - onClose: () => void
+ * - onSelect?: (ticket) => void   // called when user confirms a ticket
+ */
+export const TicketTypeDialog = ({ isOpen, onClose, onSelect }) => {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState(null);
 
-  // Subscribe to server pubs you already have, then filter client-side for the logged-in agent
+  // Subscribe to your existing publications; filter by agent on the client (per your request)
   const { ready, ticketsForAgent, tenantsMap, propertiesMap } = useTracker(() => {
     const subTickets = Meteor.subscribe("tickets");
     const subTenants = Meteor.subscribe("tenants");
@@ -36,30 +42,30 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
       return { ready: allReady, ticketsForAgent: [], tenantsMap: {}, propertiesMap: {} };
     }
 
+    // tickets for the logged-in agent (client-side filtering)
     const agentTickets = Tickets.find(
       { agent_id: uid },
       { sort: { date_logged: -1 } }
     ).fetch();
 
-    const allTenants = Tenants.find({}).fetch();
-    const tenantsMapLocal = allTenants.reduce((acc, t) => {
-      acc[t.ten_id] = {
+    // Build quick lookups
+    const tMap = {};
+    Tenants.find({}).forEach((t) => {
+      tMap[t.ten_id] = {
         fullName: [t.ten_fn, t.ten_ln].filter(Boolean).join(" ").trim(),
       };
-      return acc;
-    }, {});
+    });
 
-    const allProps = Properties.find({}).fetch();
-    const propertiesMapLocal = allProps.reduce((acc, p) => {
-      acc[p.prop_id] = { address: p.prop_address };
-      return acc;
-    }, {});
+    const pMap = {};
+    Properties.find({}).forEach((p) => {
+      pMap[p.prop_id] = { address: p.prop_address };
+    });
 
     return {
       ready: allReady,
       ticketsForAgent: agentTickets,
-      tenantsMap: tenantsMapLocal,
-      propertiesMap: propertiesMapLocal,
+      tenantsMap: tMap,
+      propertiesMap: pMap,
     };
   }, []);
 
@@ -73,6 +79,7 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
     };
   }, [isOpen]);
 
+  // Reset state when opened
   useEffect(() => {
     if (isOpen) {
       setQuery("");
@@ -80,7 +87,7 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
     }
   }, [isOpen]);
 
-  // Decorate tickets with tenant name + property address so UI matches your original dummy version
+  // Decorate with fields to match your original dummy UI
   const decorated = useMemo(() => {
     return ticketsForAgent.map((t) => {
       const tenantName = tenantsMap[t.ten_id]?.fullName || "—";
@@ -96,7 +103,7 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
     });
   }, [ticketsForAgent, tenantsMap, propertiesMap]);
 
-  // Search over the same fields you used previously
+  // Search over same fields as before
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return decorated;
@@ -109,20 +116,20 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
     );
   }, [query, decorated]);
 
-  // Measure the yellow box height ONCE (on open, when nothing is expanded)
+  // Measure yellow box height once and add a buffer so it's a bit taller
   const listRef = useRef(null);
   const [maxListHeightPx, setMaxListHeightPx] = useState(null);
-  const HEIGHT_BUFFER = 96; // 👈 extra height to make the yellow box a bit taller
+  const HEIGHT_BUFFER = 96; // increase to make the yellow area taller
 
   useLayoutEffect(() => {
     if (!isOpen) return;
-    if (selectedId !== null) return; // only measure when nothing expanded
+    if (selectedId !== null) return; // only when nothing expanded
     if (maxListHeightPx != null) return; // only once
 
     const rAF = requestAnimationFrame(() => {
       if (listRef.current) {
         const h = listRef.current.clientHeight;
-        if (h > 0) setMaxListHeightPx(h + HEIGHT_BUFFER); // 👈 add buffer
+        if (h > 0) setMaxListHeightPx(h + HEIGHT_BUFFER);
       }
     });
     return () => cancelAnimationFrame(rAF);
@@ -133,7 +140,7 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
   return (
     <div className="fixed inset-0 z-50 bg-black/30">
       <div className="min-h-full flex items-center justify-center p-6">
-        {/* Keep the dialog natural height; only yellow box gets a max-height */}
+        {/* Dialog container (keep natural height) */}
         <div className="relative w-[920px] max-w-[92vw] rounded-[28px] bg-[#CBADD8] p-6 shadow-xl">
           <button
             onClick={onClose}
@@ -179,7 +186,7 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
             </button>
           </div>
 
-          {/* Yellow list: now slightly taller due to buffer */}
+          {/* Yellow list (slightly taller) */}
           <div
             ref={listRef}
             className="rounded-2xl bg-[#FAEEDA] p-5 overflow-y-auto overscroll-contain"
@@ -206,11 +213,14 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
                   return (
                     <div
                       key={t.ticket_id}
-                      className={`relative rounded-2xl border px-5 pt-4 pb-4 transition hover:shadow cursor-pointer self-start
-                        ${expanded ? "bg-[#CBADD8] border-black/30" : "bg-white border-black/20"}`}
+                      className={`relative rounded-2xl border px-5 pt-4 pb-4 transition hover:shadow cursor-pointer self-start ${
+                        expanded
+                          ? "bg-[#CBADD8] border-black/30"
+                          : "bg-white border-black/20"
+                      }`}
                       onClick={() => setSelectedId(expanded ? null : t.ticket_id)}
                     >
-                      {/* Arrow in TOP-RIGHT (hard-positioned wrapper to avoid drift) */}
+                      {/* Arrow in TOP-RIGHT (fixed) */}
                       <div className="absolute top-3 right-3 z-10">
                         <IconButton
                           size="small"
@@ -220,7 +230,6 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
                           }}
                           aria-label="toggle expand"
                           className="text-2xl font-bold text-black hover:text-gray-700"
-                          sx={{ position: "relative" }} // keep root predictable
                         >
                           {expanded ? <ExpandLessIcon /> : <ExpandMoreIcon />}
                         </IconButton>
@@ -229,10 +238,12 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
                       {/* Summary content (same styling as before) */}
                       <div className="space-y-1 pr-10">
                         <div className="text-sm font-bold">
-                          <span className="font-semibold">Title:</span> {t.title || "—"}
+                          <span className="font-semibold">Title:</span>{" "}
+                          {t.title || "—"}
                         </div>
                         <div className="text-sm">
-                          <span className="font-semibold">Tenant:</span> {t.tenant}
+                          <span className="font-semibold">Tenant:</span>{" "}
+                          {t.tenant}
                         </div>
                         <div className="text-sm">
                           <span className="font-semibold">Ticket number:</span>{" "}
@@ -321,15 +332,14 @@ export const TicketTypeDialog = ({ isOpen, onClose }) => {
               disabled={!selectedId}
               onClick={() => {
                 const chosen = decorated.find((t) => t.ticket_id === selectedId);
-                console.log("Selected ticket:", chosen);
+                if (chosen && onSelect) onSelect(chosen); // notify parent so it can open next dialog
                 onClose();
               }}
-              className={`w-[360px] rounded-full px-6 py-3 text-lg font-semibold
-                ${
-                  selectedId
-                    ? "bg-[#7F7F7F] text-white hover:opacity-90"
-                    : "bg-[#C9C9C9] text-white cursor-not-allowed"
-                }`}
+              className={`w-[360px] rounded-full px-6 py-3 text-lg font-semibold ${
+                selectedId
+                  ? "bg-[#7F7F7F] text-white hover:opacity-90"
+                  : "bg-[#C9C9C9] text-white cursor-not-allowed"
+              }`}
             >
               Confirm Ticket Selection
             </button>
