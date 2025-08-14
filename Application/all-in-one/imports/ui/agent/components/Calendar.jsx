@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { ConfirmDialog } from './ConfirmDialog.jsx'; 
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { AgentAvailabilities } from '../../../api/AgentAvailabilities.js';
+import { AgentAvailabilities } from '../../../api/database/collections';
 import { ClearDialog } from './ClearDialog.jsx'; 
 import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
@@ -135,7 +135,7 @@ export const Calendar = () => {
           event.end.toISOString(),
           'Availability',
           event.type,
-          event.property, // ✅ now guaranteed to be an object
+          event.property,
           String(event.price ?? ''),
           String(event.bedrooms ?? ''),
           String(event.bathrooms ?? ''),
