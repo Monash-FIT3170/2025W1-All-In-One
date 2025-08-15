@@ -285,11 +285,12 @@ export const Calendar = () => {
           eventClick={(info) => {
             const clicked = info.event.extendedProps;
             setSelectedEvent({
+              id: info.event.id,           
               title: info.event.title,
               start: info.event.start,
               end: info.event.end,
-              ...clicked,
-            }); 
+              ...clicked,                  // includes status, type, property, notes, etc.
+            });
           }}          
           headerToolbar={{
             left: 'prev today next',
@@ -392,9 +393,14 @@ export const Calendar = () => {
 
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
         <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
-          Clear
+          Clear All
         </button>
+        <p className="text-sm text-gray-800 mb-4">
+            Booked slots cannot be edited. Only pending slots can be modified.
+        </p>
       </div>
+      
+
     </div>
   );
 };
