@@ -6,10 +6,9 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, AgentAvailabilities } from "../../api/database/collections"; // importing mock for now
 import { Link } from "react-router-dom";
 import UpcomingOpenHouseModal from "./components/UpcomingOpenHouseModal";
-import { AgentAvailabilities } from "../../api/AgentAvailabilities";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a listed property (accessed through TenantBasicPropListing) //

@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Search, Filter, ChevronDown, X } from 'lucide-react';
-import { AgentAvailabilities } from '../../api/AgentAvailabilities';
-import { Properties, Agents, Photos } from "../../api/database/collections";
+import { Properties, Agents, Photos, AgentAvailabilities } from "../../api/database/collections";
 import Navbar from "./components/TenNavbar";
 import { Link } from "react-router-dom";
 
