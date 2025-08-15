@@ -3,13 +3,13 @@ import SimpleSchema from 'simpl-schema';
 
 
 const openHouseBookings = new SimpleSchema({
-  property: Object,
+  propertyData: Object,
   booking: Object,
   tenant: Object
 });
 
 const openHouseEOI = new SimpleSchema({
-  property: Object,
+  propertyData: Object,
   tenant: Object,
   EOI: String
 })
@@ -64,9 +64,10 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
   const [tenant, setTenant] = useState('');
   const [EOI, setEOI] = useState('');
 
-  // const handleSubmit = () => {
-
-  // }
+  {/* Submitting an Expression of Interest */}
+  const handleSubmit = () => {
+    
+  }
 
   // const handleSelect = () => {
 

@@ -61,7 +61,7 @@ export const Calendar = () => {
     }
   };
 
-  const handleAvailabilityTypeSelect = (type, start, end, propertyInfo) => {
+  const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note) => {
     setShowAvailabilityTypeDialog(false);
 
     const {
@@ -85,10 +85,11 @@ export const Calendar = () => {
       bathrooms,
       parking,
       image,
+      note,
     });
   };
 
-  const handleBookingSelect = ({ type, start, end, address, price, bedrooms, bathrooms, parking, image }) => {
+  const handleBookingSelect = ({ type, start, end, address, price, bedrooms, bathrooms, parking, image, note }) => {
     const tempEvent = {
       id: Date.now(),
       start,
@@ -109,6 +110,7 @@ export const Calendar = () => {
       bathrooms,
       parking,
       image,
+      note,
       allDay: false,
     };
   
@@ -141,7 +143,8 @@ export const Calendar = () => {
           String(event.bathrooms ?? ''),
           String(event.parking ?? ''),
           String(event.image ?? ''),
-          'confirmed'
+          'confirmed',
+          String(event.note ?? '')
         );
       }
 
