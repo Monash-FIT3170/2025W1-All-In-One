@@ -18,8 +18,10 @@ import "/imports/api/methods/account.js";
 import "/imports/api/methods/rentalApplications.js";
 import "/imports/api/agent/rentalApplications/methods";
 import { LinksCollection } from "/imports/api/links";
-import "/imports/api/AgentAvailabilities";
-import "/imports/api/TenantBookings.js";
+import '/imports/api/agent/agentAvailabilities/methods';
+import '/imports/api/agent/agentAvailabilities/publications';
+import '/imports/api/tenant/tenantBookings/methods';
+import '/imports/api/tenant/tenantBookings/publications';
 
 Meteor.startup(async () => {
   // Insert mock data only if collections are empty

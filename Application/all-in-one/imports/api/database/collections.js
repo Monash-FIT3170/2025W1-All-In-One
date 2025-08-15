@@ -145,3 +145,31 @@ Agents.schema = new SimpleSchema({
   agent_email: { type: String },
   agent_password: { type: String },
 });
+
+export const AgentAvailabilities = new Mongo.Collection('agentAvailabilities');
+AgentAvailabilities.schema = new SimpleSchema({
+  start: { type: String },
+  end: { type: String },
+  activity_type: { type: String },
+  availability_type: { type: String },
+  property: { type: Object, blackbox: true },
+  price: { type: String, optional: true },
+  bedrooms: { type: String, optional: true },
+  bathrooms: { type: String, optional: true },
+  parking: { type: String, optional: true },
+  image: { type: String, optional: true },
+  status: { type: String, optional: true },
+  createdAt: { type: Date, optional: true }
+});
+
+export const TenantBookings = new Mongo.Collection('tenantBookings');
+TenantBookings.schema = new SimpleSchema({
+  agentAvailabilityId: { type: String },
+  tenantName: { type: String },
+  tenantId: { type: String },
+  start: { type: Date },
+  end: { type: Date },
+  property: { type: Object, blackbox: true },
+  status: { type: String },
+  createdAt: { type: Date, optional: true }
+});
