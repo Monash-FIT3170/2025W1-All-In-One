@@ -7,6 +7,7 @@ import Employment from './applyPages/Employment';
 import Income from './applyPages/Income';
 import Identity from './applyPages/Identity';
 import Household from './applyPages/Household';
+import SharedLease from './applyPages/SharedLease';
 import Navbar from './components/TenNavbar';
 import Footer from './components/Footer';
 import { useLocation, useParams } from "react-router-dom";
@@ -32,6 +33,7 @@ function Apply() {
     'Income',
     'Identity',
     'Household',
+    'Shared Lease',
   ];
 
   const [activeSection, setActiveSection] = useState(sectionList[0]);
@@ -69,6 +71,8 @@ function Apply() {
       return <Identity {...sharedProps} />;
     case 'Household':
       return <Household {...sharedProps} />;
+    case 'Shared Lease':
+      return <SharedLease {...sharedProps} />;
     default:
       return <div>Select a section from the sidebar.</div>;
     }

@@ -6,7 +6,8 @@ import {
   Identities,
   Addresses,
   Tenants,
-  Employment
+  Employment,
+  SharedLeaseGroups // <-- add this collection import, define below if needed
 } from '/imports/api/database/collections';
 import cloudinary from 'cloudinary'; // FIX: Added cloudinary import
 
@@ -265,5 +266,37 @@ Meteor.methods({
       { _id: rentalAppId },
       { $pull: { tenants: { ten_id: tenId } } }
     );
-  }
+  },
+
+  // Shared Lease Group Methods
+  async 'sharedLease.createGroup'(tenantId, propId) {
+    check(tenantId, String);
+    check(propId, String);
+
+    const groupId = await SharedLeaseGroups.insertAsync({
+      createdAt: new Date(),
+      propId,
+      members: [tenantId],
+    });
+
+    console.log(`[METHOD] sharedLease.createGroup created group ${groupId} for tenant ${tenantId}`);
+    return await groupId;
+  },
+
+  async 'sharedLease.joinGroup'(groupId, tenantId) {
+    check(groupId, String);
+    check(tenantId, String);
+
+    const group = await SharedLeaseGroups.findOneAsync(groupId);
+    if (!group) {
+      throw new Meteor.Error('Group not found');
+    }
+
+    if (!group.members.includes(tenantId)) {
+      await SharedLeaseGroups.updateAsync(groupId, { $push: { members: tenantId } });
+      console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} joined group ${groupId}`);
+    } else {
+      console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} already in group ${groupId}`);
+    }
+  },
 });

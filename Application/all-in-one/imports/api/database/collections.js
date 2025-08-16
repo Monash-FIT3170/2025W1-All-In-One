@@ -158,3 +158,4 @@ Agents.schema = new SimpleSchema({
   agent_password: { type: String },
 });
 
+export const SharedLeaseGroups = new Mongo.Collection('sharedLeaseGroups');

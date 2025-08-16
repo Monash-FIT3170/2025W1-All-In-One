@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { check } from 'meteor/check';
-import { RentalApplications, Incomes, Identities } from '/imports/api/database/collections';
+import { RentalApplications, Incomes, Identities,SharedLeaseGroups} from '/imports/api/database/collections';
 import '/imports/api/agent/rentalApplications/methods';
 
 // Publish all rental applications (optionally add filters later)
@@ -30,4 +30,8 @@ Meteor.publish('properties', function () {
 
 Meteor.publish('agents', function () {
   return Agents.find();
+});
+
+Meteor.publish('sharedLeaseGroups', function () {
+  return SharedLeaseGroups.find();
 });

@@ -102,67 +102,6 @@ export default function TenantApplications() {
                                         <p className="text-white text-sm">
                                             Occupation: {employment?.emp_job_title || 'N/A'}
                                         </p>
-
-                                        {/* Search Tenants */}
-                                        <div className="mt-4">
-                                            <input
-                                                type="text"
-                                                placeholder="Search tenants..."
-                                                className="p-2 rounded w-full text-black"
-                                                value={searchTerm}
-                                                onChange={(e) =>
-                                                    setSearchTerms(prev => ({ ...prev, [app._id]: e.target.value }))
-                                                }
-                                            />
-                                            {searchTerm && (
-                                                <div className="bg-white rounded shadow mt-2 max-h-32 overflow-y-auto">
-                                                    {filteredTenants
-                                                        .filter(t => !app.tenants?.some(added => added.ten_id === t.ten_id)) // prevent duplicates
-                                                        .map(t => (
-                                                            <div
-                                                                key={t.ten_id}
-                                                                className="flex items-center gap-3 p-2 hover:bg-gray-100 cursor-pointer"
-                                                                onClick={() => handleTenantAdd(app._id, t.ten_id)}
-                                                            >
-                                                                {t.ten_avatar ? (
-                                                                    <img
-                                                                        src={t.ten_avatar}
-                                                                        alt={`${t.ten_fn} ${t.ten_ln}`}
-                                                                        className="w-8 h-8 rounded-full object-cover"
-                                                                    />
-                                                                ) : (
-                                                                    <div className="w-8 h-8 rounded-full bg-gray-300 flex items-center justify-center text-sm font-semibold text-gray-700">
-                                                                        {t.ten_fn?.[0]}{t.ten_ln?.[0]}
-                                                                    </div>
-                                                                )}
-                                                                <span>{t.ten_fn} {t.ten_ln}</span>
-                                                            </div>
-                                                        ))
-                                                    }
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        {/* Scrollable Selected Tenants */}
-                                        <div className="mt-4 bg-white bg-opacity-80 rounded p-2 max-h-28 overflow-y-auto divide-y divide-gray-300">
-                                            {app.tenants && app.tenants.length > 0 ? (
-                                                app.tenants.map((t) => (
-                                                    <div key={t.ten_id} className="flex justify-between items-center py-1">
-                                                        <span className="text-gray-800">
-                                                            {t.ten_fn} {t.ten_ln}
-                                                        </span>
-                                                        <button
-                                                            className="text-red-500 hover:underline text-sm"
-                                                            onClick={() => handleTenantRemove(app._id, t.ten_id)}
-                                                        >
-                                                            Remove
-                                                        </button>
-                                                    </div>
-                                                ))
-                                            ) : (
-                                                <div className="text-gray-500 text-sm">No tenants added</div>
-                                            )}
-                                        </div>
                                     </div>
                                     <div className="mt-4">
                                         <span
