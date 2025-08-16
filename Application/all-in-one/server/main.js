@@ -121,109 +121,112 @@ Meteor.startup(async () => {
     }
   }
 
-
-  const agentEmail = 'agent1@example.com';
-  const existingAgentUser = await Meteor.users.findOneAsync({ 'emails.address': agentEmail });
+  const agentEmail = "agent1@example.com";
+  const existingAgentUser = await Meteor.users.findOneAsync({
+    "emails.address": agentEmail,
+  });
 
   if (!existingAgentUser) {
     const agentUserId = await Accounts.createUser({
       email: agentEmail,
-      password: 'securepassword123',
+      password: "securepassword123",
       profile: {
-        firstName: 'Amy',
-        lastName: 'Jones',
-        role: 'agent'
-      }
+        firstName: "Amy",
+        lastName: "Jones",
+        role: "agent",
+      },
     });
 
     await Agents.insertAsync({
       agent_id: agentUserId,
-      agent_fname: 'Amy',
-      agent_lname: 'Jones',
-      agent_ph: '0400000000',
+      agent_fname: "Amy",
+      agent_lname: "Jones",
+      agent_ph: "0400000000",
       agent_email: agentEmail,
     });
 
-    console.log('✅ Agent created and added to Agents collection');
+    console.log("✅ Agent created and added to Agents collection");
   }
 
-  const landlordEmail = 'landlord1@example.com';
-  const existingLandlordUser = await Meteor.users.findOneAsync({ 'emails.address': landlordEmail });
+  const landlordEmail = "landlord1@example.com";
+  const existingLandlordUser = await Meteor.users.findOneAsync({
+    "emails.address": landlordEmail,
+  });
 
   if (!existingLandlordUser) {
     const landlordUserId = await Accounts.createUser({
       email: landlordEmail,
-      password: 'securepassword123',
+      password: "securepassword123",
       profile: {
-        firstName: 'John',
-        lastName: 'Doe',
-        role: 'landlord'
-      }
+        firstName: "John",
+        lastName: "Doe",
+        role: "landlord",
+      },
     });
 
     await Landlord.insertAsync({
       ll_id: landlordUserId,
-      ll_fn: 'John',
-      ll_ln: 'Doe',
+      ll_fn: "John",
+      ll_ln: "Doe",
       ll_email: landlordEmail,
-      ll_pn: '0499999999',
-      ll_pfp: '',
-      prop_id: 'P001',
+      ll_pn: "0499999999",
+      ll_pfp: "",
+      prop_id: "P001",
     });
 
-    console.log('✅ Landlord created and added to Landlords collection');
+    console.log("✅ Landlord created and added to Landlords collection");
   }
 
   async function insertLink({ title, url }) {
-  await LinksCollection.insertAsync({ title, url, createdAt: new Date() });
-}
+    await LinksCollection.insertAsync({ title, url, createdAt: new Date() });
+  }
 
   // Publications
-  Meteor.publish('properties', function () {
+  Meteor.publish("properties", function () {
     return Properties.find();
   });
 
-  Meteor.publish('photos', function () {
+  Meteor.publish("photos", function () {
     return Photos.find();
   });
 
-  Meteor.publish('videos', function () {
+  Meteor.publish("videos", function () {
     return Videos.find();
   });
 
-  Meteor.publish('tenants', function () {
+  Meteor.publish("tenants", function () {
     return Tenants.find();
   });
 
-  Meteor.publish('rentalApplications', function () {
+  Meteor.publish("rentalApplications", function () {
     return RentalApplications.find();
   });
 
-  Meteor.publish('employment', function () {
+  Meteor.publish("employment", function () {
     return Employment.find();
   });
 
-  Meteor.publish('addresses', function () {
+  Meteor.publish("addresses", function () {
     return Addresses.find();
   });
 
-  Meteor.publish('incomes', function () {
+  Meteor.publish("incomes", function () {
     return Incomes.find();
   });
 
-  Meteor.publish('identities', function () {
+  Meteor.publish("identities", function () {
     return Identities.find();
   });
 
-  Meteor.publish('households', function () {
+  Meteor.publish("households", function () {
     return Households.find();
   });
 
-  Meteor.publish('agents', function () {
+  Meteor.publish("agents", function () {
     return Agents.find();
   });
 
-  Meteor.publish('landlords', function () {
+  Meteor.publish("landlords", function () {
     return Landlord.find();
   });
 });
