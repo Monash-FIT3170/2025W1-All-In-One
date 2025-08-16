@@ -37,7 +37,7 @@ export const GeneralTicketDialog = ({ isOpen, onClose, propertyAddress, propId, 
       title: ticketTitle,
       description: ticketDescription,
       type: 'General',
-      date_logged: new Date().toDateString(),
+      date_logged: dateLogged,
       status: 'Active'
     };
 
