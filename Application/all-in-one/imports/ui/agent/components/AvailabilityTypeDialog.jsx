@@ -79,7 +79,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
 
         {type === 'Open House' && (
           <div>
-            <label className="block text-black font-semibold mb-1">Property</label>
+            <label className="block text-lg text-black font-semibold mb-1">Property</label>
             <input
               type="text"
               placeholder="Search Property..."
@@ -110,6 +110,40 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
                 )}
               </div>
             )}
+
+            {/*EOIs*/}
+            <h3 className="text-lg font-bold mt-4 mb-2 text-black">Expressions of Interest</h3>
+            <p className="text-sm text-gray-800 mb-4">
+              Expressions of interest (EOI) for properties, with dates requested by prospective tenants. Choose to “remove” EOI or “select”, to send an invite to the prospective tenant for this open house.
+            </p>
+            {/*list of EOI*/}
+            <div
+              className="rounded-2xl bg-[#FAEEDA] p-5 overflow-y-auto overscroll-contain mb-4"
+              role="region"
+            >
+              <div className="py-10 text-center text-sm text-black/70">
+                You currently have no EOIs.
+              </div>
+            </div>
+
+            {/*Private Open House checkbox*/}
+            <div>
+              <label className="block text-lg text-black font-semibold mb-1">Private Open House</label>
+              <p className="text-sm text-gray-800 mb-4">
+                Select the checkbox if this is a private open house for the selected EOI prospective tenant.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  id="privateOpenHouse"
+                  type="checkbox"
+                  className="rounded-lg border-gray-300"
+                />
+                <label htmlFor="privateOpenHouse" className="text-left">
+                  Private Open House
+                </label>
+              </div>
+            </div>
+
           </div>
         )}
 
