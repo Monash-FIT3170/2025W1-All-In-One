@@ -66,6 +66,7 @@ RentalApplications.schema = new SimpleSchema({
   household_pets: { type: Boolean },
   pet_description: { type: String, optional: true },
   emergency_contact_id: { type: String },
+  shared_lease_id: { type: String, optional: true }
 });
 
 

@@ -44,6 +44,7 @@ Meteor.methods({
       'pet_description',
       'emergency_contact_id',
       'rental_app_id',
+      'shared_lease_id',
     ];
 
     const sanitizedUpdate = Object.fromEntries(
@@ -298,5 +299,49 @@ Meteor.methods({
     } else {
       console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} already in group ${groupId}`);
     }
+  },
+
+  async 'rentalApplications.updateSharedLease'(rentalAppId, leaseId) {
+    check(rentalAppId, String);
+    check(leaseId, String);
+
+    return RentalApplications.update(
+      { rental_app_id: rentalAppId },
+      { $set: { shared_lease_id: leaseId } }
+    );
+  },
+
+    async 'sharedLease.create'(rentalAppId) {
+    check(rentalAppId, String);
+
+    // create a shared lease
+    const leaseId = await SharedLease.insertAsync({
+      createdAt: new Date(),
+      applications: [rentalAppId],
+    });
+
+    // update the rental application with this shared lease id
+    await RentalApplications.updateAsync(rentalAppId, {
+      $set: { shared_lease_id: leaseId },
+    });
+
+    return leaseId;
+  },
+
+  async 'sharedLease.join'(leaseId, rentalAppId) {
+    check(leaseId, String);
+    check(rentalAppId, String);
+
+    // add this rental application to the shared lease
+    await SharedLease.updateAsync(leaseId, {
+      $addToSet: { applications: rentalAppId },
+    });
+
+    // update the rental application with this shared lease id
+    await RentalApplications.updateAsync(rentalAppId, {
+      $set: { shared_lease_id: leaseId },
+    });
+
+    return leaseId;
   },
 });
