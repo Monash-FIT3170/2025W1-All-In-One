@@ -4,22 +4,20 @@ import { OpenHouseAttendance } from '../../database/collections';
 
 Meteor.methods({
   async 'openHouseAttendance.insert' ( 
-    bookingID, propertyID, propertyAddress, date, start, end, attendanceList ) {
+    bookingID, propertyAddress, start, end, attendanceList ) {
       try {
         console.log('[DEBUG] insert args:', {
-          bookingID, propertyID, propertyAddress, date, start, end, attendanceList
+          bookingID, propertyAddress, start, end, attendanceList
         });
 
         check(bookingID, String);
-        check(propertyID, String);
         check(propertyAddress, String);
-        check(date, Date);
         check(start, String);
         check(end, String);
         check(attendanceList, Array);
 
         const result = await OpenHouseAttendance.insertAsync({
-          bookingID, propertyID, propertyAddress, date, start, end, attendanceList
+          bookingID, propertyAddress, start, end, attendanceList
         });
 
       console.log(`[SERVER] Inserted attendance list ${result}`);
@@ -27,7 +25,7 @@ Meteor.methods({
 
       } catch (err) {
         console.error('[SERVER ERROR] openHouseAttendance.insert:', err);
-        throw new Meteor.Error('insert-failed', err.message);
+        throw new Meteor.Error('open-house-insert-failed', err.message);
       }
   },
 
@@ -44,7 +42,7 @@ Meteor.methods({
 
         const attendance = false;
 
-        const result = OpenHouseAttendance.update(
+        const result = await OpenHouseAttendance.updateAsync(
           { _id: book_id }, 
           { $push: {attendanceList: {tenantID: ten_id, tenantName: ten_name, tenantAttendance: attendance }}
         });
@@ -68,7 +66,7 @@ Meteor.methods({
         check(book_id, String);
         check(ten_id, String);
 
-        const result = OpenHouseAttendance.update(
+        const result = await OpenHouseAttendance.updateAsync(
           { _id: book_id, 'attendanceList.$.tenantID': ten_id }, 
           { $bit: {tenantAttendance: {xor: 1} } }
         );
@@ -81,5 +79,5 @@ Meteor.methods({
         throw new Meteor.Error('update-failed', err.message);
       }
   },
-  
+
 })

@@ -176,7 +176,7 @@ TenantBookings.schema = new SimpleSchema({
 
 export const ExpressionOfInterest = new Mongo.Collection('expressionOfInterest');
 ExpressionOfInterest.schema = new SimpleSchema({
-  propertyID: { type: String },
+  EOI_id: { type: String },
   propertyAddress: { type: String },
   tenantName: { type: String },
   tenantID: { type: String },
@@ -186,14 +186,12 @@ ExpressionOfInterest.schema = new SimpleSchema({
 export const OpenHouseAttendance = new Mongo.Collection('openHouseAttendance');
 OpenHouseAttendance.schema = new SimpleSchema({
   bookingID: { type: String },
-  propertyID: { type: String },
   propertyAddress: { type: String },
-  date: { type: Date },
   start: { type: String },
   end: { type: String },
   attendanceList: { type: Array },
-    'attedanceList.$': { type: Object },
-    'attedanceList.$.tenantID': { type: String },
-    'attedanceList.$.tenantName': { type: String },
-    'attedanceList.$.tenantAttendance': { type: Boolean }
+    'attendanceList.$': { type: Object },
+    'attendanceList.$.tenantID': { type: String },
+    'attendanceList.$.tenantName': { type: String },
+    'attendanceList.$.tenantAttendance': { type: Boolean }
 });
