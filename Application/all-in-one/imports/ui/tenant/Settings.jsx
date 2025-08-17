@@ -3,8 +3,9 @@ import Navbar from './components/TenNavbar';
 import Footer from './components/Footer';
 import ProfileSection from './settingsPages/profile';
 import IdentitySettings from './settingsPages/identitySettings';
+import SettingsAddresses from './settingsPages/addressSettings';
 
-const sectionList= ['Profile', 'Identity']
+const sectionList= ['Profile', 'Identity', 'Addresses']
 
 export default function Settings ({ tenantId }){
     const [activeSection, setActiveSection]= useState(sectionList[0]);
@@ -31,6 +32,10 @@ export default function Settings ({ tenantId }){
             // Add more cases for other sections as needed
             case 'Idnetity':
                 return <IdentitySettings />;
+
+            case 'Addresses':
+                return <SettingsAddresses />
+                
             default:
                 return <div>Select a section</div>;
         }
