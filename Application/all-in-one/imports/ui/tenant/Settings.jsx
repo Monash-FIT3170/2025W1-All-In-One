@@ -7,8 +7,9 @@ import SettingsAddresses from './settingsPages/addressSettings';
 import IncomeSettings from './settingsPages/incomeSettings';
 import EmploymentSettings from './settingsPages/employmentSettings';
 import ProfilePictureSetting from './settingsPages/pfpSettings';
+import PasswordSettings from './settingsPages/passwordSettings';
 
-const sectionList= ['Profile', 'Profile Picture','Identity', 'Addresses', 'Income', 'Employment']
+const sectionList= ['Profile', 'Profile Picture', 'Security','Identity', 'Addresses', 'Income', 'Employment']
 
 export default function Settings ({ tenantId }){
     const [activeSection, setActiveSection]= useState(sectionList[0]);
@@ -46,6 +47,9 @@ export default function Settings ({ tenantId }){
 
             case 'Profile Picture':
                 return <ProfilePictureSetting />
+
+            case 'Security':
+              return <PasswordSettings />
 
             default:
                 return <div>Select a section</div>;
