@@ -4,8 +4,9 @@ import Footer from './components/Footer';
 import ProfileSection from './settingsPages/profile';
 import IdentitySettings from './settingsPages/identitySettings';
 import SettingsAddresses from './settingsPages/addressSettings';
+import IncomeSettings from './settingsPages/incomeSettings';
 
-const sectionList= ['Profile', 'Identity', 'Addresses']
+const sectionList= ['Profile', 'Identity', 'Addresses', 'Income']
 
 export default function Settings ({ tenantId }){
     const [activeSection, setActiveSection]= useState(sectionList[0]);
@@ -32,6 +33,8 @@ export default function Settings ({ tenantId }){
             // Add more cases for other sections as needed
             case 'Identity':
                 return <IdentitySettings />;
+            case 'Income':
+              return <IncomeSettings />
 
             case 'Addresses':
                 return <SettingsAddresses />
