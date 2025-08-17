@@ -298,5 +298,19 @@ Meteor.methods({
 
     console.log(`[METHOD] tenantEmployment.remove called for employment_id: ${employmentId}`);
     return await Ten_SettingsEmployment.removeAsync({ employment_id: employmentId });
+  },
+
+  // tenant profile picture
+  async 'tenant.updateProfilePic' (url){
+    check (url, String);
+
+    if (!this.userId) throw new Meteor.Error("not-authorized");
+
+    const result= await Tenants.updateAsync(
+      {ten_id: this.userId},
+      { $set: { ten_pfp: url}}
+    );
+
+    return result;
   }
 });
