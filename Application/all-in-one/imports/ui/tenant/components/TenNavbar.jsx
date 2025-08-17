@@ -37,7 +37,7 @@ function Navbar() {
         </NavButton>
 
         {/*TODO: Add route to the tenant's profile settings*/}
-        <Link to="/PLACEHOLDER">
+        <Link to="/Settings">
           <img
             src="/images/user-avatar.png"
             alt="User Avatar"
