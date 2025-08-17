@@ -32,14 +32,19 @@ import {
   Identities,
   Households,
   Agents,
-  Landlord
+  Landlord,
+  Ten_SettingsAddresses,
+  Ten_SettingsEmployment,
+  Ten_SettingsIdentities,
+  Ten_SettingsIncomes
 } from '/imports/api/database/collections';
 import { mockData } from '/imports/api/database/mockData';
 import '/imports/api/methods/account.js';
-import '/imports/api/agent/rentalApplications/methods'
+import '/imports/api/agent/rentalApplications/methods.js'
 import { LinksCollection } from '/imports/api/links';
 import '/imports/api/AgentAvailabilities';
 import '/imports/api/TenantBookings.js';
+import '/imports/api/methods/profileSettings.js';
 
 import 'dotenv/config';
 
@@ -225,5 +230,21 @@ Meteor.startup(async () => {
 
   Meteor.publish('landlords', function () {
     return Landlord.find();
+  });
+
+  Meteor.publish('tenSettingsAddresses', function () {
+    return Ten_SettingsAddresses.find();
+  });
+
+  Meteor.publish('tenSettingsEmployment', function () {
+    return Ten_SettingsEmployment.find();
+  });
+
+  Meteor.publish('tenSettingsIdentities', function () {
+    return Ten_SettingsIdentities.find();
+  });
+
+  Meteor.publish('tenSettingsIncomes', function () {
+    return Ten_SettingsIncomes.find();
   });
 });
