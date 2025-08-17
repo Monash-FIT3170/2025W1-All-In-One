@@ -54,6 +54,27 @@ Meteor.methods({
     return await Ten_SettingsIdentities.insertAsync(identityDoc);
   },
 
+  async 'tenantIdentities.update'(identityId, updateFields) {
+    check (identityId, String);
+    check (updateFields, {
+      identity_type: String,
+      identity_public_id: Match.Optional(String),
+      identity_scan: Match.Optional(String),
+      identity_desc: Match.Optional(String),
+    });
+
+    const identity = await Ten_SettingsIdentities.findOneAsync({ identity_id: identityId });
+    if (!identity) {
+      throw new Meteor.Error('not-found', 'Identity not found');
+    }
+
+    console.log(`[METHOD] tenantIdentities.update called for identity_id: ${identityId}`, updateFields);
+    return await Ten_SettingsIdentities.updateAsync(
+      { identity_id: identityId },
+      { $set: updateFields }
+    );
+  },
+
   async 'tenantIdentities.remove'(identityId) {
     check(identityId, String);
     console.log(`[METHOD] tenantIdentities.remove called for identity_id: ${identityId}`);
