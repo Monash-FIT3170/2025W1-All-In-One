@@ -6,13 +6,14 @@ import IdentitySettings from './settingsPages/identitySettings';
 import SettingsAddresses from './settingsPages/addressSettings';
 import IncomeSettings from './settingsPages/incomeSettings';
 import EmploymentSettings from './settingsPages/employmentSettings';
+import ProfilePictureSetting from './settingsPages/pfpSettings';
 
-const sectionList= ['Profile', 'Identity', 'Addresses', 'Income', 'Employment']
+const sectionList= ['Profile', 'Profile Picture','Identity', 'Addresses', 'Income', 'Employment']
 
 export default function Settings ({ tenantId }){
     const [activeSection, setActiveSection]= useState(sectionList[0]);
     const currentIndex= sectionList.indexOf(activeSection);
-
+  
     const goNext= () => {
         if (currentIndex < sectionList.length - 1) {
             setActiveSection(sectionList[currentIndex + 1]);
@@ -42,6 +43,9 @@ export default function Settings ({ tenantId }){
 
             case 'Addresses':
                 return <SettingsAddresses />
+
+            case 'Profile Picture':
+                return <ProfilePictureSetting />
 
             default:
                 return <div>Select a section</div>;
