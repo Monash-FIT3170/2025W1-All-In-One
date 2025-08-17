@@ -168,7 +168,7 @@ Meteor.methods({
   ten_id: String,
   address_address: String,
   address_movein: Date,
-  address_moveout: Date,
+  address_moveout: Match.OneOf(Date, null),
   address_ownership: String,
   address_reference_type: String,
   address_reference_name: String,
@@ -178,11 +178,23 @@ Meteor.methods({
 });
 
     console.log('[METHOD] tenantAddresses.insert called with:', addressData);
-    return await Addresses.insertAsync(addressData);
+    return await Ten_SettingsAddresses.insertAsync(addressData);
   },
 
-  async 'tenantAddresses.update'(addressData) {
-    check(addressData, Object);
+  async 'tenantAddresses.update'(addressId, addressData) {
+  console.log('[METHOD] tenantAddresses.update called with:', { addressId, addressData });
+    check (addressId, String)
+    check(addressData, {
+  address_address: Match.Maybe(String),
+  address_movein: Match.Maybe(Date),
+  address_moveout: Match.OneOf(Date, null, undefined),
+  address_ownership: Match.Maybe(String),
+  address_reference_type: Match.Maybe(String),
+  address_reference_name: Match.Maybe(String),
+  address_reference_email: Match.Maybe(String),
+  address_reference_number: Match.Maybe(String),
+  address_status: Match.Maybe(String),
+});
 
     const allowedFields = [
     'address_address',
@@ -200,9 +212,13 @@ Meteor.methods({
     Object.entries(addressData).filter(([key]) => allowedFields.includes(key))
   );
 
+   if (Object.keys(sanitizedUpdate).length === 0) {
+      throw new Meteor.Error('no-update-fields', 'No valid fields provided for update.');
+    }
+
      console.log('[METHOD] tenantAddresses.update called with:', sanitizedUpdate);
   return await Ten_SettingsAddresses.updateAsync(
-    { address_id: addressData.address_id },
+    { address_id: addressId },
     { $set: sanitizedUpdate }
   );
   },
