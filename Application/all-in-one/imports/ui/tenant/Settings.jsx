@@ -30,12 +30,12 @@ export default function Settings ({ tenantId }){
             case 'Profile':
                 return <ProfileSection />;
             // Add more cases for other sections as needed
-            case 'Idnetity':
+            case 'Identity':
                 return <IdentitySettings />;
 
             case 'Addresses':
                 return <SettingsAddresses />
-                
+
             default:
                 return <div>Select a section</div>;
         }
