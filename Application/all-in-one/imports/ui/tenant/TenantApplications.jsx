@@ -3,7 +3,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
 import Navbar from './components/TenNavbar';
-import { useLocation } from "react-router-dom";
+import { Link,useLocation } from "react-router-dom";
 
 export default function TenantApplications() {
     const location = useLocation();
@@ -103,7 +103,9 @@ export default function TenantApplications() {
                                             Occupation: {employment?.emp_job_title || 'N/A'}
                                         </p>
                                     </div>
-                                    <div className="mt-4">
+
+                                    <div className="mt-4 flex items-center justify-between">
+                                        {/* Status badge */}
                                         <span
                                             className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${
                                                 app.status === 'Approved'
@@ -115,6 +117,15 @@ export default function TenantApplications() {
                                         >
                                             {app.status || 'Pending'}
                                         </span>
+
+                                        {/* Edit button */}
+                                        <Link
+                                            key={property.prop_id}
+                                            to={`/Apply/${property.prop_id}?tenantId=${tenantID}`}
+                                            className="ml-4 bg-white text-purple-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+                                        >
+                                            Edit
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
