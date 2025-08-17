@@ -2,8 +2,9 @@ import React, {act, useState} from 'react';
 import Navbar from './components/TenNavbar';
 import Footer from './components/Footer';
 import ProfileSection from './settingsPages/profile';
+import IdentitySettings from './settingsPages/identitySettings';
 
-const sectionList= ['Profile']
+const sectionList= ['Profile', 'Identity']
 
 export default function Settings ({ tenantId }){
     const [activeSection, setActiveSection]= useState(sectionList[0]);
@@ -28,6 +29,8 @@ export default function Settings ({ tenantId }){
             case 'Profile':
                 return <ProfileSection />;
             // Add more cases for other sections as needed
+            case 'Idnetity':
+                return <IdentitySettings />;
             default:
                 return <div>Select a section</div>;
         }
