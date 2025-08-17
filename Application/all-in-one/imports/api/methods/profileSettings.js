@@ -1,13 +1,14 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 import { Ten_SettingsAddresses, Ten_SettingsEmployment, Ten_SettingsIdentities, Ten_SettingsIncomes, Tenants } from '/imports/api/database/collections';
+import { Random } from 'meteor/random';
 
 Meteor.methods({
 
   // Incomes of tenant
   async 'tenantIncomes.insert'(incomeData) {
     check(incomeData, {
-      inc_id: String,
+      //inc_id: String, - autigenerate here instead - more secure?
       ten_id: String,
       inc_type: String,
       inc_amt: Number,
@@ -15,8 +16,14 @@ Meteor.methods({
       inc_public_id: Match.Optional(String),      // Added this field
     });
 
-    console.log('[METHOD] tenantIncomes.insert called with:', incomeData);
-    return await Ten_SettingsIncomes.insertAsync(incomeData);
+    const record = {
+      inc_id: Random.id(),
+      ten_id: this.userId,
+      ...incomeData,
+    };
+
+    console.log('[METHOD] tenantIncomes.insert called with:', record);
+    return await Ten_SettingsIncomes.insertAsync(record);
   },
 
   async 'tenantIncomes.update'(incId, updateData) {
@@ -30,13 +37,24 @@ Meteor.methods({
     );
 
     console.log(`[METHOD] tenantIncomes.update called for inc_id: ${incId}`, sanitizedUpdate);
-    return await Ten_SettingsIncomes.updateAsync({ inc_id: incId }, { $set: sanitizedUpdate });
+    
+    // ownership check: only update if this income belongs to the logged-in tenant
+    const result = await Ten_SettingsIncomes.updateAsync(
+      { inc_id: incId, ten_id: this.userId },
+      { $set: sanitizedUpdate }
+    );
+
+    if (result === 0) {
+      throw new Meteor.Error('Update failed or unauthorized');
+    }
+
+    return result;
   },
 
    async 'tenantIncomes.remove'(incId) {
     check(incId, String);
     console.log(`[METHOD] incomes.remove called for inc_id: ${incId}`);
-    return await Ten_SettingsIncomes.removeAsync({ inc_id: incId });
+    return await Ten_SettingsIncomes.removeAsync({ inc_id: incId, ten_id: this.userId, });
   },
 
   // Identities

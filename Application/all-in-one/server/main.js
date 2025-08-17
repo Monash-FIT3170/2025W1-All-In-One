@@ -245,6 +245,7 @@ Meteor.startup(async () => {
   });
 
   Meteor.publish('tenSettingsIncomes', function () {
-    return Ten_SettingsIncomes.find();
-  });
+  if (!this.userId) return this.ready();
+  return Ten_SettingsIncomes.find({ ten_id: this.userId });
+});
 });
