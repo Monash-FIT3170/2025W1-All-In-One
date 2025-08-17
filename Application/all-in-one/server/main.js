@@ -12,6 +12,8 @@ import {
   Households,
   Agents,
   Landlord,
+  OpenHouseAttendance,
+  ExpressionOfInterest,
 } from "/imports/api/database/collections";
 import { mockData } from "/imports/api/database/mockData";
 import "/imports/api/methods/account.js";
@@ -22,6 +24,10 @@ import '/imports/api/agent/agentAvailabilities/methods';
 import '/imports/api/agent/agentAvailabilities/publications';
 import '/imports/api/tenant/tenantBookings/methods';
 import '/imports/api/tenant/tenantBookings/publications';
+import '/imports/api/agent/openHouseAttendance/methods';
+import '/imports/api/agent/openHouseAttendance/publication';
+import '/imports/api/agent/expressionOfInterest/methods';
+import '/imports/api/agent/expressionOfInterest/publication';
 
 Meteor.startup(async () => {
   // Insert mock data only if collections are empty
