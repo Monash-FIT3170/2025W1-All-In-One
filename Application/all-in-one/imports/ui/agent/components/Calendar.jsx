@@ -4,7 +4,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { AgentAvailabilities } from '../../../api/database/collections';
+import { AgentAvailabilities, OpenHouseAttendance } from '../../../api/database/collections';
 import { ClearDialog } from './ClearDialog.jsx'; 
 import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
@@ -137,6 +137,25 @@ export const Calendar = () => {
         'confirmed',
         String(note ?? '')
       );
+
+      // Creates an attendance list for any new open house availabilities
+      if (type === 'Open House'){
+        const curr_booking = AgentAvailabilities.findOne({ 
+          start: start.toISOString() });
+        
+        const booking_id = curr_booking._id;
+        const attendanceList = [];
+
+        await callAsync(
+          'openHouseAttendance.insert',
+          booking_id,
+          address,
+          start.toISOString(),
+          end.toISOString(),
+          attendanceList
+        );
+      }
+
     } catch (error) {
       alert('Insert failed: ' + error.reason);
       console.error('Failed to create availability:', error.reason);
