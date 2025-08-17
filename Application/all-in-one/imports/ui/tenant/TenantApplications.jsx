@@ -119,13 +119,15 @@ export default function TenantApplications() {
                                         </span>
 
                                         {/* Edit button */}
-                                        <Link
-                                            key={property.prop_id}
-                                            to={`/Apply/${property.prop_id}?tenantId=${tenantID}`}
-                                            className="ml-4 bg-white text-purple-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
-                                        >
-                                            Edit
-                                        </Link>
+                                        {app.status === "Pending" && (
+                                            <Link
+                                                key={property.prop_id}
+                                                to={`/Apply/${property.prop_id}?tenantId=${tenantID}`}
+                                                className="ml-4 bg-white text-purple-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+                                            >
+                                                Edit
+                                            </Link>
+                                        )}
                                     </div>
                                 </div>
                             </div>
