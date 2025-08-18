@@ -95,33 +95,44 @@ export const PropertyListing = () => {
     
     let property = {};
     
-    // Try to find property by availability.property first
-    if (availability.property && availability.property !== "") {
-      property = properties.find(p => p.prop_id === availability.property) || {};
+    // Priority 1: Try to find property from booking.property.id (most reliable)
+    if (booking.property && typeof booking.property === 'object' && booking.property.id) {
+      property = properties.find(p => p.prop_id === booking.property.id) || {};
     }
     
-    // If no property found, try to get from booking.property if it exists
-    if (!property.prop_id && booking.property) {
-      // Check if booking.property has property info directly
-      if (typeof booking.property === 'object' && booking.property.address) {
-        // Use property data directly from booking
-        property = {
-          prop_id: booking.property.id || 'unknown',
-          prop_address: booking.property.address,
-          prop_pricepweek: booking.property.price,
-          prop_numbeds: booking.property.bedrooms,
-          prop_numbaths: booking.property.bathrooms,
-          prop_numcarspots: booking.property.parking,
-          prop_type: booking.property.type || 'Property',
-          prop_available_date: new Date(),
-          prop_pets: false,
-          prop_furnish: false,
-          prop_desc: 'Booked property'
-        };
+    // Priority 2: Try availability.property if booking didn't work
+    if (!property.prop_id && availability.property) {
+      // Check if availability.property is an object with id/prop_id
+      if (typeof availability.property === 'object' && availability.property.id) {
+        property = properties.find(p => p.prop_id === availability.property.id) || {};
+      } 
+      // Check if availability.property is a string prop_id
+      else if (typeof availability.property === 'string' && availability.property !== "") {
+        property = properties.find(p => p.prop_id === availability.property) || {};
       }
     }
     
-    // If still no property, use first available property as fallback
+    // Priority 3: Use booking.property data directly if available
+    if (!property.prop_id && booking.property && typeof booking.property === 'object' && booking.property.address) {
+      // Create property object from booking data
+      property = {
+        prop_id: booking.property.id || `booking-${booking._id}`,
+        prop_address: booking.property.address,
+        prop_pricepweek: booking.property.price || 0,
+        prop_numbeds: booking.property.bedrooms || 0,
+        prop_numbaths: booking.property.bathrooms || 0,
+        prop_numcarspots: booking.property.parking || 0,
+        prop_type: booking.property.type || 'Property',
+        prop_available_date: new Date(),
+        prop_pets: false,
+        prop_furnish: false,
+        prop_desc: 'Property details from booking',
+        agent_id: booking.property.agentId || null,
+        prop_bond: booking.property.bond || 0
+      };
+    }
+    
+    // Priority 4: If still no property, use first available property as fallback
     if (!property.prop_id && properties.length > 0) {
       property = properties[0]; // Use first property as fallback
     }

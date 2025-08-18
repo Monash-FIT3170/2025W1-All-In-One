@@ -7,7 +7,7 @@ import { AgentAvailabilities } from '../../../api/database/collections';
 import { BookingConfirmDialog } from './BookingConfirmDialog'; 
 import { Meteor } from 'meteor/meteor'; 
 
-export const InspectionCalendar = () => {
+export const InspectionCalendar = ({ propertyId }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
 
@@ -71,7 +71,10 @@ export const InspectionCalendar = () => {
       tenantName: user?.profile?.name || 'Anonymous',
       start: new Date(selectedSlot.start),
       end: new Date(selectedSlot.end),
-      property: selectedSlot.property,
+      property: {
+        ...selectedSlot.property,
+        id: propertyId // Ensure the property ID is correctly linked
+      },
       status: 'pending',
     };
 
