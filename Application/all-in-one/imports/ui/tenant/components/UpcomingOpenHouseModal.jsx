@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { Meteor } from 'meteor/meteor';
 import {formatDisplayDate, formatTime} from '../../globalComponents/DateTimeFormatting'
+import { OpenHouseAttendance, Tenants } from '../../../api/database/collections';
 
 
 function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
@@ -12,20 +14,47 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
     }
   };
 
-
-  const [property, setProperty] = useState('')
-  const [openHouseBooking, setOpenHouseBooking] = useState('');
-  const [tenant, setTenant] = useState('');
   const [EOI, setEOI] = useState('');
 
-  {/* Submitting an Expression of Interest */}
-  const handleSubmit = () => {
+  // {/* Submitting an Expression of Interest */}
+  // const handleSubmit = () => {
     
-  }
-
-  // const handleSelect = () => {
-
   // }
+
+  {/* Selecting a provided timeslot for Open House */}
+  const handleSelect = (openHouse_id) => {
+    const tenant_id = Meteor.userId();
+    Meteor.subscribe('openHouseAttendance');
+    Meteor.subscribe('tenants');
+
+    const tenant = Tenants.findOne({
+      ten_id: tenant_id });
+    const tenantFullName = tenant.ten_fn + " " + tenant.ten_ln;
+
+    const attendanceList = OpenHouseAttendance.findOne({ 
+      bookingID: openHouse_id});
+    
+    if (attendanceList.attendanceList.find( ten => ten.tenantID === tenant_id)){
+      alert('You have already signed up for this open house')
+      return;
+    }
+    
+    Meteor.call(
+      'openHouseAttendance.addTenant', 
+        openHouse_id,
+        tenant_id,
+        tenantFullName,
+      (err) => {
+        if (err) {
+          alert("Adding Tenant to List Failed: " + err.reason);
+        }
+        else {
+          alert("Tenant Successfully Added!");
+          onClose();
+        }
+      }
+    );
+  }
 
   return (
     <div ref={modalRef} onClick={closeModal} className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
@@ -55,7 +84,7 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
               <h5 className="text-lg font-semibold text-gray-600 mb-1 justify-center items-center">{formatDisplayDate(openHouse.start)}</h5>
               <p className="text-sm text-gray-600 mb-1 justify-center items-center"> {formatTime(openHouse.start, openHouse.end)} </p>
               <button 
-              // onClick={handleSelect}
+              onClick={() => handleSelect(openHouse._id)}
               className="w-1/1 bg-[#9747FF] mt-3 justify-center hover:bg-violet-900 text-white font-base text-center py-2 px-2 rounded-md shadow-md transition duration-200">
                 Select
               </button>

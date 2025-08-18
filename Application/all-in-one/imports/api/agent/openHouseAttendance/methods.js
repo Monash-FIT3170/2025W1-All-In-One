@@ -43,10 +43,10 @@ Meteor.methods({
         const attendance = false;
 
         const result = await OpenHouseAttendance.updateAsync(
-          { _id: book_id }, 
+          { bookingID: book_id }, 
           { $push: {attendanceList: {tenantID: ten_id, tenantName: ten_name, tenantAttendance: attendance }}
         });
-
+        
       console.log(`[SERVER] Added tenant to attendance list ${result}`);
       return result;
 
@@ -67,7 +67,7 @@ Meteor.methods({
         check(ten_id, String);
 
         const result = await OpenHouseAttendance.updateAsync(
-          { _id: book_id, 'attendanceList.$.tenantID': ten_id }, 
+          { bookingID: book_id, 'attendanceList.$.tenantID': ten_id }, 
           { $bit: {tenantAttendance: {xor: 1} } }
         );
 
