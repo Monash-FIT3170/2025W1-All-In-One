@@ -3,7 +3,7 @@ import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { useTracker } from 'meteor/react-meteor-data';
-import { AgentAvailabilities } from '../../../api/database/collections';
+import { AgentAvailabilities, Properties } from '../../../api/database/collections';
 import { BookingConfirmDialog } from './BookingConfirmDialog'; 
 import { Meteor } from 'meteor/meteor'; 
 
@@ -15,14 +15,31 @@ export const InspectionCalendar = ({ propertyId }) => {
   const user = useTracker(() => Meteor.user());
   
 
-  const { availabilities } = useTracker(() => {
-    Meteor.subscribe('allAvailableInspections');
-    const all = AgentAvailabilities.find({ 
-      activity_type: 'Availability',
-      status: { $ne: 'booked' } 
-    }).fetch();
-    return { availabilities: all };
-  });
+  const { availabilities, property, isReady } = useTracker(() => {
+    const propertiesHandle = Meteor.subscribe('properties');
+    const availabilitiesHandle = Meteor.subscribe('allAvailableInspections');
+    
+    const ready = propertiesHandle.ready() && availabilitiesHandle.ready();
+    
+    let property = null;
+    let availabilities = [];
+    
+    if (ready && propertyId) {
+      // Get the property to find its agent_id
+      property = Properties.findOne({ prop_id: propertyId });
+      
+      if (property && property.agent_id) {
+        // Only get availabilities from the agent who manages this property
+        availabilities = AgentAvailabilities.find({ 
+          activity_type: 'Availability',
+          status: { $ne: 'booked' },
+          agent_id: property.agent_id
+        }).fetch();
+      }
+    }
+    
+    return { availabilities, property, isReady: ready };
+  }, [propertyId]);
   
 
   const handleEventClick = (info) => {
@@ -99,11 +116,42 @@ export const InspectionCalendar = ({ propertyId }) => {
     setSelectedSlot(null);
   };
 
+  // Loading state
+  if (!isReady) {
+    return (
+      <div className="bg-[#FFF8E9] min-h-screen p-8">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-gray-800">Book Inspection Time</h2>
+          <p className="text-gray-600">Loading available inspection times...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // No property found
+  if (!property) {
+    return (
+      <div className="bg-[#FFF8E9] min-h-screen p-8">
+        <div className="text-center mb-6">
+          <h2 className="text-3xl font-bold text-gray-800">Book Inspection Time</h2>
+          <p className="text-red-600">Property not found.</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Book Inspection Time</h2>
-        <p className="text-gray-600">Select the Inspection Timeslot that suits you best.</p>
+        <p className="text-gray-600">
+          Select the Inspection Timeslot that suits you best for this property.
+          {availabilities.length === 0 && (
+            <span className="block mt-2 text-orange-600">
+              No inspection times currently available for this property.
+            </span>
+          )}
+        </p>
       </div>
 
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-6xl mx-auto">
