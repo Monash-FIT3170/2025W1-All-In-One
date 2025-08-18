@@ -16,10 +16,35 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
 
   const [EOI, setEOI] = useState('');
 
-  // {/* Submitting an Expression of Interest */}
-  // const handleSubmit = () => {
+  {/* Submitting an Expression of Interest */}
+  const handleSubmit = () => {
+    const propertyID = propertyData.id;
+    const propertyAddress = propertyData.address;
+    const tenantID = Meteor.userId();
     
-  // }
+    Meteor.subscribe('tenants');
+    const tenant = Tenants.findOne({
+      ten_id: tenantID });
+    const tenantFullName = tenant.ten_fn + " " + tenant.ten_ln;
+    
+    Meteor.call(
+      'expressionOfInterest.insert', 
+        propertyID,
+        propertyAddress,
+        tenantID,
+        tenantFullName,
+        EOI,
+      (err) => {
+        if (err) {
+          alert("Adding Tenant to List Failed: " + err.reason);
+        }
+        else {
+          alert("Expression of interest sent! \n\nAgent will be in touch via email. \n\nPlease note, expressions of interest cannot guarantee a private open house inspection.");
+          onClose();
+        }
+      }
+    );
+  };
 
   {/* Selecting a provided timeslot for Open House */}
   const handleSelect = (openHouse_id) => {
@@ -54,7 +79,7 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
         }
       }
     );
-  }
+  };
 
   return (
     <div ref={modalRef} onClick={closeModal} className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
@@ -103,7 +128,7 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
         <div className='flex justify-center mb-3'>
           <textarea 
           value = {EOI}
-          onChange={(e) => StylePropertyMapReadOnly(e.target.value)}
+          onChange={(e) => setEOI(e.target.value)}
           placeholder='Enter expression of interest here with date and time'
           className="w-full p-2 h-24 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
           />
@@ -111,7 +136,7 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
 
         <div className="flex justify-center mb-1">
           <button
-            // onClick={handleSubmit}
+            onClick={handleSubmit}
             className="w-1/1 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 px-2 rounded-md shadow-md transition duration-200">
             Send Expression of Interest
           </button>
