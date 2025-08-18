@@ -419,8 +419,8 @@ export const PropertyListing = () => {
                             : "- car"}
                         </span>
                         <span className="font-medium">
-                          {event.propertyDetails.price 
-                            ? `${event.propertyDetails.price}/week` 
+                          {event.propertyDetails.price && event.propertyDetails.price !== 0
+                            ? `$${event.propertyDetails.price}/week` 
                             : "$-/week"}
                         </span>
                       </div>
