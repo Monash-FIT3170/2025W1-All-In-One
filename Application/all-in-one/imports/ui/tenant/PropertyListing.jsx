@@ -63,7 +63,7 @@ export const PropertyListing = () => {
   // Subscribe to data - only get current user's bookings
   const { myBookings, availabilities, properties, agents, photos, isReady } = useTracker(() => {
     const bookingsHandle = Meteor.subscribe('tenantBookings');
-    const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
+    const availabilitiesHandle = Meteor.subscribe('allAvailableInspections');
     const propertiesHandle = Meteor.subscribe('properties');
     const agentsHandle = Meteor.subscribe('agents');
     const photosHandle = Meteor.subscribe('photos');

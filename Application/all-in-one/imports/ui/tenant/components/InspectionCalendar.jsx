@@ -16,8 +16,11 @@ export const InspectionCalendar = ({ propertyId }) => {
   
 
   const { availabilities } = useTracker(() => {
-    Meteor.subscribe('agentAvailabilities');
-    const all = AgentAvailabilities.find({ type: 'Inspection' }).fetch();
+    Meteor.subscribe('allAvailableInspections');
+    const all = AgentAvailabilities.find({ 
+      activity_type: 'Availability',
+      status: { $ne: 'booked' } 
+    }).fetch();
     return { availabilities: all };
   });
   

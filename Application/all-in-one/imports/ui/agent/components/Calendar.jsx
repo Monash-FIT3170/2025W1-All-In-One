@@ -122,6 +122,7 @@ export const Calendar = () => {
 
     // Immediately insert into DB
     try {
+      const currentUserId = Meteor.userId();
       await callAsync(
         'agentAvailabilities.insert',
         start.toISOString(),
@@ -135,7 +136,8 @@ export const Calendar = () => {
         String(parking ?? ''),
         String(image ?? ''),
         'confirmed',
-        String(note ?? '')
+        String(note ?? ''),
+        currentUserId
       );
     } catch (error) {
       alert('Insert failed: ' + error.reason);
@@ -154,6 +156,7 @@ export const Calendar = () => {
 
   const handleConfirm = async () => {
     try {
+      const currentUserId = Meteor.userId();
       for (const event of newEvents) {
         await callAsync(
           'agentAvailabilities.insert',
@@ -169,6 +172,7 @@ export const Calendar = () => {
           String(event.image ?? ''),
           'confirmed',
           String(event.note ?? ''),
+          currentUserId
         );
       }
 

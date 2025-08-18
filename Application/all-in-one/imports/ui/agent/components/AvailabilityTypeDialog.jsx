@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { mockData } from '/imports/api/database/mockData.js';
+import { useTracker } from 'meteor/react-meteor-data';
+import { Meteor } from 'meteor/meteor';
+import { Properties, Photos } from '/imports/api/database/collections';
 
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
@@ -10,6 +12,21 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const [property, setProperty] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [note, setNote] = useState('');
+
+  // Get agent's properties from database
+  const { agentProperties, photos, isReady } = useTracker(() => {
+    const propertiesHandle = Meteor.subscribe('properties');
+    const photosHandle = Meteor.subscribe('photos');
+    const currentUserId = Meteor.userId();
+    
+    const ready = propertiesHandle.ready() && photosHandle.ready();
+    
+    return {
+      agentProperties: ready && currentUserId ? Properties.find({ agent_id: currentUserId }).fetch() : [],
+      photos: ready ? Photos.find({}).fetch() : [],
+      isReady: ready
+    };
+  }, []);
 
   useEffect(() => {
     if (pendingSlot && isOpen) {
@@ -29,12 +46,17 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     const end = dayjs(`${date} ${endTime}`, 'YYYY-MM-DD HH:mm').toDate();
 
     const selected = property && property.prop_address
-      ? mockData.properties.find(p => p.prop_address === property.prop_address)
+      ? agentProperties.find(p => p.prop_address === property.prop_address)
       : null;
 
+    // Find property photos
+    const propertyPhotos = selected ? photos.filter(photo => photo.prop_id === selected.prop_id) : [];
+    const propertyImage = propertyPhotos.length > 0 ? propertyPhotos[0].photo_url : '/images/default.jpg';
+
     onSelect(type, start, end, {
+      id: selected?.prop_id || null,
       address: selected?.prop_address || property?.prop_address || '-',
-      image: selected ? `/images/properties/${selected.prop_id}/main.jpg` : '/property.png',
+      image: propertyImage,
       price: selected?.prop_pricepweek || '-',
       bedrooms: selected?.prop_numbeds || '-',
       bathrooms: selected?.prop_numbaths || '-',
@@ -42,7 +64,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     }, note);
   };
 
-  const filteredProperties = mockData.properties.filter(p =>
+  const filteredProperties = agentProperties.filter(p =>
     p.prop_address.toLowerCase().includes((property?.prop_address || '').toLowerCase())
   );
 
@@ -81,18 +103,21 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
 
         {type === 'Open House' && (
           <div>
-            <label className="block text-black font-semibold mb-1">Property</label>
+            <label className="block text-black font-semibold mb-1">
+              Your Property {!isReady && <span className="text-xs">(Loading...)</span>}
+            </label>
             <input
               type="text"
-              placeholder="Search Property..."
+              placeholder={isReady ? "Search your properties..." : "Loading properties..."}
               value={property?.prop_address || ''}
               onChange={(e) => {
                 setProperty({ prop_address: e.target.value });
                 setShowSuggestions(true);
               }}
-              className="w-full px-4 py-2 rounded-lg bg-[#FFF8E9] border border-purple-400"
+              disabled={!isReady}
+              className="w-full px-4 py-2 rounded-lg bg-[#FFF8E9] border border-purple-400 disabled:opacity-50"
             />
-            {showSuggestions && property?.prop_address && (
+            {showSuggestions && property?.prop_address && isReady && (
               <div className="mt-1 border rounded bg-white max-h-40 overflow-y-auto shadow">
                 {filteredProperties.length > 0 ? (
                   filteredProperties.map((p, idx) => (
@@ -108,7 +133,11 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
                     </div>
                   ))
                 ) : (
-                  <div className="px-4 py-2 text-sm text-gray-500">No matches found</div>
+                  <div className="px-4 py-2 text-sm text-gray-500">
+                    {agentProperties.length === 0 
+                      ? "You don't have any properties listed yet" 
+                      : "No matching properties found"}
+                  </div>
                 )}
               </div>
             )}
@@ -118,7 +147,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
         <div>
           <h3 className="text-lg font-bold mb-2 text-black">Date and Time</h3>
           <p className="text-sm text-gray-800 mb-4">
-            The start and end time entered will appear as a timeslot for possible tenants to book inspections for any property.
+            The start and end time entered will appear as a timeslot for possible tenants to book inspections for your properties.
           </p>
           <div className="flex justify-between gap-3">
             <div className="flex flex-col w-1/3">

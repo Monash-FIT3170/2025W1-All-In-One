@@ -16,6 +16,7 @@ Meteor.methods({
     image,
     status,
     notes,
+    agent_id,
   ) {
     try {
       console.log('[DEBUG] insert args:', {
@@ -45,6 +46,7 @@ Meteor.methods({
       check(image, Match.Optional(String));
       check(status, Match.Optional(String));
       check(notes, Match.Optional(String));
+      check(agent_id, String);
 
       const result = await AgentAvailabilities.insertAsync({
         start,
