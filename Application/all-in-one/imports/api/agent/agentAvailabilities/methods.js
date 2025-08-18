@@ -45,7 +45,7 @@ Meteor.methods({
       check(image, Match.Optional(String));
       check(status, Match.Optional(String));
       check(notes, Match.Optional(String));
-  
+
       const result = await AgentAvailabilities.insertAsync({
         start,
         end,
@@ -61,6 +61,7 @@ Meteor.methods({
         image,
         status,
         notes,
+        agent_id,
         createdAt: new Date(),
       });
   

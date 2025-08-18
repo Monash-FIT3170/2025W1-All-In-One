@@ -159,6 +159,7 @@ AgentAvailabilities.schema = new SimpleSchema({
   parking: { type: String, optional: true },
   image: { type: String, optional: true },
   status: { type: String, optional: true },
+  agent_id: { type: String },
   createdAt: { type: Date, optional: true }
 });
 
