@@ -12,18 +12,25 @@ import {
   Households,
   Agents,
   Landlord,
-  Tickets
-} from '/imports/api/database/collections';
-import { mockData } from '/imports/api/database/mockData';
-import '/imports/api/methods/account.js';
-import '/imports/api/agent/rentalApplications/methods'
-import { LinksCollection } from '/imports/api/links';
-import '/imports/api/AgentAvailabilities';
-import '/imports/api/TenantBookings.js';
+  Tickets,
+  OpenHouseAttendance,
+  ExpressionOfInterest,
+} from "/imports/api/database/collections";
+import { mockData } from "/imports/api/database/mockData";
+import "/imports/api/methods/account.js";
+import "/imports/api/methods/rentalApplications.js";
+import "/imports/api/agent/rentalApplications/methods";
+import { LinksCollection } from "/imports/api/links";
+import '/imports/api/agent/agentAvailabilities/methods';
+import '/imports/api/agent/agentAvailabilities/publications';
+import '/imports/api/tenant/tenantBookings/methods';
+import '/imports/api/tenant/tenantBookings/publications';
+import '/imports/api/agent/openHouseAttendance/methods';
+import '/imports/api/agent/openHouseAttendance/publication';
+import '/imports/api/agent/expressionOfInterest/methods';
+import '/imports/api/agent/expressionOfInterest/publication';
 import '/imports/api/tenant/tickets/ticketsMethods';
-import '/imports/api/tenant/tickets/ticketsPublications';
-
-
+import '/imports/api/tenant/tickets/ticketsPublications'
 
 Meteor.startup(async () => { 
 

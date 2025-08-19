@@ -183,3 +183,52 @@ Tickets.schema = new SimpleSchema({
 });
 
 
+export const AgentAvailabilities = new Mongo.Collection('agentAvailabilities');
+AgentAvailabilities.schema = new SimpleSchema({
+  start: { type: String },
+  end: { type: String },
+  activity_type: { type: String },
+  availability_type: { type: String },
+  property: { type: Object, blackbox: true },
+  price: { type: String, optional: true },
+  bedrooms: { type: String, optional: true },
+  bathrooms: { type: String, optional: true },
+  parking: { type: String, optional: true },
+  image: { type: String, optional: true },
+  status: { type: String, optional: true },
+  createdAt: { type: Date, optional: true }
+});
+
+export const TenantBookings = new Mongo.Collection('tenantBookings');
+TenantBookings.schema = new SimpleSchema({
+  agentAvailabilityId: { type: String },
+  tenantName: { type: String },
+  tenantId: { type: String },
+  start: { type: Date },
+  end: { type: Date },
+  property: { type: Object, blackbox: true },
+  status: { type: String },
+  createdAt: { type: Date, optional: true }
+});
+
+export const ExpressionOfInterest = new Mongo.Collection('expressionOfInterest');
+ExpressionOfInterest.schema = new SimpleSchema({
+  EOI_id: { type: String },
+  propertyAddress: { type: String },
+  tenantName: { type: String },
+  tenantID: { type: String },
+  EOI: { type: String }
+});
+
+export const OpenHouseAttendance = new Mongo.Collection('openHouseAttendance');
+OpenHouseAttendance.schema = new SimpleSchema({
+  bookingID: { type: String },
+  propertyAddress: { type: String },
+  start: { type: String },
+  end: { type: String },
+  attendanceList: { type: Array },
+    'attendanceList.$': { type: Object },
+    'attendanceList.$.tenantID': { type: String },
+    'attendanceList.$.tenantName': { type: String },
+    'attendanceList.$.tenantAttendance': { type: Boolean }
+});
