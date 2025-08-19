@@ -380,6 +380,22 @@ export const Calendar = () => {
           onSelect={handleAvailabilityTypeSelect}
           onClose={closeDialogs} 
         />
+        <TicketTypeDialog
+          isOpen={showTicketTypeDialog}
+          onClose={closeTicketPicker}
+          onSelect={handleTicketChosen}
+        />
+        <TicketActivityDialog
+          isOpen={showTicketActivityDialog}
+          ticket={selectedTicketForActivity}
+          pendingSlot={pendingSlot}
+          onCreate={handleCreateTicketActivity}
+          onChangeTicket={() => {
+            setShowTicketActivityDialog(false);
+            setShowTicketTypeDialog(true);
+          }}
+          onClose={() => setShowTicketActivityDialog(false)}
+        />
       </div>
 
       {/* Show event detail modal for booked events */}
