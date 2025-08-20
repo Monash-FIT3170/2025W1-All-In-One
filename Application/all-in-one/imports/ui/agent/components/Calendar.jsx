@@ -400,7 +400,7 @@ export const Calendar = () => {
           Clear All
         </button>
         <p className="text-sm text-gray-800 mb-4">
-            Booked slots cannot be edited. Only pending slots can be modified.
+            Booked slots cannot be cleared. You can only clear unbooked availabilities.
         </p>
       </div>
       

@@ -93,24 +93,33 @@ Meteor.methods({
   },
 
   async 'agentAvailabilities.clear'() {
-    console.log('Clearing all availabilities...');
-    return await AgentAvailabilities.removeAsync({});
+    console.log('Clearing all unbooked availabilities...');
+    const selector = { $or: [ { status: { $exists: false } }, { status: { $ne: 'booked' } } ] };
+
+    const removed = await AgentAvailabilities.removeAsync(selector);
+    return { removed };
   },
 
   async 'agentAvailabilities.update'(id, update) {
     check(id, String);
     check(update, Object);
-
-    // avoid editing booked ones
+  
     const doc = await AgentAvailabilities.findOneAsync({ _id: id });
     if (!doc) throw new Meteor.Error('not-found', 'Availability not found');
-    if (doc.status === 'booked') throw new Meteor.Error('forbidden', 'Booked slots cannot be modified.');
-
+  
     const $set = {};
-    if (update.start)  $set.start  = String(update.start);
-    if (update.end)    $set.end    = String(update.end);
-    if (update.notes !== undefined) $set.notes = String(update.notes);
-
+  
+    // Notes can always be updated
+    if (update.notes !== undefined) {
+      $set.notes = String(update.notes);
+    }
+  
+    // Start/end only allowed if not booked
+    if (doc.status !== 'booked') {
+      if (update.start) $set.start = String(update.start);
+      if (update.end) $set.end = String(update.end);
+    }
+  
     return AgentAvailabilities.updateAsync({ _id: id }, { $set });
   },
 

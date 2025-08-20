@@ -5,7 +5,7 @@ import { Meteor } from 'meteor/meteor';
 export const EventDetailModal = ({ event, onClose }) => {
   if (!event) return null;
 
-  // normalize dates 
+  // normalize dates
   const startDate = useMemo(() => new Date(event.start), [event.start]);
   const endDate   = useMemo(() => new Date(event.end),   [event.end]);
 
@@ -42,22 +42,27 @@ export const EventDetailModal = ({ event, onClose }) => {
     return `${s.toLocaleTimeString([], opts)} - ${e.toLocaleTimeString([], opts)}`;
   };
 
+  async function updateAvailability(payload) {
+    return new Promise((resolve, reject) => {
+      Meteor.call('agentAvailabilities.update', String(event.id), payload, (err, res) => {
+        if (err) reject(err); else resolve(res);
+      });
+    });
+  }
+
   async function handleSave() {
     try {
-      const payload = {
-        start: new Date(draftStart).toISOString(),
-        end:   new Date(draftEnd).toISOString(),
-        notes: draftNotes.trim(),
-      };
+      const payload = isBooked
+        ? { notes: draftNotes.trim() } // time locked when booked
+        : {
+            start: new Date(draftStart).toISOString(),
+            end:   new Date(draftEnd).toISOString(),
+            notes: draftNotes.trim(),
+          };
 
-      await new Promise((resolve, reject) => {
-        Meteor.call('agentAvailabilities.update', String(event.id), payload, (err, res) => {
-          if (err) reject(err); else resolve(res);
-        });
-      });
-
+      await updateAvailability(payload);
       setIsEditing(false);
-      onClose?.(); 
+      onClose?.();
     } catch (e) {
       alert('Update failed: ' + (e?.reason || e?.message || e));
     }
@@ -149,43 +154,43 @@ export const EventDetailModal = ({ event, onClose }) => {
             </p>
           ) : (
             <div className="grid grid-cols-1 gap-3">
-              <label className="text-sm font-semibold text-gray-800">Start</label>
+              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>Start</label>
               <input
                 type="datetime-local"
-                className="w-full border rounded p-2 bg-white"
+                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
                 value={draftStart}
                 onChange={(e) => setDraftStart(e.target.value)}
+                disabled={isBooked}
               />
-              <label className="text-sm font-semibold text-gray-800">End</label>
+              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>End</label>
               <input
                 type="datetime-local"
-                className="w-full border rounded p-2 bg-white"
+                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
                 value={draftEnd}
                 onChange={(e) => setDraftEnd(e.target.value)}
+                disabled={isBooked}
               />
+              {isBooked && (
+                <p className="text-xs text-gray-600 -mt-1">
+                  Time is locked for booked slots. You can still update the note below.
+                </p>
+              )}
             </div>
-          )}
-
-          {/* Tenant summary */}
-          {event.tenant ? (
-            <div className="bg-white p-4 rounded-xl space-y-2 mt-4">
-              <p className="font-semibold text-lg">{event.tenant}</p>
-              <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
-              <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
-            </div>
-          ) : (
-            <div className="text-sm text-gray-600 mt-4 italic">No tenant information.</div>
           )}
 
           {/* Notes */}
-          {(!isEditing && (event.notes?.trim() || event.note?.trim())) && (
-            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
-              <p className="font-semibold mb-1">Note</p>
-              <p className="whitespace-pre-line">{event.notes ?? event.note}</p>
-            </div>
-          )}
-
-          {isEditing && (
+          {!isEditing ? (
+            (event.notes?.trim() || event.note?.trim()) ? (
+              <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
+                <p className="font-semibold mb-1">Note</p>
+                <p className="whitespace-pre-line">{event.notes ?? event.note}</p>
+              </div>
+            ) : (
+              <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-500 italic">
+                No notes yet.
+              </div>
+            )
+          ) : (
             <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
               <label className="font-semibold mb-1 block">Note</label>
               <textarea
@@ -198,14 +203,12 @@ export const EventDetailModal = ({ event, onClose }) => {
           )}
 
           {/* Buttons row */}
-          <div className="mt-6 flex justify-end gap-2">
-            {/* Cancel / Save when editing */}
+          <div className="mt-6 flex flex-wrap gap-2 justify-end">
             {isEditing ? (
               <>
                 <button
                   className="px-4 py-2 rounded bg-gray-300 text-black"
                   onClick={() => {
-                    // reset draft values to current event values
                     setDraftStart(toLocalInputValue(startDate));
                     setDraftEnd(toLocalInputValue(endDate));
                     setDraftNotes((event.notes ?? event.note ?? '').toString());
@@ -223,7 +226,7 @@ export const EventDetailModal = ({ event, onClose }) => {
               </>
             ) : (
               <>
-                {/* Delete */}
+                {/* Delete (blocked if booked) */}
                 <button
                   className={`px-4 py-2 rounded flex items-center gap-2 ${
                     isBooked ? 'bg-red-300 cursor-not-allowed' : 'bg-red-500 text-white'
@@ -236,28 +239,30 @@ export const EventDetailModal = ({ event, onClose }) => {
                   Delete
                 </button>
 
-                {/* Edit */}
+                {/* Single EDIT button */}
                 <button
-                  className={`px-4 py-2 rounded flex items-center gap-2 ${
-                    isBooked ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#9747FF] text-white'
-                  }`}
+                  className="px-4 py-2 rounded flex items-center gap-2 bg-[#9747FF] text-white"
                   onClick={() => setIsEditing(true)}
-                  disabled={isBooked}
-                  title={isBooked ? 'Booked slots cannot be edited' : 'Edit time and note'}
+                  title={isBooked ? 'Edit note (time locked)' : 'Edit time and note'}
                 >
                   <Pencil className="w-4 h-4" />
                   Edit
                 </button>
+                {isBooked && (
+                  <p className="text-xs text-gray-700 mt-3 italic">
+                    This slot is booked. Booked slots cannot be deleted but notes are still editable.
+                  </p>
+                )}
               </>
             )}
           </div>
 
-          {/* Booked badge */}
+          {/* Booked badge
           {isBooked && (
             <p className="text-xs text-gray-700 mt-3 italic">
-              This slot is booked and can’t be modified or deleted.
+              This slot is booked. You can still update notes.
             </p>
-          )}
+          )} */}
         </div>
       </div>
     </div>
