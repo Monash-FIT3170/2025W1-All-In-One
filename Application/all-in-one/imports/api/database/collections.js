@@ -196,6 +196,7 @@ AgentAvailabilities.schema = new SimpleSchema({
   parking: { type: String, optional: true },
   image: { type: String, optional: true },
   status: { type: String, optional: true },
+  notes: { type: String, optional: true },
   createdAt: { type: Date, optional: true }
 });
 
@@ -214,8 +215,7 @@ TenantBookings.schema = new SimpleSchema({
 export const ExpressionOfInterest = new Mongo.Collection('expressionOfInterest');
 ExpressionOfInterest.schema = new SimpleSchema({
   EOI_id: { type: String },
-  propertyAddress: { type: String },
-  tenantName: { type: String },
+  propId: { type: String },
   tenantID: { type: String },
   EOI: { type: String }
 });

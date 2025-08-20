@@ -19,20 +19,12 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
   {/* Submitting an Expression of Interest */}
   const handleSubmit = () => {
     const propertyID = propertyData.id;
-    const propertyAddress = propertyData.address;
     const tenantID = Meteor.userId();
-    
-    Meteor.subscribe('tenants');
-    const tenant = Tenants.findOne({
-      ten_id: tenantID });
-    const tenantFullName = tenant.ten_fn + " " + tenant.ten_ln;
     
     Meteor.call(
       'expressionOfInterest.insert', 
         propertyID,
-        propertyAddress,
         tenantID,
-        tenantFullName,
         EOI,
       (err) => {
         if (err) {
@@ -53,7 +45,7 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
     Meteor.subscribe('tenants');
 
     const tenant = Tenants.findOne({
-      ten_id: tenant_id });
+      _id: tenant_id });
     const tenantFullName = tenant.ten_fn + " " + tenant.ten_ln;
 
     const attendanceList = OpenHouseAttendance.findOne({ 
