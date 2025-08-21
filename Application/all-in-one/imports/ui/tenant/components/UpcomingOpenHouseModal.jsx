@@ -45,7 +45,7 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
     Meteor.subscribe('tenants');
 
     const tenant = Tenants.findOne({
-      _id: tenant_id });
+      ten_id: tenant_id });
     const tenantFullName = tenant.ten_fn + " " + tenant.ten_ln;
 
     const attendanceList = OpenHouseAttendance.findOne({ 
