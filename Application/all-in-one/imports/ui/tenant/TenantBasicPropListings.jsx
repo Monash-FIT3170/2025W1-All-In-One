@@ -1,5 +1,5 @@
 import React, {useState} from "react";
-import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter} from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter, FaTimes} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
@@ -161,11 +161,19 @@ export default function TenantBasicPropListings() {
       {showFilters && (
             <div className="mt-4 flex justify-center">
               <div
-                className="bg-[#CBADD8] py-10 px-10 rounded-lg flex flex-col gap-6 w-full min-h-[400px]"
+                className="bg-[#CBADD8] py-10 px-10 rounded-lg flex flex-col gap-6 w-full min-h-[400px] relative"
                 style={{ maxWidth: '1100px' }}
               >
+                {/* Close button */}
+                <button
+                  className="absolute top-4 right-4 text-grey-700 hover:text-red-500"
+                  onClick={() => setShowFilters(false)}
+                >
+                  <FaTimes size={20} />
+                </button>
+                
                 {/* Furnished checkbox */}
-                {/* Furnished & Pets checkboxes */}
+                
                 <div className="flex items-center gap-6">
                   <label className="flex items-center gap-2">
                     <input 
@@ -176,7 +184,8 @@ export default function TenantBasicPropListings() {
                     />
                     Furnished
                   </label>
-
+                  
+                {/* Furnished & Pets checkboxes */}
                   <label className="flex items-center gap-2">
                     <input 
                     type="checkbox" 
