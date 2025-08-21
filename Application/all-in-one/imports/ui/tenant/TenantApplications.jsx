@@ -2,13 +2,14 @@
 // This component displays all rental applications submitted by the currently logged-in tenant
 // It shows property details, application status, and tenant information for each application
 
-import React from 'react';
-import { Meteor } from 'meteor/meteor'; // Meteor framework for reactive data
-import { useTracker } from 'meteor/react-meteor-data'; // Hook for reactive data subscriptions
-import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections'; // Database collections
-import Navbar from './components/TenNavbar'; // Tenant navigation bar component
-import { useLocation } from "react-router-dom"; // Hoxok to access current route location
+import React, { useState } from 'react';
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
+import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
+import Navbar from './components/TenNavbar';
+import { useLocation, Link } from "react-router-dom";   // ✅ fixed
 import { ApplicantCard } from './components/ApplicantCard';
+
 
 export default function TenantApplications() {
     // Get the current route location (useful for navigation context)
@@ -43,10 +44,23 @@ export default function TenantApplications() {
         };
     });
 
-    // Show loading message while data is being fetched
+    const [searchTerms, setSearchTerms] = useState({});
+
     if (!isReady) {
         return <div className="p-8 text-gray-600">Loading applications...</div>;
     }
+
+    const handleTenantAdd = (appId, tenId) => {
+        Meteor.call('rentalApplications.addTenant', appId, tenId, (err) => {
+            if (err) alert(err.reason);
+        });
+    };
+
+    const handleTenantRemove = (appId, tenId) => {
+        Meteor.call('rentalApplications.removeTenant', appId, tenId, (err) => {
+            if (err) alert(err.reason);
+        });
+    };
 
     return (
         // Main container with cream background and minimum height for full screen
@@ -69,6 +83,11 @@ export default function TenantApplications() {
                         const tenant = tenants.find(t => t.ten_id === app.ten_id);
                         const property = properties.find(p => p.prop_id === app.prop_id);
                         const employment = employments.find(e => e.employment_id === app.employment_id);
+
+                        const searchTerm = searchTerms[app._id] || '';
+                        const filteredTenants = tenants.filter(t =>
+                            `${t.ten_fn} ${t.ten_ln}`.toLowerCase().includes(searchTerm.toLowerCase())
+                        );
 
                         return (
                             // Application card container with flexbox layout
@@ -120,6 +139,43 @@ export default function TenantApplications() {
                                             ? "❌"
                                             : "⏳"}
                                     />
+                                    <div>
+                                        <h3 className="text-xl font-bold text-white mb-1">
+                                            Rental Application
+                                        </h3>
+                                        <p className="text-white text-sm italic mb-2">
+                                            "{app.app_desc || 'No description'}"
+                                        </p>
+                                        <p className="text-white text-sm">
+                                            Occupation: {employment?.emp_job_title || 'N/A'}
+                                        </p>
+                                    </div>
+
+                                    <div className="mt-4 flex items-center justify-between">
+                                        {/* Status badge */}
+                                        <span
+                                            className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${
+                                                app.status === 'Approved'
+                                                    ? 'bg-green-200 text-green-800'
+                                                    : app.status === 'Rejected'
+                                                    ? 'bg-red-200 text-red-800'
+                                                    : 'bg-yellow-200 text-yellow-800'
+                                            }`}
+                                        >
+                                            {app.status || 'Pending'}
+                                        </span>
+
+                                        {/* Edit button */}
+                                        {app.status === "Pending" && (
+                                            <Link
+                                                key={property.prop_id}
+                                                to={`/Apply/${property.prop_id}?tenantId=${tenantID}`}
+                                                className="ml-4 bg-white text-purple-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+                                            >
+                                                Edit
+                                            </Link>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         );

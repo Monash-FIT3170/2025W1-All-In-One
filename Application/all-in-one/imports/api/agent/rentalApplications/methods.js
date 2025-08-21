@@ -1,6 +1,15 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
-import { RentalApplications, Incomes, Identities, Addresses, Tenants,Employment } from '/imports/api/database/collections';
+import {
+  RentalApplications,
+  Incomes,
+  Identities,
+  Addresses,
+  Tenants,
+  Employment,
+  SharedLeaseGroups // <-- add this collection import, define below if needed
+} from '/imports/api/database/collections';
+import cloudinary from 'cloudinary'; // FIX: Added cloudinary import
 
 Meteor.methods({
   // Rental Applications
@@ -35,6 +44,7 @@ Meteor.methods({
       'pet_description',
       'emergency_contact_id',
       'rental_app_id',
+      'shared_lease_id',
     ];
 
     const sanitizedUpdate = Object.fromEntries(
@@ -52,8 +62,8 @@ Meteor.methods({
       rental_app_id: String,
       inc_type: String,
       inc_amt: Number,
-      inc_supporting_doc: Match.Optional(String), // Changed to optional
-      inc_public_id: Match.Optional(String),      // Added this field
+      inc_supporting_doc: Match.Optional(String),
+      inc_public_id: Match.Optional(String),
     });
 
     console.log('[METHOD] incomes.insert called with:', incomeData);
@@ -64,7 +74,7 @@ Meteor.methods({
     check(incId, String);
     check(updateData, Object);
 
-    const allowedFields = ['inc_type', 'inc_amt', 'inc_supporting_doc', 'inc_public_id']; // Added inc_public_id
+    const allowedFields = ['inc_type', 'inc_amt', 'inc_supporting_doc', 'inc_public_id'];
 
     const sanitizedUpdate = Object.fromEntries(
       Object.entries(updateData).filter(([key]) => allowedFields.includes(key))
@@ -74,7 +84,7 @@ Meteor.methods({
     return await Incomes.updateAsync({ inc_id: incId }, { $set: sanitizedUpdate });
   },
 
-   async 'incomes.remove'(incId) {
+  async 'incomes.remove'(incId) {
     check(incId, String);
     console.log(`[METHOD] incomes.remove called for inc_id: ${incId}`);
     return await Incomes.removeAsync({ inc_id: incId });
@@ -121,8 +131,6 @@ Meteor.methods({
     // Remove from Mongo (based on internal _id)
     return await Identities.removeAsync({ _id: identity._id });
   },
-
-  
 
   // Tenants
   async 'tenants.update'(tenId, updateData) {
@@ -197,19 +205,20 @@ Meteor.methods({
     return await Addresses.removeAsync({ address_id: addressId });
   },
 
+  // Employment
   async 'employment.insert'(employmentData) {
-  check(employmentData, {
-    employment_id: String,
-    ten_id: String,
-    emp_type: String,
-    emp_comp: String,
-    emp_job_title: String,
-    emp_start_date: Date,
-    emp_verification: String,
-  });
+    check(employmentData, {
+      employment_id: String,
+      ten_id: String,
+      emp_type: String,
+      emp_comp: String,
+      emp_job_title: String,
+      emp_start_date: Date,
+      emp_verification: String,
+    });
 
-  return await Employment.insertAsync(employmentData);
-},
+    return await Employment.insertAsync(employmentData);
+  },
 
   async 'employment.update'(employmentId, updates) {
     check(employmentId, String);
@@ -221,11 +230,118 @@ Meteor.methods({
       emp_verification: Match.Maybe(String),
     });
 
-    const existing = Employment.findOneAsync({ employment_id: employmentId });
+    const existing = await Employment.findOneAsync({ employment_id: employmentId }); // FIX: Added await
     if (!existing) {
       throw new Meteor.Error('not-found', 'Employment record not found');
     }
 
     return await Employment.updateAsync({ employment_id: employmentId }, { $set: updates });
-  }
+  },
+
+  async 'rentalApplications.addTenant'(rentalAppId, tenId) {
+    check(rentalAppId, String);
+    check(tenId, String);
+
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized');
+    }
+
+    const tenant = await Tenants.findOneAsync({ ten_id: tenId }); // FIX: Added await
+    if (!tenant) throw new Meteor.Error('Tenant not found');
+
+    return await RentalApplications.updateAsync(
+      { _id: rentalAppId },
+      { $addToSet: { tenants: { ten_id: tenant.ten_id, ten_fn: tenant.ten_fn, ten_ln: tenant.ten_ln } } }
+    );
+  },
+
+  async 'rentalApplications.removeTenant'(rentalAppId, tenId) {
+    check(rentalAppId, String);
+    check(tenId, String);
+
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized');
+    }
+
+    return await RentalApplications.updateAsync(
+      { _id: rentalAppId },
+      { $pull: { tenants: { ten_id: tenId } } }
+    );
+  },
+
+  // Shared Lease Group Methods
+  async 'sharedLease.createGroup'(tenantId, propId) {
+    check(tenantId, String);
+    check(propId, String);
+
+    const groupId = await SharedLeaseGroups.insertAsync({
+      createdAt: new Date(),
+      propId,
+      members: [tenantId],
+    });
+
+    console.log(`[METHOD] sharedLease.createGroup created group ${groupId} for tenant ${tenantId}`);
+    return await groupId;
+  },
+
+  async 'sharedLease.joinGroup'(groupId, tenantId) {
+    check(groupId, String);
+    check(tenantId, String);
+
+    const group = await SharedLeaseGroups.findOneAsync(groupId);
+    if (!group) {
+      throw new Meteor.Error('Group not found');
+    }
+
+    if (!group.members.includes(tenantId)) {
+      await SharedLeaseGroups.updateAsync(groupId, { $push: { members: tenantId } });
+      console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} joined group ${groupId}`);
+    } else {
+      console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} already in group ${groupId}`);
+    }
+  },
+
+  async 'rentalApplications.updateSharedLease'(rentalAppId, leaseId) {
+    check(rentalAppId, String);
+    check(leaseId, String);
+
+    return RentalApplications.update(
+      { rental_app_id: rentalAppId },
+      { $set: { shared_lease_id: leaseId } }
+    );
+  },
+
+    async 'sharedLease.create'(rentalAppId) {
+    check(rentalAppId, String);
+
+    // create a shared lease
+    const leaseId = await SharedLease.insertAsync({
+      createdAt: new Date(),
+      applications: [rentalAppId],
+    });
+
+    // update the rental application with this shared lease id
+    await RentalApplications.updateAsync(rentalAppId, {
+      $set: { shared_lease_id: leaseId },
+    });
+
+    return leaseId;
+  },
+
+  async 'sharedLease.join'(leaseId, rentalAppId) {
+    check(leaseId, String);
+    check(rentalAppId, String);
+
+    // add this rental application to the shared lease
+    await SharedLease.updateAsync(leaseId, {
+      $addToSet: { applications: rentalAppId },
+    });
+
+    // update the rental application with this shared lease id
+    await RentalApplications.updateAsync(rentalAppId, {
+      $set: { shared_lease_id: leaseId },
+    });
+
+    return leaseId;
+  },
 });
