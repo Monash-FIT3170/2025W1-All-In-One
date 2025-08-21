@@ -257,7 +257,54 @@ export default function ReviewApplication() {
                       tenant?.ten_ln || ""
                     }`}
                     desc={app.app_desc || "N/A"}
-                    occupation={employment?.emp_job_title || "N/A"}
+                    age={
+                      tenant?.ten_dob
+                        ? Math.floor(
+                            (new Date() - new Date(tenant.ten_dob)) /
+                            (1000 * 60 * 60 * 24 * 365.25)
+                          )
+                        : "N/A"
+                    }
+                    finaliseButton={
+                      <div className="flex items-center gap-2">
+                        {/* Show final decision icon if set */}
+                        {app.finalDecision === "Approved" && (
+                          <span
+                            title="Final Decision: Approved"
+                            className="text-green-600 text-xl"
+                          >
+                            <img
+                              src="/icons/Frame31.png"
+                              alt="Green Flag"
+                              width={20}
+                              height={20}
+                            />
+                          </span>
+                        )}
+                        {app.finalDecision === "Rejected" && (
+                          <span
+                            title="Final Decision: Rejected"
+                            className="text-red-600 text-xl"
+                          >
+                            <img
+                              src="/icons/Frame32.png"
+                              alt="Red Flag"
+                              width={20}
+                              height={20}
+                            />
+                          </span>
+                        )}
+                        {/* If not finalised yet for this property, allow selecting final applicant */}
+                        {!app.finalDecision && (
+                          <button
+                            onClick={() => approveApplicantFinal(app._id, app.prop_id)}
+                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
+                          >
+                            Select as Tenant (Final)
+                          </button>
+                        )}
+                      </div>
+                    }
                     status={app.status || "Pending"}
                     extraInfo={extraInfo}
                     statusIcon={
@@ -267,9 +314,13 @@ export default function ReviewApplication() {
                           className="px-2 py-1 rounded bg-white text-sm"
                           onClick={() => setStatusMenuAppId(app._id)}
                         >
-                          {app.status === "Approved"
+                          {app.status === "Shortlisted"
+                            ? "🟢"
+                            : app.status === "Flagged"
+                            ? "🔴"
+                            : app.status == "Approved"
                             ? "✅"
-                            : app.status === "Rejected"
+                            : app.status == "Rejected"
                             ? "❌"
                             : "⏳"}
                         </button>
@@ -281,7 +332,7 @@ export default function ReviewApplication() {
                             Meteor.call(
                               "rentalApplications.setStatus",
                               app._id,
-                              "Approved"
+                              "Shortlisted"
                             );
                             setStatusMenuAppId(null);
                           }}
@@ -289,55 +340,12 @@ export default function ReviewApplication() {
                             Meteor.call(
                               "rentalApplications.setStatus",
                               app._id,
-                              "Rejected"
+                              "Flagged"
                             );
                             setStatusMenuAppId(null);
                           }}
                           status={app.status}
                         />
-
-                        {/* Final Decision controls + display */}
-                        <div className="flex items-center gap-2 ml-3">
-                          {/* Show final decision icon if set */}
-                          {app.finalDecision === "Approved" && (
-                            <span
-                              title="Final Decision: Approved"
-                              className="text-green-600 text-xl"
-                            >
-                              <img
-                                src="/icons/Frame31.png"
-                                alt="Green Flag"
-                                width={20}
-                                height={20}
-                              />
-                            </span>
-                          )}
-                          {app.finalDecision === "Rejected" && (
-                            <span
-                              title="Final Decision: Rejected"
-                              className="text-red-600 text-xl"
-                            >
-                              <img
-                                src="/icons/Frame32.png"
-                                alt="Green Flag"
-                                width={20}
-                                height={20}
-                              />
-                            </span>
-                          )}
-
-                          {/* If not finalised yet for this property, allow selecting final applicant */}
-                          {!app.finalDecision && (
-                            <button
-                              onClick={() =>
-                                approveApplicantFinal(app._id, app.prop_id)
-                              }
-                              className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-                            >
-                              Select as Tenant (Final)
-                            </button>
-                          )}
-                        </div>
                       </div>
                     }
                   />
