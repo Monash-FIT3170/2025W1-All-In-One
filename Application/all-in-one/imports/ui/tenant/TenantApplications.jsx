@@ -2,13 +2,14 @@
 // This component displays all rental applications submitted by the currently logged-in tenant
 // It shows property details, application status, and tenant information for each application
 
-import React from 'react';
-import { Meteor } from 'meteor/meteor'; // Meteor framework for reactive data
-import { useTracker } from 'meteor/react-meteor-data'; // Hook for reactive data subscriptions
-import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections'; // Database collections
-import Navbar from './components/TenNavbar'; // Tenant navigation bar component
-import { useLocation } from "react-router-dom"; // Hoxok to access current route location
+import React, { useState } from 'react';
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
+import { RentalApplications, Properties, Tenants, Employment } from '/imports/api/database/collections';
+import Navbar from './components/TenNavbar';
+import { useLocation, Link } from "react-router-dom";   // ✅ fixed
 import { ApplicantCard } from './components/ApplicantCard';
+
 
 export default function TenantApplications() {
     // Get the current route location (useful for navigation context)

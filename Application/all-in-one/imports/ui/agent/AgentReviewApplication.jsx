@@ -203,7 +203,7 @@ export default function ReviewApplication() {
             const relatedTenants = relatedApplications
                 .map(ra => tenants.find(t => t.ten_id === ra.ten_id))
                 .filter(Boolean);
-                
+
             // Build an "extraInfo" string combining landlord feedback + flag (if present)
             const extraInfoParts = [];
             if (app.landlordFeedback)
@@ -347,8 +347,9 @@ export default function ReviewApplication() {
                         </div>
                       </div>
                     }
-                    {/* SHARED LEASE TENANTS - fixed height, no scroll */}
-                    {relatedTenants.length > 0 && (
+                  />
+                  {/* SHARED LEASE TENANTS - fixed height, no scroll */}
+                  {relatedTenants.length > 0 && (
                     <div className="mt-4 bg-white bg-opacity-80 rounded p-3 h-auto text-gray-800">
                         <h4 className="font-semibold mb-2">Shared Lease Group Members:</h4>
                         {relatedTenants.map(member => (
@@ -361,8 +362,7 @@ export default function ReviewApplication() {
                         </div>
                         ))}
                     </div>
-                    )}
-                  />
+                  )}
                 </div>
               </div>
             );
