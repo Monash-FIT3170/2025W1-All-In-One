@@ -49,18 +49,7 @@ RentalApplications.schema = new SimpleSchema({
   lease_term: { type: String },
   app_rent: { type: Number },
   app_desc: { type: String },
-
-  // OLD: ten_id: { type: String },
-  // NEW: multiple tenants array
-  tenants: { 
-    type: Array, 
-    optional: true 
-  },
-  "tenants.$": { type: Object },
-  "tenants.$.ten_id": { type: String },
-  "tenants.$.ten_fn": { type: String },
-  "tenants.$.ten_ln": { type: String },
-
+  ten_id: { type: String },
   employment_id: { type: String, optional: true },
   status: { type: String, optional: true },
   household_pets: { type: Boolean },
