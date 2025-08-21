@@ -38,7 +38,7 @@ export default function TenDetailedPropListing() {
           property= Properties.findOne({prop_id: id});
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
           videos= Videos.find({prop_id: id}).fetch();
-          openHouses = AgentAvailabilities.find({type: "Open House"}).fetch()
+          openHouses = AgentAvailabilities.find({type: "Open House", is_private: false}).fetch()
           openHouses = openHouses.filter((p) => p.property.address === property.prop_address)
         }
         

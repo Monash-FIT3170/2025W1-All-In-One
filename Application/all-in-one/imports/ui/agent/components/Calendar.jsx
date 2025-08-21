@@ -95,6 +95,7 @@ export const Calendar = () => {
       bathrooms,
       parking,
       image,
+      is_private,
     } = propertyInfo;
 
     console.log('[Calendar] propertyInfo:', propertyInfo);
@@ -110,10 +111,23 @@ export const Calendar = () => {
       parking,
       image,
       note,
+      is_private,
     });
   };
 
-  const handleBookingSelect = async ({ type, start, end, address, price, bedrooms, bathrooms, parking, image, note }) => {
+  const handleBookingSelect = async ({
+    type,
+    start,
+    end,
+    address,
+    price,
+    bedrooms,
+    bathrooms,
+    parking,
+    image,
+    note,
+    is_private,
+  }) => {
     const tempEvent = {
       id: Date.now(),
       start,
@@ -128,6 +142,7 @@ export const Calendar = () => {
         bathrooms,
         parking,
         image,
+        is_private,
       },
       price,
       bedrooms,
@@ -136,6 +151,7 @@ export const Calendar = () => {
       image,
       note,
       allDay: false,
+      is_private,
     };
 
     // Immediately insert into DB
@@ -153,7 +169,8 @@ export const Calendar = () => {
         String(parking ?? ''),
         String(image ?? ''),
         'confirmed',
-        String(note ?? '')
+        String(note ?? ''),
+        is_private ?? false
       );
 
       // Creates an attendance list for any new open house availabilities
@@ -206,6 +223,7 @@ export const Calendar = () => {
           String(event.image ?? ''),
           'confirmed',
           String(event.note ?? ''),
+          event.is_private ?? false // Pass the is_private flag if it exists
         );
       }
 

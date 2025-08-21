@@ -16,6 +16,7 @@ Meteor.methods({
     image,
     status,
     notes,
+    is_private
   ) {
     try {
       console.log('[DEBUG] insert args:', {
@@ -30,7 +31,8 @@ Meteor.methods({
         parking,
         image,
         status,
-        notes
+        notes,
+        is_private
       });
   
       check(start, String);
@@ -45,6 +47,7 @@ Meteor.methods({
       check(image, Match.Optional(String));
       check(status, Match.Optional(String));
       check(notes, Match.Optional(String));
+      check(is_private, Match.Optional(Boolean));
   
       const result = await AgentAvailabilities.insertAsync({
         start,
@@ -62,6 +65,7 @@ Meteor.methods({
         status,
         notes,
         createdAt: new Date(),
+        is_private
       });
   
       console.log(`[SERVER] Inserted availability ${result}`);

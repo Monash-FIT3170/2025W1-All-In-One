@@ -13,6 +13,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [note, setNote] = useState('');
   const [selectedEOI, setSelectedEOI] = useState(null);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   useEffect(() => {
     if (pendingSlot && isOpen) {
@@ -24,6 +25,8 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       setProperty(null);
       setShowSuggestions(false);
       setNote('');
+      setSelectedEOI(null);
+      setIsPrivate(false);
     }
   }, [pendingSlot, isOpen]);
 
@@ -42,7 +45,10 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       bedrooms: selected?.prop_numbeds || '-',
       bathrooms: selected?.prop_numbaths || '-',
       parking: selected?.prop_numcarspots || '-',
+      is_private: isPrivate
     }, note);
+
+
   };
 
   const filteredProperties = Properties.find(
@@ -198,6 +204,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
                 <input
                   id="privateOpenHouse"
                   type="checkbox"
+                  onChange={(e) => setIsPrivate(e.target.checked)}
                   className="rounded-lg border-gray-300"
                 />
                 <label htmlFor="privateOpenHouse" className="text-left">
