@@ -138,35 +138,8 @@ export default function TenantApplications() {
                                             : app.status === "Rejected"
                                             ? "❌"
                                             : "⏳"}
-                                    />
-                                    <div>
-                                        <h3 className="text-xl font-bold text-white mb-1">
-                                            Rental Application
-                                        </h3>
-                                        <p className="text-white text-sm italic mb-2">
-                                            "{app.app_desc || 'No description'}"
-                                        </p>
-                                        <p className="text-white text-sm">
-                                            Occupation: {employment?.emp_job_title || 'N/A'}
-                                        </p>
-                                    </div>
-
-                                    <div className="mt-4 flex items-center justify-between">
-                                        {/* Status badge */}
-                                        <span
-                                            className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${
-                                                app.status === 'Approved'
-                                                    ? 'bg-green-200 text-green-800'
-                                                    : app.status === 'Rejected'
-                                                    ? 'bg-red-200 text-red-800'
-                                                    : 'bg-yellow-200 text-yellow-800'
-                                            }`}
-                                        >
-                                            {app.status || 'Pending'}
-                                        </span>
-
-                                        {/* Edit button */}
-                                        {app.status === "Pending" && (
+                                        editButton={
+                                            app.status != "Approved" && app.status != "Rejected" ? (
                                             <Link
                                                 key={property.prop_id}
                                                 to={`/Apply/${property.prop_id}?tenantId=${tenantID}`}
@@ -174,8 +147,9 @@ export default function TenantApplications() {
                                             >
                                                 Edit
                                             </Link>
-                                        )}
-                                    </div>
+                                        ) : null
+                                        }
+                                    />
                                 </div>
                             </div>
                         );

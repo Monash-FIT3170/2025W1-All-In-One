@@ -2,7 +2,7 @@
 import React from 'react';
 import { Meteor } from "meteor/meteor";
 
-export const ApplicantCard = ({appId, name, desc, status, statusIcon }) => {
+export const ApplicantCard = ({appId, name, desc, status, statusIcon, editButton }) => {
     return (
         <div className="bg-white rounded-lg shadow w-full h-full flex flex-col justify-center px-10 py-4">
             <div className="flex items-center justify-between">
@@ -11,7 +11,7 @@ export const ApplicantCard = ({appId, name, desc, status, statusIcon }) => {
                     <p className="text-sm text-gray-600">{desc}</p>
                 </div>
                 <div className="text-center">
-                    <div className="text-3xl">{statusIcon}</div>
+                    <div className="inline-block px-3 py-1 text-sm font-semibold rounded-full">{statusIcon}</div>
                     <span
                         className={`inline-block px-3 py-1 mt-1 text-sm font-semibold rounded-full ${
                             status === 'Approved'
@@ -27,13 +27,16 @@ export const ApplicantCard = ({appId, name, desc, status, statusIcon }) => {
                     </span>
                 </div>
             </div>
-            <div className="flex justify-start mt-auto font-semibold pt-2">
-                <button className="rounded-full bg-gray-200 px-3 py-1 text-sm"
-                onClick={() => {
-                    Meteor.call("rentalApplications.setStatus", appId, "Withdrawn");
-                }}>
+            <div className="flex justify-between items-center mt-auto font-semibold pt-2">
+                <button
+                    className="rounded-full bg-gray-200 px-3 py-1 text-sm"
+                    onClick={() => {
+                        Meteor.call("rentalApplications.setStatus", appId, "Withdrawn");
+                    }}
+                >
                     Withdraw Application
                 </button>
+                <p className="text-sm text-gray-600">{editButton}</p>
             </div>
         </div>
     );
