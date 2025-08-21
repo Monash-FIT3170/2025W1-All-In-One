@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter} from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
@@ -9,6 +9,8 @@ import { Meteor } from "meteor/meteor";
 import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
 
 export default function TenantBasicPropListings() {
+  const [showFilters, setShowFilters] = useState(false);
+  
   const { isReady, properties, photos }=  useTracker(()=>{
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
@@ -86,6 +88,7 @@ export default function TenantBasicPropListings() {
                 {/* Filter button with icon */}
                 <button
                   className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+                  onClick={() => setShowFilters(!showFilters)}
                 >
                   <FaFilter className="mr-2" />
                   Filter
@@ -94,16 +97,25 @@ export default function TenantBasicPropListings() {
             </div>
 
       {/* Filter section */}
+      {showFilters && (
             <div className="mt-4 flex justify-center">
               <div
                 className="bg-[#CBADD8] py-10 px-10 rounded-lg flex flex-col gap-6 w-full min-h-[400px]"
                 style={{ maxWidth: '1100px' }}
               >
                 {/* Furnished checkbox */}
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" className="w-5 h-5" />
-                  Furnished
-                </label>
+                {/* Furnished & Pets checkboxes */}
+                <div className="flex items-center gap-6">
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" className="w-5 h-5" />
+                    Furnished
+                  </label>
+
+                  <label className="flex items-center gap-2">
+                    <input type="checkbox" className="w-5 h-5" />
+                    Pets Allowed
+                  </label>
+                </div>
 
                 {/* Number inputs */}
                 <div className="grid grid-cols-3 gap-4">
@@ -152,6 +164,7 @@ export default function TenantBasicPropListings() {
                 </div>
               </div>
             </div>
+      )}
 
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
