@@ -194,6 +194,7 @@ export default function TenantBasicPropListings() {
                     <label className="block mb-1 font-semibold">Rooms</label>
                     <input 
                     type="number" 
+                    min="0"
                     className="w-full p-2 rounded border" 
                     value={filters.rooms}
                     onChange={(e) => setFilters({ ...filters, rooms: e.target.value })}
@@ -203,6 +204,7 @@ export default function TenantBasicPropListings() {
                     <label className="block mb-1 font-semibold">Car Spots</label>
                     <input 
                     type="number" 
+                    min="0"
                     className="w-full p-2 rounded border" 
                     value={filters.cars}
                     onChange={(e) => setFilters({ ...filters, cars: e.target.value })}
@@ -212,6 +214,7 @@ export default function TenantBasicPropListings() {
                     <label className="block mb-1 font-semibold">Bathrooms</label>
                     <input 
                     type="number" 
+                    min="0"
                     className="w-full p-2 rounded border" 
                     value={filters.baths}
                     onChange={(e) => setFilters({ ...filters, baths: e.target.value })}
@@ -225,6 +228,7 @@ export default function TenantBasicPropListings() {
                     <label className="block mb-1 font-semibold">Min Price</label>
                     <input 
                     type="number" 
+                    min="0"
                     className="w-full p-2 rounded border" 
                     value={filters.minPrice}
                     onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
@@ -234,6 +238,7 @@ export default function TenantBasicPropListings() {
                     <label className="block mb-1 font-semibold">Max Price</label>
                     <input 
                     type="number" 
+                    min="0"
                     className="w-full p-2 rounded border" 
                     value={filters.maxPrice}
                     onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
