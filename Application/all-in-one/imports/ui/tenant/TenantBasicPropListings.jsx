@@ -11,6 +11,8 @@ import { Properties, Photos } from "../../api/database/collections"; // importin
 export default function TenantBasicPropListings() {
   const [showFilters, setShowFilters] = useState(false);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const [filters, setFilters] = useState({
     furnished: false,
     pets: false,
@@ -43,9 +45,6 @@ export default function TenantBasicPropListings() {
     (p)=> p.prop_status==="Available"
   );
 
-
-  
-  
 
   const propertyCards= availableProperties.map((p)=>{
     const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
@@ -90,11 +89,21 @@ export default function TenantBasicPropListings() {
     // Property Type
     if (filters.propertyType && p.type && p.type !== filters.propertyType) return false;
 
+    // Search by location/postcode
+    if (searchQuery && !p.location.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false;
+  }
+
     // Available From (optional)
     // if (filters.availableFrom && p.availableFrom && new Date(p.availableFrom) < new Date(filters.availableFrom)) return false;
 
     return true;
   });
+
+  
+
+
+
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
@@ -124,6 +133,8 @@ export default function TenantBasicPropListings() {
                     type="text"
                     placeholder="Search Postcode..."
                     className="flex-1 outline-none bg-transparent"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
       
