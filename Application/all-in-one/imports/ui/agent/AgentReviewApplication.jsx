@@ -28,7 +28,6 @@ export default function ReviewApplication() {
     const agent = Meteor.user();
     const agentId = agent?._id;
 
-    // Subscribe to and fetch all necessary collections from the database
     const { isReady, applications, tenants, properties, employments } = useTracker(() => {
         const sub1 = Meteor.subscribe('rentalApplications');
         const sub2 = Meteor.subscribe('properties');
@@ -196,7 +195,15 @@ export default function ReviewApplication() {
             const employment = employments.find(
               (e) => e.employment_id === app.employment_id
             );
+            // Find other applications with same shared_lease_id
+            const relatedApplications = applications.filter(
+                otherApp => otherApp._id !== app._id && otherApp.shared_lease_id && otherApp.shared_lease_id === app.shared_lease_id
+            );
 
+            const relatedTenants = relatedApplications
+                .map(ra => tenants.find(t => t.ten_id === ra.ten_id))
+                .filter(Boolean);
+                
             // Build an "extraInfo" string combining landlord feedback + flag (if present)
             const extraInfoParts = [];
             if (app.landlordFeedback)
@@ -340,6 +347,21 @@ export default function ReviewApplication() {
                         </div>
                       </div>
                     }
+                    {/* SHARED LEASE TENANTS - fixed height, no scroll */}
+                    {relatedTenants.length > 0 && (
+                    <div className="mt-4 bg-white bg-opacity-80 rounded p-3 h-auto text-gray-800">
+                        <h4 className="font-semibold mb-2">Shared Lease Group Members:</h4>
+                        {relatedTenants.map(member => (
+                        <div
+                            key={member.ten_id}
+                            className="py-1 px-2 bg-white rounded-md shadow-sm mb-1 hover:bg-purple-50 cursor-pointer"
+                            onClick={() => console.log("Navigate to tenant page:", member.ten_id)}
+                        >
+                            {member.ten_fn} {member.ten_ln}
+                        </div>
+                        ))}
+                    </div>
+                    )}
                   />
                 </div>
               </div>
