@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { mockData } from '/imports/api/database/mockData.js';
+import { Properties, ExpressionOfInterest, Agents, Tenants } from "/imports/api/database/collections";
+import { useTracker } from 'meteor/react-meteor-data';
+import { EOI } from './EOI'; // Import the EOI component
 
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
@@ -10,6 +12,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const [property, setProperty] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [note, setNote] = useState('');
+  const [selectedEOI, setSelectedEOI] = useState(null);
 
   useEffect(() => {
     if (pendingSlot && isOpen) {
@@ -29,7 +32,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     const end = dayjs(`${date} ${endTime}`, 'YYYY-MM-DD HH:mm').toDate();
 
     const selected = property && property.prop_address
-      ? mockData.properties.find(p => p.prop_address === property.prop_address)
+      ? Properties.findOne({ prop_id: property.prop_id })
       : null;
 
     onSelect(type, start, end, {
@@ -42,15 +45,60 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     }, note);
   };
 
-  const filteredProperties = mockData.properties.filter(p =>
-    p.prop_address.toLowerCase().includes((property?.prop_address || '').toLowerCase())
-  );
+  const filteredProperties = Properties.find(
+    {
+      prop_address: {
+        $regex: property?.prop_address || '', // Match the input address
+        $options: 'i', // Case-insensitive search
+      },
+    }
+  ).fetch();
+
+
+  // Filter EOIs to only those related to the logged-in agent's properties
+  const { filteredEOIs, agent, isReady } = useTracker(() => {
+    const agentsSub = Meteor.subscribe('agents');
+    const eoIsSub = Meteor.subscribe('expressionOfInterest'); // adjust publication name if different
+    const ready = agentsSub.ready() && eoIsSub.ready();
+
+    const userId = Meteor.userId();
+    const agent = userId ? Agents.findOne({ agent_id: userId }) : null;
+    if (!userId) console.log("Meteor.userId() not available yet");
+    if (userId && !agent) console.log("No logged-in agent found for userId:", userId);
+
+    let filteredEOIs = [];
+    if (agent) {
+      const allEOIs = ExpressionOfInterest.find().fetch();
+      console.log("All EOIs fetched:", allEOIs);
+
+      filteredEOIs = allEOIs.filter((eoi) => {
+        const property = Properties.findOne({ prop_id: eoi.propertyID, agent_id: userId });
+        console.log("Checking EOI:", eoi);
+        console.log("Associated property:", property);
+        return !!property;
+      });
+
+      console.log("Filtered EOIs for logged-in agent:", filteredEOIs);
+    }
+
+    return { filteredEOIs, agent, isReady: ready };
+  });
+
+  function getPropertyAddress(eoi) {
+    const property = Properties.findOne({ prop_id : eoi.propertyID });
+    return property ? property.prop_address : '';
+  }
+
+  function getProspectiveTenantName(eoi) {
+    const tenant = Tenants.findOne({ ten_id : eoi.tenantID });
+    return tenant ? tenant.ten_fn + ' ' + tenant.ten_ln : '';
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-      <div className="bg-[#CBADD8] p-6 rounded-3xl shadow-lg w-[440px] text-left space-y-6 relative">
+      <div className="bg-[#CBADD8] p-6 rounded-3xl shadow-lg w-[440px] text-left space-y-6 relative overflow-y-auto overscroll-contain max-h-[700px]">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
@@ -120,11 +168,23 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
             </p>
             {/*list of EOI*/}
             <div
-              className="rounded-2xl bg-[#FAEEDA] p-5 overflow-y-auto overscroll-contain mb-4"
+              className="rounded-2xl bg-[#FAEEDA] p-6 overflow-y-auto overscroll-contain mb-4 max-h-[300px]"
               role="region"
             >
-              <div className="py-10 text-center text-sm text-black/70">
-                You currently have no EOIs.
+              <div className="text-center text-sm text-black/70">
+                {filteredEOIs.length > 0 ? (
+                  filteredEOIs.map((eoi, idx) => (
+                    <EOI
+                        address={getPropertyAddress(eoi)}
+                        prospectiveTenName={getProspectiveTenantName(eoi)}
+                        EOI={eoi.EOI}
+                        isSelected={selectedEOI === eoi._id}
+                        onSelect={() => setSelectedEOI(eoi._id)}
+                    />
+                  ))
+                ) : (
+                <p>You currently have no EOIs.</p>
+                )}
               </div>
             </div>
 
@@ -145,7 +205,6 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
                 </label>
               </div>
             </div>
-
           </div>
         )}
 
