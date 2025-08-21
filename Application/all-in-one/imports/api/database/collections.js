@@ -214,8 +214,7 @@ TenantBookings.schema = new SimpleSchema({
 
 export const ExpressionOfInterest = new Mongo.Collection('expressionOfInterest');
 ExpressionOfInterest.schema = new SimpleSchema({
-  EOI_id: { type: String },
-  propId: { type: String },
+  propertyID: { type: String },
   tenantID: { type: String },
   EOI: { type: String }
 });
