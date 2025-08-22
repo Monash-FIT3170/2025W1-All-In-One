@@ -231,4 +231,4 @@ import '/imports/api/agent/expressionOfInterest/publication';
   Meteor.publish("landlords", function () {
     return Landlord.find();
   });
-});
+  
