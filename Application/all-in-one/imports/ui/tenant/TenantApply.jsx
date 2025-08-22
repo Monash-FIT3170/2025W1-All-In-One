@@ -159,18 +159,34 @@ function Apply() {
                 return;
               }
 
+              // First mark as submitted = true
               Meteor.call(
-                'rentalApplications.update',
+                "rentalApplications.update",
                 rentalApplication._id,
                 { submitted: true },
                 (err, res) => {
                   if (err) {
                     alert(err.reason || "Error submitting application");
-                  } else if (res === 0) {
-                    alert("No rental application found. Please complete your application before submitting.");
-                  } else {
-                    alert("Application submitted successfully!");
+                    return;
                   }
+                  if (res === 0) {
+                    alert("No rental application found. Please complete your application before submitting.");
+                    return;
+                  }
+
+                  // ✅ Then set status = Pending
+                  Meteor.call(
+                    "rentalApplications.setStatus",
+                    rentalApplication._id,
+                    "Pending",
+                    (err2) => {
+                      if (err2) {
+                        alert(err2.reason || "Error setting status to Pending");
+                      } else {
+                        alert("Application submitted successfully!");
+                      }
+                    }
+                  );
                 }
               );
             }}
@@ -179,7 +195,6 @@ function Apply() {
             Submit
           </button>
         </div>
-
       </div>
       <Footer/>
       </div>
