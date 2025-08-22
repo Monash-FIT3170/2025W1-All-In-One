@@ -63,6 +63,8 @@ RentalApplications.schema = new SimpleSchema({
   agentFinalStatus: { type: String, optional: true }, // 'approved', 'rejected'
   finalDecision: { type: String, optional: true },
   // values: "Approved", "Rejected"
+
+  submitted : {type: Boolean, defaultValue: false},
 });
 
 export const Tenants = new Mongo.Collection("tenants");

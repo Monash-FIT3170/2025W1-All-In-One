@@ -11,6 +11,8 @@ import SharedLease from './applyPages/SharedLease';
 import Navbar from './components/TenNavbar';
 import Footer from './components/Footer';
 import { useLocation, useParams } from "react-router-dom";
+import {RentalApplications} from '/imports/api/database/collections';
+import { useTracker } from 'meteor/react-meteor-data';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -24,6 +26,14 @@ function Apply() {
 
   console.log("Property ID:", id);
   console.log("Tenant ID:", tenantId);
+
+  const rentalApplication = useTracker(() => {
+    Meteor.subscribe('rentalApplications');
+    return RentalApplications.findOne({ prop_id: id, ten_id: tenantId });
+  }, [id, tenantId]);
+
+  console.log("Rental application:", rentalApplication);
+
   const sectionList = [
     'General',
     'Personal Details',
@@ -38,7 +48,6 @@ function Apply() {
 
   const [activeSection, setActiveSection] = useState(sectionList[0]);
   const currentIndex = sectionList.indexOf(activeSection);
-
   const goNext = () => {
     if (currentIndex < sectionList.length - 1) {
       setActiveSection(sectionList[currentIndex + 1]);
@@ -140,6 +149,37 @@ function Apply() {
             </div>
           </div>
         </div>
+
+        {/* Submit Button */}
+        <div className="flex mt-12">
+          <button
+            onClick={() => {
+              if (!rentalApplication) {
+                alert("No rental application found. Please complete your application before submitting.");
+                return;
+              }
+
+              Meteor.call(
+                'rentalApplications.update',
+                rentalApplication._id,
+                { submitted: true },
+                (err, res) => {
+                  if (err) {
+                    alert(err.reason || "Error submitting application");
+                  } else if (res === 0) {
+                    alert("No rental application found. Please complete your application before submitting.");
+                  } else {
+                    alert("Application submitted successfully!");
+                  }
+                }
+              );
+            }}
+            className="px-6 py-3 bg-[#9747FF] text-white font-semibold rounded-lg shadow hover:bg-violet-900 transition"
+          >
+            Submit
+          </button>
+        </div>
+
       </div>
       <Footer/>
       </div>
