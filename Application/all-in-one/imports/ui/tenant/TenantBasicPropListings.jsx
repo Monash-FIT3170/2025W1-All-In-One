@@ -70,7 +70,9 @@ export default function TenantBasicPropListings() {
   const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
   //console.log("Starred properties:", starredProperties.map(sp => sp.prop_id));
 
-  const propertyCards= availableProperties.map((p)=>{
+  const propertyCards= availableProperties
+  .filter(p=> showOnlySaved ? locallyStarred.has(p.prop_id): true)
+  .map((p)=>{
     const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
     return{
       id: p.prop_id,

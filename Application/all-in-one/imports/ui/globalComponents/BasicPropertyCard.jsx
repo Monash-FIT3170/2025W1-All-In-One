@@ -106,11 +106,11 @@ export default function PropertyCard({
         <div className="px-4 pb-4 mt-4 flex justify-between text-gray-600 text-sm">
           <div className="flex items-center gap-2">
             <FaBath size={24} />
-            <span className="text-xl">{property.beds}</span>
+            <span className="text-xl">{property.baths}</span>
           </div>
           <div className="flex items-center gap-2">
             <FaBed size={24} />
-            <span className="text-xl">{property.baths}</span>
+            <span className="text-xl">{property.beds}</span>
           </div>
           <div className="flex items-center gap-2">
             <FaCar size={24} />
