@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, StarredProperties } from "../../api/database/collections"; // importing mock for now
 import { Link } from "react-router-dom";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -16,25 +16,32 @@ import { Link } from "react-router-dom";
 export default function TenDetailedPropListing() {
     const { id } = useParams();
     console.log("propId received:", id);
-     const { isReady, property, photos, videos }=  useTracker(()=>{
+     const { isReady, property, photos, videos, starredProperties }=  useTracker(()=>{
+        const tenantID = Meteor.userId();
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
         const subVideos= Meteor.subscribe("videos");
+        const subStarred = Meteor.subscribe("starredProperties"); 
     
         const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready();
   
         let property= null;
         let photos= [];
         let videos=[];
+        let starredProperties = [];
   
         // find property, photos and videos corresponding to the property ID passed.
         if (isReady){
           property= Properties.findOne({prop_id: id});
           photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
           videos= Videos.find({prop_id: id}).fetch();
+          starredProperties = StarredProperties.find({ 
+    ten_id: tenantID, 
+    prop_id: id        
+  }).fetch();
         }
   
-        return {isReady, property, photos, videos};
+        return {isReady, property, photos, videos, starredProperties};
     
       }, [id]);
     
@@ -45,6 +52,8 @@ export default function TenDetailedPropListing() {
       if (!property){
         return (<div className="min-h-screen flex items-center justify-center text-xl text-red-600">Property Not Found!</div>);
       }
+
+      const isStarred = starredProperties.length>0;
     
       // data passed on to propertyDetailsCard
       const propertyData= {
@@ -63,7 +72,7 @@ export default function TenDetailedPropListing() {
           furnished: property.prop_furnish? "Yes":"No",
           },
           description: property.prop_desc,
-          
+          starred: isStarred,
         };
         
       const tenantID = Meteor.userId()
@@ -75,7 +84,7 @@ export default function TenDetailedPropListing() {
 
       {/*Main content and butons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={propertyData} />
+        <PropertyDetailsCard property={propertyData} showSaveButton={true} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
           <Link
           to={`/InspectionBooking/${id}`} // TBD: replace with actual link to inspection booking page

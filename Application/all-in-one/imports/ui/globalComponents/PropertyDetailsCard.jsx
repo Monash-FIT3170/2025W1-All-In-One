@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch, FaStar, FaRegStar  } from "react-icons/fa";
 import { useState } from "react";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
@@ -37,13 +37,18 @@ function SamplePrevArrow(props) {
   );
 }
 
-export default function PropertyDetailsCard({ property }) {
+export default function PropertyDetailsCard({ property, showSaveButton= false }) {
   // image disaplayed if there are no images
   const defaultImage = "/images/default.jpg";
 
   const [activeMediaType, setActiveMediaType] = useState("images");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Local saved state, init from property.starred or false
+  const [saved, setSaved] = useState(property.starred ?? false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   if (!property) {
     return <div className="text-lg text-red-600">Property Not Found!</div>;
@@ -55,6 +60,37 @@ export default function PropertyDetailsCard({ property }) {
     setIsModalOpen(true);
   };
   const closeModal = () => setIsModalOpen(false);
+
+  React.useEffect(() => {
+    setSaved(property.starred ?? false);
+  }, [property.starred]);
+
+   const toggleSave = () => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+
+    if (!saved) {
+      // Simulate saving the property
+      Meteor.call("starredProperties.add", property.id, (err) => {
+        setLoading(false);
+        if (err) {
+          setError(err.reason || "Error saving listing");
+        } else {
+          setSaved(true);
+        }
+      });
+    } else {
+      Meteor.call("starredProperties.remove", property.id, (err) => {
+        setLoading(false);
+        if (err) {
+          setError(err.reason || "Error removing listing");
+        } else {
+          setSaved(false);
+        }
+      }); 
+    }
+  };
 
   // Combine all media for carousel (images first, then videos)
   const allMedia = [
@@ -174,10 +210,36 @@ export default function PropertyDetailsCard({ property }) {
 
         {/* Right hand side- property infor*/}
         <div className="w-full lg:w-1/2 p-2 space-y-3">
+        <div className="flex justify-between items-center">
           <div className="text-2xl md:text-3xl font-semibold text-gray-800">
             ${property.price}{" "}
             <span className="text-lg font-medium">per Week </span>
           </div>
+          {showSaveButton && (
+      <>
+        <button
+          onClick={toggleSave}
+          disabled={loading}
+          aria-label={saved ? "Unsave property" : "Save property"}
+    className="focus:outline-none"
+    style={{ background: "none", border: "none", padding: 0, marginLeft: 8, cursor: loading ? "not-allowed" : "pointer" }}
+  >
+    {loading ? (
+      <span className="text-gray-400">...</span>
+    ) : saved ? (
+      <FaStar size={24} className="text-yellow-500" />
+    ) : (
+      <FaRegStar size={24} className="text-gray-400" />
+    )}
+  </button>
+        {error && (
+          <div className="text-red-600 mt-2 text-sm font-medium">
+            {error}
+          </div>
+        )}
+      </>
+    )}
+  </div>
           <div className="text-3xl text-gray-800">{property.address}</div>
           <div className="text-1xl text-gray-600">
             Property Type:{" "}
@@ -252,6 +314,7 @@ export default function PropertyDetailsCard({ property }) {
           </div>
         </div>
       </div>
+    
     </>
   );
 }

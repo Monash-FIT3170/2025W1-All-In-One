@@ -120,7 +120,7 @@ const App = () => (
         <Route element={<ProtectedLandlordRoutes />}>
           {/* Signed In Landlord Page*/}
           <Route path="/LandlordBasicPropListings" element={<LandlordBasicPropListings/>}/>
-                    <Route path="/LandlordDetailedPropListing" element={<LandlordDetailedPropListing />} />
+          <Route path="/LandlordDetailedPropListing/:id" element={<LandlordDetailedPropListing />} />
 
           
 

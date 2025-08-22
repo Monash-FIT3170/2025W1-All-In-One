@@ -6,32 +6,38 @@ import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, StarredProperties  } from "../../api/database/collections"; // importing mock for now
 
 /////////////////////////////////////////////////////////////
 // This page will display all the properties to a landlord //
 /////////////////////////////////////////////////////////////
 
 export default function LandlordBasicPropListings() {
-const { isReady, properties, photos }=  useTracker(()=>{
+const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
     const subPhotos= Meteor.subscribe("photos");
+    const subStarred= Meteor.subscribe("starredProperties");
 
     const isReady= subProps.ready() && subPhotos.ready();
     const properties= isReady ? Properties.find().fetch(): [];
     const photos= isReady ? Photos.find().fetch(): [];
+    const starredProperties= isReady ? StarredProperties.find({userId: Meteor.userId()}).fetch(): [];
 
-    return { isReady, properties, photos};
+    return { isReady, properties, photos, starredProperties};
 
   });
 
   if (!isReady){
     return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
   }
+    
+  
 
   const availableProperties= properties.filter(
     (p)=> p.prop_status==="Available"
   );
+
+  const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
 
   const propertyCards= availableProperties.map((p)=>{
     const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
@@ -43,6 +49,7 @@ const { isReady, properties, photos }=  useTracker(()=>{
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
       cars:p.prop_numcarspots,
+      starred: starredSet.has(p.prop_id)
     };
   });
 
@@ -100,13 +107,15 @@ const { isReady, properties, photos }=  useTracker(()=>{
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {propertyCards.map((property) => (
-            <Link
-              key={property.id}
-              to={`/LandlordDetailedPropListing/${property.id}`}
-            >
-              <BasicPropertyCard property={property} />
-            </Link>
-          ))}
+                      
+                        <BasicPropertyCard 
+                        key={property.id}
+                        property={property} 
+                        showFav={false}  
+                        linkTo={`/LandlordDetailedPropListing/${property.id}`}
+                        />
+              
+                    ))}
         </div>
       </div>
       {/* Blank space before footer */}
