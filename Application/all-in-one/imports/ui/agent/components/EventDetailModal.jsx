@@ -178,6 +178,14 @@ export const EventDetailModal = ({ event, onClose }) => {
             </div>
           )}
 
+          {isBooked && event.tenant && (
+            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
+              <p className="font-semibold mb-1">Booked For</p>
+              <p>{event.tenant.name}</p>
+              {/* Add more tenant fields later if you store them */}
+            </div>
+          )}
+
           {/* Notes */}
           {!isEditing ? (
             (event.notes?.trim() || event.note?.trim()) ? (

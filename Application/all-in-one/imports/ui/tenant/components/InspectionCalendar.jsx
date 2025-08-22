@@ -89,17 +89,21 @@ export const InspectionCalendar = ({ propertyId }) => {
     const bookingData = {
       agentAvailabilityId: String(selectedSlot.id),
       tenantId,
-      tenantName: user?.profile?.name || 'Anonymous',
+      tenantName:
+        user?.profile?.name ||
+        user?.username ||
+        user?.emails?.[0]?.address ||
+        'Anonymous',
       start: new Date(selectedSlot.start),
       end: new Date(selectedSlot.end),
       property: {
         ...selectedSlot.property,
-        id: propertyId // Ensure the property ID is correctly linked
+        id: propertyId 
       },
       status: 'pending',
     };
-
-    console.log("📦 Booking Data:", bookingData);
+    
+    console.log("Booking Data:", bookingData);
 
     Meteor.call('tenantBookings.insert', bookingData, (err) => {
       if (err) {

@@ -77,18 +77,28 @@ Meteor.methods({
   },
   
 
-  async 'agentAvailabilities.markAsBooked'(availabilityId) {
+  async 'agentAvailabilities.markAsBooked'(availabilityId, payload = {}) {
     check(availabilityId, String);
+    check(payload, Object);
+
+    const $set = { status: 'booked', bookedAt: new Date() };
+
+    if (payload.tenant) {
+      $set.tenant = {
+        id: String(payload.tenant.id),
+        name: String(payload.tenant.name),
+      };
+    }
+
+    if (payload.property) {
+      $set.property = payload.property;
+    }
 
     const result = await AgentAvailabilities.updateAsync(
       { _id: availabilityId },
-      { $set: { status: 'booked' } }
+      { $set }
     );
-
-    if (result === 0) {
-      throw new Meteor.Error('not-found', 'No matching availability found.');
-    }
-
+    if (result === 0) throw new Meteor.Error('not-found', 'No matching availability found.');
     return result;
   },
 

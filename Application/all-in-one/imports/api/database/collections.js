@@ -160,8 +160,11 @@ AgentAvailabilities.schema = new SimpleSchema({
   image: { type: String, optional: true },
   status: { type: String, optional: true },
   agent_id: { type: String },
-  createdAt: { type: Date, optional: true }
+  createdAt: { type: Date, optional: true },
+  tenant: { type: Object, optional: true, blackbox: true }, 
+  bookedAt: { type: Date, optional: true },
 });
+
 
 export const TenantBookings = new Mongo.Collection('tenantBookings');
 TenantBookings.schema = new SimpleSchema({
