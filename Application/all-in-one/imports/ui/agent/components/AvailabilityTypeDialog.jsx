@@ -9,6 +9,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const [date, setDate] = useState('');
   const [property, setProperty] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [note, setNote] = useState('');
 
   useEffect(() => {
     if (pendingSlot && isOpen) {
@@ -19,6 +20,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       setEndTime(end.format('HH:mm'));
       setProperty(null);
       setShowSuggestions(false);
+      setNote('');
     }
   }, [pendingSlot, isOpen]);
 
@@ -37,7 +39,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       bedrooms: selected?.prop_numbeds || '-',
       bathrooms: selected?.prop_numbaths || '-',
       parking: selected?.prop_numcarspots || '-',
-    });
+    }, note);
   };
 
   const filteredProperties = mockData.properties.filter(p =>
@@ -147,6 +149,17 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
               />
             </div>
           </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className="block text-black font-semibold mb-1">Notes (optional)</label>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="i.e., Bring pen & notepad"
+            className="w-full h-24 px-4 py-2 rounded-lg bg-[#FFF8E9] border border-purple-400 resize-none"
+          />
         </div>
 
         <div className="text-center pt-2">

@@ -32,21 +32,23 @@ import {
   Identities,
   Households,
   Agents,
-  Landlord
-} from '/imports/api/database/collections';
-import { mockData } from '/imports/api/database/mockData';
-import '/imports/api/methods/account.js';
-import '/imports/api/agent/rentalApplications/methods'
-import { LinksCollection } from '/imports/api/links';
-import '/imports/api/AgentAvailabilities';
-import '/imports/api/TenantBookings.js';
-
-import 'dotenv/config';
-
-
-Meteor.startup(async () => { 
-
-  logDbTarget();
+  Landlord,
+  OpenHouseAttendance,
+  ExpressionOfInterest,
+} from "/imports/api/database/collections";
+import { mockData } from "/imports/api/database/mockData";
+import "/imports/api/methods/account.js";
+import "/imports/api/methods/rentalApplications.js";
+import "/imports/api/agent/rentalApplications/methods";
+import { LinksCollection } from "/imports/api/links";
+import '/imports/api/agent/agentAvailabilities/methods';
+import '/imports/api/agent/agentAvailabilities/publications';
+import '/imports/api/tenant/tenantBookings/methods';
+import '/imports/api/tenant/tenantBookings/publications';
+import '/imports/api/agent/openHouseAttendance/methods';
+import '/imports/api/agent/openHouseAttendance/publication';
+import '/imports/api/agent/expressionOfInterest/methods';
+import '/imports/api/agent/expressionOfInterest/publication';
 
   // Insert mock data only if collections are empty
   if ((await Properties.find().countAsync()) === 0) {
