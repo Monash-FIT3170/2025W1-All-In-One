@@ -2,7 +2,7 @@
 import React from 'react';
 import { Meteor } from "meteor/meteor";
 
-export const ApplicantCard = ({ appId, name, desc, status, statusIcon, editButton, submitted }) => {
+export const ApplicantCard = ({ appId, name, desc, status, statusIcon, editButton, submitted, viewButton }) => {
     // ✅ Compute display status
     const displayStatus =
         status === "Withdrawn" && submitted
@@ -70,7 +70,7 @@ export const ApplicantCard = ({ appId, name, desc, status, statusIcon, editButto
                 >
                     Withdraw Application
                 </button>
-                <p className="text-sm text-gray-600">{editButton}</p>
+                <p className="text-sm text-gray-600">{editButton}{viewButton}</p>
             </div>
         </div>
     );
