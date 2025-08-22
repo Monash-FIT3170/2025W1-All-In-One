@@ -12,6 +12,7 @@ import {
 import FilterMenu from "./components/FilterMenu";
 import StatusMenu from "./components/StatusMenu";
 import Navbar from "./components/AgentNavbar";
+import { Link } from "react-router-dom";
 
 export default function ReviewApplication() {
   // State for the search bar
@@ -25,72 +26,68 @@ export default function ReviewApplication() {
   const [selectedApplicants, setSelectedApplicants] = useState([]);
   const [selectedProperties, setSelectedProperties] = useState([]);
 
-    const agent = Meteor.user();
-    const agentId = agent?._id;
+  const agent = Meteor.user();
+  const agentId = agent?._id;
 
-    const { isReady, applications, tenants, properties, employments } = useTracker(() => {
-        const sub1 = Meteor.subscribe('rentalApplications');
-        const sub2 = Meteor.subscribe('properties');
-        const sub3 = Meteor.subscribe('tenants');
-        const sub4 = Meteor.subscribe('employment');
+  const { isReady, applications, tenants, properties, employments } =
+    useTracker(() => {
+      const sub1 = Meteor.subscribe("rentalApplications");
+      const sub2 = Meteor.subscribe("properties");
+      const sub3 = Meteor.subscribe("tenants");
+      const sub4 = Meteor.subscribe("employment");
 
       const isReady =
         sub1.ready() && sub2.ready() && sub3.ready() && sub4.ready();
 
-        if (!isReady) {
-            return {
-                isReady: false,
-                properties: [],
-                applications: [],
-                tenants: [],
-                employments: []
-            };
-        }
-
-        const properties = Properties.find({ agent_id: agentId }).fetch();
-        const applications = RentalApplications.find({prop_id: { $in: properties.map(p => p.prop_id) }}).fetch();
-        const tenants = Tenants.find().fetch();
-        const employments = Employment.find().fetch();
-
+      if (!isReady) {
         return {
-            isReady: true,
-            properties,
-            applications,
-            tenants,
-            employments
+          isReady: false,
+          properties: [],
+          applications: [],
+          tenants: [],
+          employments: [],
         };
+      }
+
+      const properties = Properties.find({ agent_id: agentId }).fetch();
+      const applications = RentalApplications.find({
+        prop_id: { $in: properties.map((p) => p.prop_id) },
+      }).fetch();
+      const tenants = Tenants.find().fetch();
+      const employments = Employment.find().fetch();
+
+      return {
+        isReady: true,
+        properties,
+        applications,
+        tenants,
+        employments,
+      };
     });
 
-  // Show loading message until all subscriptions are ready
   if (!isReady) {
     return <div className="p-8 text-gray-600">Loading applications...</div>;
   }
 
-  // Helper to format landlord flag nicely
   const formatFlagLabel = (flag) => {
     if (!flag) return "";
     const f = String(flag).toLowerCase();
     if (f.includes("short")) return "🟢 Shortlisted";
     if (f.includes("review")) return "🟡 To be Reviewed";
     if (f.includes("flag")) return "🔴 Flagged";
-    // fallback
     return flag;
   };
 
-  // Filter applications based on search bar and selected filters
   const filteredApplications = applications.filter((app) => {
-    // Find the tenant and property for this application
     const tenant = tenants.find((t) => t.ten_id === app.ten_id);
     const property = properties.find((p) => p.prop_id === app.prop_id);
 
-    // Prepare search terms
     const tenantName = `${tenant?.ten_fn || ""} ${
       tenant?.ten_ln || ""
     }`.toLowerCase();
     const propertyAddress = (property?.prop_address || "").toLowerCase();
     const searchTerm = allSearch.toLowerCase();
 
-    // Check if the application matches the selected filters
     const matchStatus =
       selectedStatuses.length === 0 || selectedStatuses.includes(app.status);
     const matchApplicant =
@@ -100,7 +97,6 @@ export default function ReviewApplication() {
       selectedProperties.length === 0 ||
       selectedProperties.includes(app.prop_id);
 
-    // Return true if all filters match and the search term matches either the tenant or property
     return (
       matchStatus &&
       matchApplicant &&
@@ -109,7 +105,6 @@ export default function ReviewApplication() {
     );
   });
 
-  // Function to approve an applicant as FINAL (Agent action)
   const approveApplicantFinal = (appId, propId) => {
     if (!propId) {
       alert("Property ID is missing");
@@ -128,7 +123,6 @@ export default function ReviewApplication() {
       if (err) {
         alert("Error approving: " + (err.reason || err.message || err));
       } else {
-        // Meteor reactivity will refresh the UI; small friendly message
         alert("Applicant approved successfully.");
       }
     });
@@ -137,7 +131,6 @@ export default function ReviewApplication() {
   return (
     <div className="bg-[#FFF8EB] min-h-screen pb-20">
       <Navbar />
-      {/* Main content container */}
       <div className="px-12 py-8">
         <h2 className="text-2xl font-semibold">Review Applications</h2>
         <p className="text-sm text-gray-600">All applications in one place!</p>
@@ -153,7 +146,6 @@ export default function ReviewApplication() {
 
         {/* Search bar and filter button */}
         <div className="mt-4 bg-[#CBADD8] px-6 py-4 rounded-lg flex gap-4 relative">
-          {/* Search input for applicants and properties */}
           <input
             type="text"
             placeholder="Search Applicant..."
@@ -162,7 +154,6 @@ export default function ReviewApplication() {
             value={allSearch}
             onChange={(e) => setAllSearch(e.target.value)}
           />
-          {/* Button to open the filter menu */}
           <button
             className="w-1/5 px-4 py-2 rounded-md text-white"
             style={{ backgroundColor: "#9747FF" }}
@@ -170,7 +161,6 @@ export default function ReviewApplication() {
           >
             Filter
           </button>
-          {/* Filter menu component, receives all filter state and setters */}
           <FilterMenu
             show={showFilterMenu}
             onClose={() => setShowFilterMenu(false)}
@@ -186,25 +176,26 @@ export default function ReviewApplication() {
           />
         </div>
 
-        {/* Applications Grid: displays filtered applications */}
+        {/* Applications Grid */}
         <div className="grid grid-cols-1 gap-6 mt-6 ">
           {filteredApplications.map((app) => {
-            // Find the tenant, property, and employment for this application
             const tenant = tenants.find((t) => t.ten_id === app.ten_id);
             const property = properties.find((p) => p.prop_id === app.prop_id);
             const employment = employments.find(
               (e) => e.employment_id === app.employment_id
             );
-            // Find other applications with same shared_lease_id
+
             const relatedApplications = applications.filter(
-                otherApp => otherApp._id !== app._id && otherApp.shared_lease_id && otherApp.shared_lease_id === app.shared_lease_id
+              (otherApp) =>
+                otherApp._id !== app._id &&
+                otherApp.shared_lease_id &&
+                otherApp.shared_lease_id === app.shared_lease_id
             );
 
             const relatedTenants = relatedApplications
-                .map(ra => tenants.find(t => t.ten_id === ra.ten_id))
-                .filter(Boolean);
+              .map((ra) => tenants.find((t) => t.ten_id === ra.ten_id))
+              .filter(Boolean);
 
-            // Build an "extraInfo" string combining landlord feedback + flag (if present)
             const extraInfoParts = [];
             if (app.landlordFeedback)
               extraInfoParts.push(`Landlord: ${app.landlordFeedback}`);
@@ -213,11 +204,9 @@ export default function ReviewApplication() {
             const extraInfo = extraInfoParts.join(" • ");
 
             return (
-              // Card for each application
               <div key={app._id} className="flex overflow-hidden gap-8">
-                {/* Left: Property image and overlay info */}
+                {/* Property image */}
                 <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden ">
-                  {/* Property Image as Background (safe fallback) */}
                   <img
                     src={
                       property?.prop_id
@@ -227,8 +216,6 @@ export default function ReviewApplication() {
                     alt="Property"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
-
-                  {/* White Overlay Box at the bottom */}
                   <div
                     className="absolute bottom-0 left-0 w-full"
                     style={{ height: "35%" }}
@@ -257,7 +244,7 @@ export default function ReviewApplication() {
                   </div>
                 </div>
 
-                {/* Right: Applicant Info Card */}
+                {/* Applicant Info Card */}
                 <div className="w-3/4 p-8 bg-[#CBADD8] rounded-2xl flex flex-col justify-between">
                   <ApplicantCard
                     name={`${tenant?.ten_fn || "Unknown"} ${
@@ -268,13 +255,12 @@ export default function ReviewApplication() {
                       tenant?.ten_dob
                         ? Math.floor(
                             (new Date() - new Date(tenant.ten_dob)) /
-                            (1000 * 60 * 60 * 24 * 365.25)
+                              (1000 * 60 * 60 * 24 * 365.25)
                           )
                         : "N/A"
                     }
                     finaliseButton={
                       <div className="flex items-center gap-2">
-                        {/* Show final decision icon if set */}
                         {app.finalDecision === "Approved" && (
                           <span
                             title="Final Decision: Approved"
@@ -301,10 +287,11 @@ export default function ReviewApplication() {
                             />
                           </span>
                         )}
-                        {/* If not finalised yet for this property, allow selecting final applicant */}
                         {!app.finalDecision && (
                           <button
-                            onClick={() => approveApplicantFinal(app._id, app.prop_id)}
+                            onClick={() =>
+                              approveApplicantFinal(app._id, app.prop_id)
+                            }
                             className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
                           >
                             Select as Tenant (Final)
@@ -315,7 +302,6 @@ export default function ReviewApplication() {
                     status={app.status || "Pending"}
                     extraInfo={extraInfo}
                     statusIcon={
-                      // Status icon button and menu
                       <div className="relative flex items-center gap-3">
                         <button
                           className="px-2 py-1 rounded bg-white text-sm"
@@ -331,7 +317,6 @@ export default function ReviewApplication() {
                             ? "❌"
                             : "⏳"}
                         </button>
-                        {/* Status menu for accepting/rejecting application */}
                         <StatusMenu
                           show={statusMenuAppId === app._id}
                           onClose={() => setStatusMenuAppId(null)}
@@ -356,19 +341,39 @@ export default function ReviewApplication() {
                       </div>
                     }
                   />
-                  {/* SHARED LEASE TENANTS - fixed height, no scroll */}
+
+                  {/* View Application Button */}
+                  <div className="mt-4">
+                    <Link
+                      to={`/agent/application/${app._id}`}
+                      className="inline-block bg-white text-purple-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+                    >
+                      View Application
+                    </Link>
+                  </div>
+
+                  {/* Shared Lease Members */}
                   {relatedTenants.length > 0 && (
                     <div className="mt-4 bg-white bg-opacity-80 rounded p-3 h-auto text-gray-800">
-                        <h4 className="font-semibold mb-2">Shared Lease Group Members:</h4>
-                        {relatedTenants.map(member => (
-                        <div
+                      <h4 className="font-semibold mb-2">
+                        Shared Lease Group Members:
+                      </h4>
+                      {relatedTenants.map((member) => {
+                        // Find the application belonging to this related member
+                        const memberApp = applications.find(
+                          (a) => a.ten_id === member.ten_id && a.shared_lease_id === app.shared_lease_id
+                        );
+
+                        return (
+                          <Link
                             key={member.ten_id}
-                            className="py-1 px-2 bg-white rounded-md shadow-sm mb-1 hover:bg-purple-50 cursor-pointer"
-                            onClick={() => console.log("Navigate to tenant page:", member.ten_id)}
-                        >
+                            to={`/agent/application/${memberApp?._id}`}
+                            className="block py-1 px-2 bg-white rounded-md shadow-sm mb-1 hover:bg-purple-50 cursor-pointer"
+                          >
                             {member.ten_fn} {member.ten_ln}
-                        </div>
-                        ))}
+                          </Link>
+                        );
+                      })}
                     </div>
                   )}
                 </div>

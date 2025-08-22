@@ -33,6 +33,7 @@ import AgentListings from "./agent/AgentListings.jsx";
 import ReviewApplication from "./agent/AgentReviewApplication.jsx";
 import AgentDashboard from "./agent/AgentDashboard.jsx";
 
+import ViewApplication from "./globalComponents/ViewApplication.jsx";
 // importing landlord pages
 import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx";
 import LandlordDetailedProp from "./landlord/LandLordDetailedProp.jsx";
@@ -126,6 +127,8 @@ const App = () => (
             path="/AgentReviewApplication"
             element={<ReviewApplication />}
           />
+
+          <Route path="/agent/application/:appId" element={<ViewApplication />} />
         </Route>
 
         {/* Protected Landlord Routes */}
