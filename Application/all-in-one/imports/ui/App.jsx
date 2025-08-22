@@ -98,6 +98,8 @@ const App = () => (
             element={<TenDetailedPropListing />}
           />
           <Route path="/DetailedLease/:id" element={<DetailedLease />} />
+
+          <Route path="/tenant/application/:appId" element={<ViewApplication />} />
         </Route>
 
         {/* Protected Agent Routes */}
@@ -155,6 +157,8 @@ const App = () => (
             element={<LandlordDetailedPropListing />}
           />
           <Route path="/LandlordProperties" element={<LandlordProperties />} />
+
+          <Route path="/landlord/application/:appId" element={<ViewApplication />} />
         </Route>
       </Routes>
     </div>
