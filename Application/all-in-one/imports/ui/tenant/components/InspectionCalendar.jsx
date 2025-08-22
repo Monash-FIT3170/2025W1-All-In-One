@@ -30,10 +30,11 @@ export const InspectionCalendar = ({ propertyId }) => {
       
       if (property && property.agent_id) {
         // Only get availabilities from the agent who manages this property
-        availabilities = AgentAvailabilities.find({ 
-          activity_type: 'Availability',
-          status: { $ne: 'booked' },
-          agent_id: property.agent_id
+        availabilities = AgentAvailabilities.find({
+        activity_type: 'Availability',
+        type: 'Inspection', // exclude open houses              
+        status: { $ne: 'booked' }, // exclude booked
+        agent_id: property.agent_id
         }).fetch();
       }
     }
