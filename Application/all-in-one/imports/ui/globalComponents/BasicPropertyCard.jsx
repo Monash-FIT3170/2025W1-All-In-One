@@ -13,6 +13,7 @@ export default function PropertyCard({
   onStarToggle,
 }) {
 
+
   //const [isStarred, setIsStarred] = React.useState(property.starred);
 
   function toggleFavourite(e){
