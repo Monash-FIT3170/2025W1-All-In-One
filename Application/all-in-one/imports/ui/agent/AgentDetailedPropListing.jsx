@@ -63,9 +63,10 @@ export default function AgentDetailedPropListing() {
         furnished: property.prop_furnish? "Yes":"No",
         },
         description: property.prop_desc,
+        photo: property.photo,
         
       };
-  
+  console.log("test",property);
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
@@ -73,13 +74,13 @@ export default function AgentDetailedPropListing() {
 
       {/*Main content*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={propertyData} />
+        <PropertyDetailsCard property={property} />
       </div>
 
       {/*Description and buttons (not buttons for this milestone*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
         <p className="font-semibold text-lg text-[#434343]">
-          {propertyData.description}
+          {property.prop_desc}
         </p>
       </div>
 
