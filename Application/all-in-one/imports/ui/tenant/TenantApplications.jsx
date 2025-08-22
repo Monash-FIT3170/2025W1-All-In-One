@@ -139,7 +139,7 @@ export default function TenantApplications() {
                                             ? "❌"
                                             : "⏳"}
                                         editButton={
-                                            app.status != "Approved" && app.status != "Rejected" ? (
+                                            app.status != "Approved" && app.status != "Rejected" && app.submitted == false ? (
                                             <Link
                                                 key={property.prop_id}
                                                 to={`/Apply/${property.prop_id}?tenantId=${tenantID}`}

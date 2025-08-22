@@ -28,14 +28,39 @@ export const ApplicantCard = ({appId, name, desc, status, statusIcon, editButton
                 </div>
             </div>
             <div className="flex justify-between items-center mt-auto font-semibold pt-2">
-                <button
-                    className="rounded-full bg-gray-200 px-3 py-1 text-sm"
-                    onClick={() => {
-                        Meteor.call("rentalApplications.setStatus", appId, "Withdrawn");
-                    }}
-                >
-                    Withdraw Application
-                </button>
+            <button
+            className="rounded-full bg-gray-200 px-3 py-1 text-sm"
+            onClick={() => {
+                // First set submitted to false
+                Meteor.call(
+                "rentalApplications.update",
+                appId,               // assuming appId === rentalApplication._id
+                { submitted: false },
+                (err) => {
+                    if (err) {
+                    alert(err.reason || "Error withdrawing application");
+                    return;
+                    }
+
+                    // Then set status to Withdrawn
+                    Meteor.call(
+                    "rentalApplications.setStatus",
+                    appId,
+                    "Withdrawn",
+                    (err2) => {
+                        if (err2) {
+                        alert(err2.reason || "Error updating status");
+                        } else {
+                        alert("Application withdrawn successfully!");
+                        }
+                    }
+                    );
+                }
+                );
+            }}
+            >
+            Withdraw Application
+            </button>
                 <p className="text-sm text-gray-600">{editButton}</p>
             </div>
         </div>
