@@ -122,7 +122,14 @@ export default function TenDetailedPropListing() {
               >
                 Application Rejected
               </button>
-            ) : (
+            ) : rentalApp.submitted === true ? (
+              <button
+                disabled
+                className="w-1/2 bg-gray-300 text-gray-500 font-base text-center py-2 rounded-md shadow-md cursor-not-allowed"
+              >
+                Application Submitted
+              </button>
+            ): (
               <Link
                 key={id}
                 to={`/Apply/${id}?tenantId=${tenantID}`}
