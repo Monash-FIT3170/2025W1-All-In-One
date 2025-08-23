@@ -1,3 +1,4 @@
+process.env.MAIL_URL = "smtps://allinone3170%40gmail.com:llqwcpiqphurfowj@smtp.gmail.com:465";
 import { Meteor } from 'meteor/meteor';
 import {
   Properties,
@@ -33,9 +34,7 @@ import '/imports/api/tenant/tickets/ticketsMethods';
 import '/imports/api/tenant/tickets/ticketsPublications'
 import '/imports/api/methods/eoi.js';
 
-
 Meteor.startup(async () => { 
-
   // Insert mock data only if collections are empty
   if ((await Properties.find().countAsync()) === 0) {
     for (const property of mockData.properties) {
