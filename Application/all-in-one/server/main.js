@@ -31,6 +31,8 @@ import '/imports/api/agent/expressionOfInterest/methods';
 import '/imports/api/agent/expressionOfInterest/publication';
 import '/imports/api/tenant/tickets/ticketsMethods';
 import '/imports/api/tenant/tickets/ticketsPublications'
+import '/imports/api/methods/eoi.js';
+
 
 Meteor.startup(async () => { 
 

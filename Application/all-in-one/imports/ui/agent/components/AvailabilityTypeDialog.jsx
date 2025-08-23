@@ -179,18 +179,24 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
             >
               <div className="text-center text-sm text-black/70">
                 {filteredEOIs.length > 0 ? (
-                  filteredEOIs.map((eoi, idx) => (
+                  filteredEOIs.map((eoi) => (
                     <EOI
-                        address={getPropertyAddress(eoi)}
-                        prospectiveTenName={getProspectiveTenantName(eoi)}
-                        EOI={eoi.EOI}
-                        isSelected={selectedEOI === eoi._id}
-                        onSelect={() => setSelectedEOI(eoi._id)}
+                      key={eoi._id}
+                      eoiDoc={eoi}
+                      address={getPropertyAddress(eoi)}
+                      prospectiveTenName={getProspectiveTenantName(eoi)}
+                      isSelected={String(selectedEOI) === String(eoi._id)}
+                      onSelect={() => setSelectedEOI(eoi._id)}
+                      onRemoved={(id) => {
+                        // optional: if you removed the selected one, clear selection
+                        if (String(selectedEOI) === String(id)) setSelectedEOI(null);
+                      }}
                     />
                   ))
                 ) : (
-                <p>You currently have no EOIs.</p>
+                  <p>You currently have no EOIs.</p>
                 )}
+
               </div>
             </div>
 
