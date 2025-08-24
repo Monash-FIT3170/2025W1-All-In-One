@@ -139,13 +139,23 @@ export default function TenantApplications() {
                                             ? "❌"
                                             : "⏳"}
                                         editButton={
-                                            app.status != "Approved" && app.status != "Rejected" ? (
+                                            app.status != "Approved" && app.status != "Rejected" && app.submitted == false ? (
                                             <Link
                                                 key={property.prop_id}
                                                 to={`/Apply/${property.prop_id}?tenantId=${tenantID}`}
                                                 className="ml-4 bg-white text-purple-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
                                             >
                                                 Edit
+                                            </Link>
+                                        ) : null
+                                        }
+                                        viewButton={
+                                            app.submitted == true ? (
+                                            <Link
+                                                to={`/tenant/application/${app._id}`}
+                                                className="ml-4 bg-white text-purple-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
+                                            >
+                                                View
                                             </Link>
                                         ) : null
                                         }

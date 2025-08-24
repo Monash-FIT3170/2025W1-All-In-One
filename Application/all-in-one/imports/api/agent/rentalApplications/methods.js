@@ -45,6 +45,7 @@ Meteor.methods({
       'emergency_contact_id',
       'rental_app_id',
       'shared_lease_id',
+      'submitted'
     ];
 
     const sanitizedUpdate = Object.fromEntries(

@@ -35,6 +35,7 @@ import ReviewApplication from "./agent/AgentReviewApplication.jsx"
 import AgentDashboard from './agent/AgentDashboard.jsx';
 import EditPropertyDetails from './agent/EditPropertyDetails.jsx';
 
+import ViewApplication from "./globalComponents/ViewApplication.jsx";
 // importing landlord pages
 import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx";
 import LandlordDetailedProp from "./landlord/LandLordDetailedProp.jsx";
@@ -98,6 +99,8 @@ const App = () => (
             element={<TenDetailedPropListing />}
           />
           <Route path="/DetailedLease/:id" element={<DetailedLease />} />
+
+          <Route path="/tenant/application/:appId" element={<ViewApplication />} />
         </Route>
 
         {/* Protected Agent Routes - Require agent authentication */}
@@ -108,19 +111,27 @@ const App = () => (
           <Route path="/AgentDashboard" element={<AgentDashboard />} />{" "}
           {/* Proper dashboard */}
           {/* Add any other protected agent routes here */}
-          {/* Agent Routes team-2 */ }
-                  <Route path="/AddPropertyListing" element={<AddPropertyListing />} />
-                  <Route path="/AgentBasicPropListing" element={<AgentBasicPorpListing/>}/>
-                  <Route path="/AgentDetailedListing/:id" element={<AgentDetailedListing/>}/>
-                  <Route path="/AgentDetailedPropListing/:id" element={<AgentDetailedPropListing/>}/>
-                  <Route path="/AgentListings" element={<AgentListings/>}/>
-                  <Route path="/AgentReviewApplication" element={<ReviewApplication/>}/>
-                  <Route path="/EditPropertyDetails" element={<EditPropertyDetails/>}/>
-          
-          
-        
+          {/* Agent Routes team-2 */}
+          <Route path="/AddPropertyListing" element={<AddPropertyListing />} />
+          <Route
+            path="/AgentBasicPropListing"
+            element={<AgentBasicPorpListing />}
+          />
+          <Route
+            path="/AgentDetailedListing/:id"
+            element={<AgentDetailedListing />}
+          />
+          <Route
+            path="/AgentDetailedPropListing/:id"
+            element={<AgentDetailedPropListing />}
+          />
+          <Route path="/AgentListings" element={<AgentListings />} />
+          <Route
+            path="/AgentReviewApplication"
+            element={<ReviewApplication />}
+          />
 
-
+          <Route path="/agent/application/:appId" element={<ViewApplication />} />
         </Route>
 
         {/* Protected Landlord Routes */}
@@ -147,6 +158,8 @@ const App = () => (
             element={<LandlordDetailedPropListing />}
           />
           <Route path="/LandlordProperties" element={<LandlordProperties />} />
+
+          <Route path="/landlord/application/:appId" element={<ViewApplication />} />
         </Route>
       </Routes>
     </div>
