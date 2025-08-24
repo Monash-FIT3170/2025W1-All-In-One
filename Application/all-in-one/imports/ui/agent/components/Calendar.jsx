@@ -128,12 +128,14 @@ export const Calendar = () => {
     note,
     is_private,
   }) => {
+    // If it's a private open house, we want a different initial status
+    const status = type === 'Open House' && is_private ? 'Invitation sent' : 'confirmed';
     const tempEvent = {
       id: Date.now(),
       start,
       end,
       type,
-      status: 'pending',
+      status,
       title: `Pending: ${type} Availability`,
       property: {
         address,
@@ -168,13 +170,13 @@ export const Calendar = () => {
         String(bathrooms ?? ''),
         String(parking ?? ''),
         String(image ?? ''),
-        'confirmed',
+        status,
         String(note ?? ''),
         is_private ?? false
       );
 
       // Creates an attendance list for any new open house availabilities
-      if (type === 'Open House'){
+      if (type === 'Open House' && !is_private) {
         const curr_booking = AgentAvailabilities.findOne({
           start: start.toISOString() });
 

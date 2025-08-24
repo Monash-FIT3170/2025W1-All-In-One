@@ -186,10 +186,15 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
                       address={getPropertyAddress(eoi)}
                       prospectiveTenName={getProspectiveTenantName(eoi)}
                       isSelected={String(selectedEOI) === String(eoi._id)}
-                      onSelect={() => setSelectedEOI(eoi._id)}
+                      onSelect={() => {
+                        setSelectedEOI(eoi._id);
+                        const prop = Properties.findOne({ prop_id: eoi.propertyID });
+                        if (prop) setProperty(prop);   // ✅ keep property in sync with EOI
+                      }}
                       onRemoved={(id) => {
                         // optional: if you removed the selected one, clear selection
                         if (String(selectedEOI) === String(id)) setSelectedEOI(null);
+                        setProperty(null);
                       }}
                     />
                   ))
