@@ -1,4 +1,7 @@
-import React, { useState } from "react";
+import React from "react";
+import { Link } from "react-router-dom";
+import { FaBath, FaBed, FaCar, FaCouch, FaStar, FaRegStar  } from "react-icons/fa";
+import { useState } from "react";
 import Slider from "react-slick";
 import { FaBath, FaBed, FaCar, FaCouch, FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import "slick-carousel/slick/slick.css";
@@ -28,9 +31,15 @@ function SamplePrevArrow(props) {
   );
 }
 
-export default function PropertyDetailsCard({ property }) {
+export default function PropertyDetailsCard({ property, showSaveButton= false }) {
+  // image disaplayed if there are no images
   const defaultImage = "/images/default.jpg";
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  // Local saved state, init from property.starred or false
+  const [saved, setSaved] = useState(property.starred ?? false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   if (!property) {
     return <div className="text-lg text-red-600">Property Not Found!</div>;
@@ -39,30 +48,42 @@ export default function PropertyDetailsCard({ property }) {
   // Prepare photoArray from new or legacy structure
   let photoArray = [];
 
-  if (property.photo && property.photo.length > 0) {
-    photoArray = property.photo;
-  } else if (property.imageUrls && property.imageUrls.length > 0) {
-    photoArray = property.imageUrls.map((url, index) => ({
-      url,
-      name: `Property Image ${index + 1}`,
-      isPDF: false,
-      isVideo: /\.(mp4|webm|ogg)$/i.test(url),
-    }));
-  }
+  React.useEffect(() => {
+    setSaved(property.starred ?? false);
+  }, [property.starred]);
 
-  // Detect media type with isVideo or URL extension
-  const allMedia = photoArray
-    .filter((file) => !file.isPDF)
-    .map((file) => ({
-      type: file.isVideo || /\.(mp4|webm|ogg)$/i.test(file.url) ? "video" : "image",
-      url: file.url,
-      name: file.name,
-    }));
+  const toggleSave = () => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
 
-  console.log("Media detected:", allMedia);
+    if (!saved) {
+      // Simulate saving the property
+      Meteor.call("starredProperties.add", property.id, (err) => {
+        setLoading(false);
+        if (err) {
+          setError(err.reason || "Error saving listing");
+        } else {
+          setSaved(true);
+        }
+      });
+    } else {
+      Meteor.call("starredProperties.remove", property.id, (err) => {
+        setLoading(false);
+        if (err) {
+          setError(err.reason || "Error removing listing");
+        } else {
+          setSaved(false);
+        }
+      }); 
+    }
+  };
 
-  const openModal = () => setIsModalOpen(true);
-  const closeModal = () => setIsModalOpen(false);
+  // Combine all media for carousel (images first, then videos)
+  const allMedia = [
+    ...(property.imageUrls?.map((url) => ({ type: "image", url })) || []),
+    ...(property.videoUrls?.map((url) => ({ type: "video", url })) || [])
+  ];
 
   return (
     <>
@@ -217,13 +238,37 @@ export default function PropertyDetailsCard({ property }) {
 
         {/* Right side info */}
         <div className="w-full lg:w-1/2 p-2 space-y-3">
+        <div className="flex justify-between items-center">
           <div className="text-2xl md:text-3xl font-semibold text-gray-800">
             ${property.prop_pricepweek || property.price}{" "}
             <span className="text-lg font-medium">per Week </span>
           </div>
-          <div className="text-3xl text-gray-800">
-            {property.prop_address || property.address}
+          {showSaveButton && (
+      <>
+        <button
+          onClick={toggleSave}
+          disabled={loading}
+          aria-label={saved ? "Unsave property" : "Save property"}
+    className="focus:outline-none"
+    style={{ background: "none", border: "none", padding: 0, marginLeft: 8, cursor: loading ? "not-allowed" : "pointer" }}
+  >
+    {loading ? (
+      <span className="text-gray-400">...</span>
+    ) : saved ? (
+      <FaStar size={24} className="text-yellow-500" />
+    ) : (
+      <FaRegStar size={24} className="text-gray-400" />
+    )}
+  </button>
+        {error && (
+          <div className="text-red-600 mt-2 text-sm font-medium">
+            {error}
           </div>
+        )}
+      </>
+    )}
+  </div>
+          <div className="text-3xl text-gray-800">{property.address}</div>
           <div className="text-1xl text-gray-600">
             Property Type:{" "}
             <span className="text-gray-700">{property.prop_type || property.type}</span>
@@ -274,6 +319,7 @@ export default function PropertyDetailsCard({ property }) {
           </div>
         </div>
       </div>
+    
     </>
   );
 }
