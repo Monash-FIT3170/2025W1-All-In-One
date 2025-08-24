@@ -95,11 +95,11 @@ export default function AgentListings() {
           {propertyCards.map((property) => (
                       
                         <BasicPropertyCard 
-                        key={property.id}
+                        key={property.prop_id}
                         property={property} 
                         showFav={false} 
                         onFavourite={(p)=> console.log("Favourited:",p)} 
-                        linkTo={`/AgentDetailedListing/${property.id}`}
+                        linkTo={`/AgentDetailedListing/${property.prop_id}`}
                         />
               
                     ))}

@@ -7,7 +7,6 @@ import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, AgentAvailabilities, StarredProperties } from "../../api/database/collections"; // importing mock for now
-import { Link } from "react-router-dom";
 import UpcomingOpenHouseModal from "./components/UpcomingOpenHouseModal";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////

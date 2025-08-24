@@ -1,9 +1,8 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { FaBath, FaBed, FaCar, FaCouch, FaStar, FaRegStar  } from "react-icons/fa";
 import { useState } from "react";
 import Slider from "react-slick";
-import { FaBath, FaBed, FaCar, FaCouch, FaChevronRight, FaChevronLeft } from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch, FaStar, FaRegStar, FaChevronRight, FaChevronLeft } from "react-icons/fa";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 

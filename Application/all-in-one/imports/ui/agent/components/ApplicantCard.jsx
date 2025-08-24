@@ -8,7 +8,7 @@ export const ApplicantCard = ({ name, desc, age, status, statusIcon, finaliseBut
                 <p className="font-semibold text-lg">{name}</p>
                 <p className="text-sm text-gray-600">Age: {age}</p>
                 <p className="text-sm text-gray-600">Description: {desc}</p>
-                <p className="text-sm text-gray-600 mt-4">{finaliseButton}</p>
+                <div className="text-sm text-gray-600 mt-4">{finaliseButton}</div>
             </div>
             <div className="text-center">
                 <div className="inline-block px-3 py-1 text-3xl font-semibold rounded-full">{statusIcon}</div>
