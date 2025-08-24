@@ -128,7 +128,7 @@ export const Calendar = () => {
     note,
     is_private,
   }) => {
-    // If it's a private open house, we want a different initial status
+    // Private Open House → different initial status
     const status = type === 'Open House' && is_private ? 'Invitation sent' : 'confirmed';
     const tempEvent = {
       id: Date.now(),
@@ -175,22 +175,25 @@ export const Calendar = () => {
         is_private ?? false
       );
 
-      // Creates an attendance list for any new open house availabilities
+      // Creates an attendance list for any new PUBLIC open house availabilities
       if (type === 'Open House' && !is_private) {
         const curr_booking = AgentAvailabilities.findOne({
-          start: start.toISOString() });
+          start: start.toISOString()
+        });
 
-        const booking_id = curr_booking._id;
+        const booking_id = curr_booking?._id;
         const attendanceList = [];
 
-        await callAsync(
-          'openHouseAttendance.insert',
-          booking_id,
-          address,
-          start.toISOString(),
-          end.toISOString(),
-          attendanceList
-        );
+        if (booking_id) {
+          await callAsync(
+            'openHouseAttendance.insert',
+            booking_id,
+            address,
+            start.toISOString(),
+            end.toISOString(),
+            attendanceList
+          );
+        }
       }
 
     } catch (error) {
@@ -291,7 +294,6 @@ export const Calendar = () => {
   };
 
   const handleCreateTicketActivity = ({ start, end, notes, ticket }) => {
-    // TODO: insert your server-side method here if needed
     // Example: create a local pending event so it shows on the calendar immediately
     setNewEvents((prev) => [
       ...prev,
@@ -321,6 +323,14 @@ export const Calendar = () => {
       <div className="border-t border-gray-300 max-w-6xl mx-auto mb-6"></div>
 
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-6xl mx-auto">
+        {/* dashed look for private Open House invites */}
+        <style>{`
+          .fc .invite-pending {
+            border-style: dashed !important;
+            border-width: 2px !important;
+          }
+        `}</style>
+
         <FullCalendar
           plugins={[timeGridPlugin, interactionPlugin]}
           initialView="timeGridWeek"
@@ -331,37 +341,61 @@ export const Calendar = () => {
           selectable={true}
           select={handleSelect}
           events={[
-            ...availabilities.map(slot => ({
-              ...slot,
-              id: slot._id, // This is the real Mongo _id
-              title: slot.status === 'booked'
-                ? 'Booked'
-                : `${slot.type} Availability`,
-              backgroundColor:
-                slot.status === 'booked'
-                  ? '#e5e7eb'
-                  : slot.status === 'pending'
-                  ? '#F2F2F2'
-                  : slot.type === 'Open House'
-                  ? '#DCFFCD'
-                  : '#CEF4F1',
-              textColor:
-                slot.status === 'booked'
-                  ? '#6b7280'
-                  : slot.status === 'pending'
-                  ? '#000000'
-                  : slot.type === 'Open House'
-                  ? '#68A44F'
-                  : '#24A89E',
-              borderColor:
-                slot.status === 'booked'
-                  ? '#9ca3af'
-                  : slot.status === 'pending'
-                  ? '#000000'
-                  : slot.type === 'Open House'
-                  ? '#A98A22'
-                  : '#24A89E',
-            })),
+            ...availabilities.map(slot => {
+              const type = slot.availability_type || slot.type; // robustness
+              const statusLower = String(slot.status || '').toLowerCase();
+
+              const isBooked = statusLower === 'booked';
+              const isPrivateInvite =
+                type === 'Open House' &&
+                slot.is_private === true &&
+                /^(invitation sent|invite sent|invited)$/.test(statusLower);
+
+              let title;
+              let backgroundColor;
+              let textColor;
+              let borderColor;
+              let classNames = [];
+
+              if (isBooked) {
+                title = 'Booked';
+                backgroundColor = '#e5e7eb';
+                textColor = '#6b7280';
+                borderColor = '#9ca3af';
+              } else if (isPrivateInvite) {
+                // NEW: private OH invite pending -> grey + dashed
+                title = 'Private Open House (Invite Sent)';
+                backgroundColor = '#e5e7eb'; // light grey base
+                textColor = '#374151';       // gray-700
+                borderColor = '#9ca3af';     // gray-400
+                classNames = ['invite-pending']; // dashed via CSS above
+              } else if (slot.status === 'pending') {
+                title = `Pending: ${type} Availability`;
+                backgroundColor = '#F2F2F2';
+                textColor = '#000000';
+                borderColor = '#000000';
+              } else if (type === 'Open House') {
+                title = 'Open House Availability';
+                backgroundColor = '#DCFFCD';
+                textColor = '#68A44F';
+                borderColor = '#A98A22';
+              } else {
+                title = 'Inspection Availability';
+                backgroundColor = '#CEF4F1';
+                textColor = '#24A89E';
+                borderColor = '#24A89E';
+              }
+
+              return {
+                ...slot,
+                id: slot._id, // This is the real Mongo _id
+                title,
+                backgroundColor,
+                textColor,
+                borderColor,
+                classNames,
+              };
+            }),
             ...newEvents.map(event => ({
               ...event,
               backgroundColor: '#F2F2F2',
