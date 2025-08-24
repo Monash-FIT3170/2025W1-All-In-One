@@ -48,7 +48,7 @@ function Navbar() {
       {/* Navigation bar options */}
       <div className="flex items-center gap-4">
         {/* Applications review navigation */}
-        <NavButton to="/LandlordDetailedPropListing">Applications</NavButton>
+        <NavButton to="/LandlordReviewApplication">Applications</NavButton>
 
         {/* Properties management navigation */}
         <NavButton to="/LandlordProperties">Properties</NavButton>

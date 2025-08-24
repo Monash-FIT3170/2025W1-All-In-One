@@ -41,6 +41,7 @@ import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx"
 import LandlordDetailedProp from "./landlord/LandLordDetailedProp.jsx";
 import LandlordDetailedPropListing from "./landlord/LandlordDetailedPropListing.jsx";
 import LandlordProperties from "./landlord/LandlordProperties.jsx";
+import LandlordReviewApplication from "./landlord/LandlordReviewApplication.jsx";
 
 import UploadImage from './UploadImage.jsx';
 import MultiFileUpload from './MultiFileUpload.jsx';
@@ -158,6 +159,8 @@ const App = () => (
             element={<LandlordDetailedPropListing />}
           />
           <Route path="/LandlordProperties" element={<LandlordProperties />} />
+
+          <Route path="/LandlordReviewApplication" element={<LandlordReviewApplication />} />
 
           <Route path="/landlord/application/:appId" element={<ViewApplication />} />
         </Route>
