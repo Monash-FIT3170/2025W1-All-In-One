@@ -78,7 +78,7 @@ export default function TenantBasicPropListings() {
       id: p.prop_id,
       location: p.prop_address,
       price:`$${p.prop_pricepweek}`,
-      image:photo?.photo_url ||
+      image:`/images/properties/${p.prop_id}/main.jpg` ||
       "/images/default.jpg",
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
@@ -142,7 +142,6 @@ export default function TenantBasicPropListings() {
     return true;
   });
 
- 
 
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
@@ -168,7 +167,7 @@ export default function TenantBasicPropListings() {
                 {/* saved listings toggle button*/}
                 <button
                 onClick={() => setShowOnlySaved(!showOnlySaved)}
-               className={`flex items-center justify-center ${
+                className={`flex items-center justify-center ${
   showOnlySaved ? 'bg-[#7d3dd1]' : 'bg-[#9747FF]'
 } hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md`}
                 >

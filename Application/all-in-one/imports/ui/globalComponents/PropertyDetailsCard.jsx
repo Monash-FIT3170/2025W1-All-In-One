@@ -65,7 +65,7 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
     setSaved(property.starred ?? false);
   }, [property.starred]);
 
-   const toggleSave = () => {
+  const toggleSave = () => {
     if (loading) return;
     setLoading(true);
     setError(null);
