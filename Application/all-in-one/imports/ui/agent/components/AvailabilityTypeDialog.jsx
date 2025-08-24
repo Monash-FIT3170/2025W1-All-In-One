@@ -37,6 +37,14 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     const selected = property && property.prop_address
       ? Properties.findOne({ prop_id: property.prop_id })
       : null;
+      
+    
+    // ✅ send acceptance email if this is a private open house with an EOI selected
+    if (type === 'Open House' && isPrivate && selectedEOI) {
+      Meteor.call('eoi.accept', selectedEOI, (err) => {
+        if (err) console.error('EOI accept email failed:', err);
+      });
+    }
 
     onSelect(type, start, end, {
       address: selected?.prop_address || property?.prop_address || '-',
