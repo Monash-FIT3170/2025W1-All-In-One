@@ -1,8 +1,13 @@
 import React from 'react';
-import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
+import { BedDouble, ShowerHead, CarFront, Users, Check } from 'lucide-react';
+import { Meteor } from 'meteor/meteor';
 
-export const EventDetailModal = ({ event, onClose }) => {
+export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
   if (!event) return null;
+  
+  // Debug logging to see what data is being passed
+  console.log('EventDetailModal received event:', event);
+  console.log('Event attendanceList:', event.attendanceList);
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -23,9 +28,37 @@ export const EventDetailModal = ({ event, onClose }) => {
     return `${s.toLocaleTimeString([], opts)} - ${e.toLocaleTimeString([], opts)}`;
   };
 
+  const handleAttendanceToggle = (tenantID) => {
+    console.log('Toggling attendance for tenant:', tenantID, 'event ID:', event.id);
+    
+    if (!event.id) {
+      console.error('Event ID is missing!');
+      alert('Error: Event ID is missing. Please try refreshing the page.');
+      return;
+    }
+    
+    Meteor.call(
+      'openHouseAttendance.toggleAttendance',
+      event.id,
+      tenantID,
+      (err) => {
+        if (err) {
+          console.error('Failed to toggle attendance:', err);
+          alert('Failed to update attendance: ' + err.reason);
+        } else {
+          console.log('Attendance toggled successfully');
+          // Call the callback to refresh the attendance data
+          if (onAttendanceUpdate) {
+            onAttendanceUpdate();
+          }
+        }
+      }
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="relative bg-[#CBADD8] p-6 rounded-xl w-[800px] shadow-lg flex gap-6">
+      <div className="relative bg-[#CBADD8] p-6 rounded-xl w-[900px] max-h-[90vh] overflow-y-auto shadow-lg flex gap-6">
         <button
           className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
           onClick={onClose}
@@ -84,22 +117,77 @@ export const EventDetailModal = ({ event, onClose }) => {
           </div>
         </div>
 
-        {/* Right: Booking Info */}
+        {/* Right: Booking Info & Attendance List */}
         <div className="flex-1">
           <h2 className="text-2xl font-bold mb-2">{formatDate(event.start)}</h2>
           <p className="text-lg font-medium text-gray-700">
             {formatTime(event.start, event.end)}
           </p>
 
-          {event.tenant ? (
-            <div className="bg-white p-4 rounded-xl space-y-2 mt-4">
-              <p className="font-semibold text-lg">{event.tenant}</p>
-              <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
-              <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
+          {/* Combined Tenant Information & Attendance List */}
+          <div className="bg-white p-4 rounded-xl space-y-4 mt-4">
+            {/* Individual Tenant Info (if exists) */}
+            {event.tenant ? (
+              <div className="space-y-2">
+                <p className="font-semibold text-lg">{event.tenant}</p>
+                <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
+                <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
+              </div>
+            ) : null}
+
+            {/* Divider if both sections exist */}
+            {event.tenant && event.attendanceList && event.attendanceList.length > 0 && (
+              <div className="border-t border-gray-200 my-3"></div>
+            )}
+
+            {/* Attendance List Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Users className="w-5 h-5 text-gray-600" />
+                <h3 className="font-semibold text-lg">Tenants Subscribed to Open House</h3>
+              </div>
+              
+              {event.attendanceList && event.attendanceList.length > 0 ? (
+                <div className="space-y-2">
+                  {event.attendanceList.map((attendee, index) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center gap-3">
+                        <button
+                          onClick={() => handleAttendanceToggle(attendee.tenantID)}
+                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                            attendee.tenantAttendance
+                              ? 'bg-green-500 border-green-500 text-white'
+                              : 'border-gray-300 hover:border-green-400'
+                          }`}
+                          title={attendee.tenantAttendance ? 'Mark as not attended' : 'Mark as attended'}
+                        >
+                          {attendee.tenantAttendance && <Check className="w-3 h-3" />}
+                        </button>
+                        <p className="font-medium text-gray-800">{attendee.tenantName}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          attendee.tenantAttendance 
+                            ? 'bg-green-100 text-green-800' 
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}>
+                          {attendee.tenantAttendance ? 'Attended' : 'Registered'}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                  <p className="text-sm text-gray-600 text-center mt-2">
+                    Total: {event.attendanceList.length} tenant(s)
+                  </p>
+                </div>
+              ) : (
+                <div className="text-center py-4">
+                  <Users className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                  <p className="text-gray-500">No tenants have subscribed yet</p>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="text-sm text-gray-600 mt-4 italic">No tenant information.</div>
-          )}
+          </div>
 
           {event.notes?.trim() && (
             <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">

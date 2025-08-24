@@ -64,10 +64,11 @@ export const Calendar = () => {
    */
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('agentAvailabilities');
+    const attendanceHandler = Meteor.subscribe('openHouseAttendance');
     const data = AgentAvailabilities.find().fetch();
     return {
       availabilities: data,
-      isLoading: !handler.ready(),
+      isLoading: !handler.ready() || !attendanceHandler.ready(),
     };
   });
 
@@ -340,12 +341,34 @@ export const Calendar = () => {
           ]}                   
           eventClick={(info) => {
             const clicked = info.event.extendedProps;
-            setSelectedEvent({
-              title: info.event.title,
-              start: info.event.start,
-              end: info.event.end,
-              ...clicked,
-            }); 
+            
+            // If this is an Open House event, fetch the attendance list
+            if (clicked.type === 'Open House') {
+              // Subscribe to open house attendance data
+              Meteor.subscribe('openHouseAttendance');
+              
+              // Find the attendance record for this event
+              const attendanceRecord = OpenHouseAttendance.findOne({ 
+                bookingID: info.event.id 
+              });
+              
+              setSelectedEvent({
+                id: info.event.id, // Include the MongoDB _id
+                title: info.event.title,
+                start: info.event.start,
+                end: info.event.end,
+                attendanceList: attendanceRecord?.attendanceList || [],
+                ...clicked,
+              });
+            } else {
+              setSelectedEvent({
+                id: info.event.id, // Include the MongoDB _id
+                title: info.event.title,
+                start: info.event.start,
+                end: info.event.end,
+                ...clicked,
+              });
+            }
           }}          
           headerToolbar={{
             left: 'prev today next',
@@ -376,6 +399,19 @@ export const Calendar = () => {
         <EventDetailModal
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
+          onAttendanceUpdate={() => {
+            // Refresh the attendance data when attendance is updated
+            if (selectedEvent.type === 'Open House') {
+              // Force a re-render by updating the selectedEvent with fresh data
+              const attendanceRecord = OpenHouseAttendance.findOne({ 
+                bookingID: selectedEvent.id 
+              });
+              setSelectedEvent(prev => ({
+                ...prev,
+                attendanceList: attendanceRecord?.attendanceList || []
+              }));
+            }
+          }}
         />
       )}
 
