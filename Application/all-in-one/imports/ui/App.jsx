@@ -122,14 +122,10 @@ const App = () => (
         {/* Protected Landlord Routes */}
         <Route element={<ProtectedLandlordRoutes />}>
           {/* Signed In Landlord Page*/}
-          <Route
-            path="/LandlordBasicPropListings"
-            element={<LandlordBasicPropListings />}
-          />
-          <Route
-            path="/LandlordDetailedPropListing/:id"
-            element={<LandlordDetailedPropListing />}
-          />
+          <Route path="/LandlordBasicPropListings" element={<LandlordBasicPropListings/>}/>
+          <Route path="/LandlordDetailedPropListing/:id" element={<LandlordDetailedPropListing />} />
+
+          
 
           {/* Add any other protected routes here */}
           {/*Landlord routes- team 2*/}
