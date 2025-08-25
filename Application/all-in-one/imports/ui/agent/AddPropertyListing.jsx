@@ -23,7 +23,6 @@ export default function AddPropertyListing() {
   const [numParkSpots, setNumParkSpots] = useState(0);
   const [propType, setPropType] = useState("Townhouse");
   const [description, setDescription] = useState("");
-  const [dateAvailable, setDateAvailable] = useState("");
   const [isFurnished, setIsFurnished] = useState(true);
   const [petsAllowed, setPetsAllowed] = useState(true);
   const [bond, setBond] = useState(0);
@@ -46,7 +45,6 @@ export default function AddPropertyListing() {
         numParkSpots,
         propType,
         description,
-        dateAvailable,
         isFurnished,
         petsAllowed,
         bond,
@@ -196,15 +194,6 @@ export default function AddPropertyListing() {
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"
             />
 
-            {/*Available Date Input*/}
-            <label className="text-l font-semibold text-gray-600 mb-5"> Available from date </label>
-              <input 
-                type="date" 
-                required
-                placeholder="DD/MM/YYYY"
-                onChange={(e) => setDateAvailable(e.target.value)} 
-                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-2.5 mb-5 w-lg"
-              />
 
             {/*Furnished Dropdown*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Furnished? </label>

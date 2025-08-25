@@ -11,7 +11,6 @@ Properties.schema = new SimpleSchema({
   prop_numcarspots: { type: Number },
   prop_type: { type: String },
   prop_desc: { type: String },
-  prop_available_date: { type: Date },
   prop_furnish: { type: Boolean },
   prop_pets: { type: Boolean },
   prop_bond: { type: Number },
