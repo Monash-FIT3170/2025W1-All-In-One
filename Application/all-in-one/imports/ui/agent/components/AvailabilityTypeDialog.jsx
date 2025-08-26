@@ -4,9 +4,17 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Properties } from '/imports/api/database/collections.js';
 
-
-
-
+/**
+ * AvailabilityTypeDialog Component
+ * 
+ * A modal dialog that allows agents to create availability slots for inspections or open houses.
+ * Features:
+ * - Toggle between "Inspection" and "Open House" availability types
+ * - Property search and selection for open houses (from MongoDB)
+ * - Date and time selection for availability slots
+ * - Optional notes field for additional information
+ * - Real-time property data from MongoDB collections
+ */
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
   const [startTime, setStartTime] = useState('');

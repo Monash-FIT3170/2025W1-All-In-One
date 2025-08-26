@@ -1,3 +1,15 @@
+/**
+ * Calendar Component
+ * 
+ * A comprehensive calendar interface for agents to manage their schedule and activities.
+ * Features:
+ * - Interactive calendar view with time grid display
+ * - Create availability slots for inspections and open houses
+ * - Schedule and manage various activities (inspections, open houses, meetings)
+ * - View and manage open house attendance
+ * - Real-time data synchronization with MongoDB collections
+ * - Multiple dialog modals for different activity types
+ */
 import React, { useState , useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';

@@ -1,4 +1,14 @@
-// ReviewApplication.jsx
+/**
+ * AgentReviewApplication Component
+ * 
+ * A comprehensive application review interface for agents to manage rental applications.
+ * Features:
+ * - View and filter rental applications by status (Pending, Shortlisted, Flagged, etc.)
+ * - Search applications by applicant name or property address
+ * - Review detailed applicant information including employment and references
+ * - Update application status and make final decisions
+ * - Real-time data from MongoDB collections (RentalApplications, Properties, Tenants, Employment)
+ */
 import React, { useState } from "react";
 import { Meteor } from "meteor/meteor";
 import { ApplicantCard } from "./components/ApplicantCard";
