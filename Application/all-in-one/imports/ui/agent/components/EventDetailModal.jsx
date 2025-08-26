@@ -56,6 +56,52 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
     );
   };
 
+  const handleNotesSave = (tenantID, notes) => {
+    if (!event.id) {
+      alert('Error: Event ID is missing.');
+      return;
+    }
+    Meteor.call(
+      'openHouseAttendance.updateNotes',
+      event.id,
+      tenantID,
+      notes,
+      (err) => {
+        if (err) {
+          console.error('Failed to save notes:', err);
+          alert('Failed to save notes: ' + err.reason);
+        } else if (onAttendanceUpdate) {
+          onAttendanceUpdate();
+        }
+      }
+    );
+  };
+
+  const handleAddAnonymous = () => {
+    const first = prompt('Enter first name');
+    if (!first) return;
+    const last = prompt('Enter last name');
+    if (!last) return;
+    if (!event.id) {
+      alert('Error: Event ID is missing.');
+      return;
+    }
+    Meteor.call(
+      'openHouseAttendance.addAnonymousAttendee',
+      event.id,
+      first,
+      last,
+      (err) => {
+        if (err) {
+          console.error('Failed to add attendee:', err);
+          alert('Failed to add attendee: ' + err.reason);
+        } else if (onAttendanceUpdate) {
+          onAttendanceUpdate();
+        }
+      }
+    );
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="relative bg-[#CBADD8] p-6 rounded-xl w-[900px] max-h-[90vh] overflow-y-auto shadow-lg flex gap-6">
@@ -150,30 +196,41 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
               {event.attendanceList && event.attendanceList.length > 0 ? (
                 <div className="space-y-2">
                   {event.attendanceList.map((attendee, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center gap-3">
-                        <button
-                          onClick={() => handleAttendanceToggle(attendee.tenantID)}
-                          className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                            attendee.tenantAttendance
-                              ? 'bg-green-500 border-green-500 text-white'
-                              : 'border-gray-300 hover:border-green-400'
-                          }`}
-                          title={attendee.tenantAttendance ? 'Mark as not attended' : 'Mark as attended'}
-                        >
-                          {attendee.tenantAttendance && <Check className="w-3 h-3" />}
-                        </button>
-                        <p className="font-medium text-gray-800">{attendee.tenantName}</p>
+                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <button
+                            onClick={() => handleAttendanceToggle(attendee.tenantID)}
+                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                              attendee.tenantAttendance
+                                ? 'bg-green-500 border-green-500 text-white'
+                                : 'border-gray-300 hover:border-green-400'
+                            }`}
+                            title={attendee.tenantAttendance ? 'Mark as not attended' : 'Mark as attended'}
+                          >
+                            {attendee.tenantAttendance && <Check className="w-3 h-3" />}
+                          </button>
+                          <button className="font-medium text-gray-800 underline" onClick={() => {
+                            const current = attendee.notes || '';
+                            const updated = prompt(`Notes for ${attendee.tenantName}:`, current) ?? current;
+                            if (updated !== current) handleNotesSave(attendee.tenantID, updated);
+                          }}>{attendee.tenantName}</button>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            attendee.tenantAttendance 
+                              ? 'bg-green-100 text-green-800' 
+                              : 'bg-yellow-100 text-yellow-800'
+                          }`}>
+                            {attendee.tenantAttendance ? 'Attended' : 'Registered'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          attendee.tenantAttendance 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {attendee.tenantAttendance ? 'Attended' : 'Registered'}
-                        </span>
-                      </div>
+                      {attendee.notes?.trim() ? (
+                        <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">
+                          {attendee.notes}
+                        </div>
+                      ) : null}
                     </div>
                   ))}
                   <p className="text-sm text-gray-600 text-center mt-2">
@@ -186,6 +243,11 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
                   <p className="text-gray-500">No tenants have subscribed yet</p>
                 </div>
               )}
+              <div className="mt-3 text-center">
+                <button onClick={handleAddAnonymous} className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700">
+                  Add Name
+                </button>
+              </div>
             </div>
           </div>
 

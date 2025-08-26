@@ -203,7 +203,8 @@ OpenHouseAttendance.schema = new SimpleSchema({
     'attendanceList.$': { type: Object },
     'attendanceList.$.tenantID': { type: String },
     'attendanceList.$.tenantName': { type: String },
-    'attendanceList.$.tenantAttendance': { type: Boolean }
+    'attendanceList.$.tenantAttendance': { type: Boolean },
+    'attendanceList.$.notes': { type: String, optional: true } // Optional notes for the attendee (entered by agent)
 });
 
 export const StarredProperties = new Mongo.Collection('starredProperties');
