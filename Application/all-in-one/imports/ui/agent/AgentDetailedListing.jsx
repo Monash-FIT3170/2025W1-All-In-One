@@ -86,7 +86,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
           status: property.prop_status,
           leaseStartDate: approvedLeaseStart,
           AvailableDate: property.prop_available_date,
-          Pets: property.prop_pets ? "True":"False",
+          Pets: property.prop_pets ? "Yes":"No",
           imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
           videoUrls: videos.length ? videos.map((video) => video.video_url) : null,
           details:{
@@ -98,7 +98,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
           description: property.prop_desc,
           bond: property.prop_bond,
           landlord: property.landlord_id,
-          
+
         };
 
 

@@ -58,7 +58,7 @@ Meteor.methods({
       
 
       const date = new Date(dateAvailable);
-   
+
       {/* Adding Property to 'Properties' Database */}
       await Properties.insertAsync({
         prop_id: propID,
@@ -102,23 +102,26 @@ Meteor.methods({
     
     const date = new Date(dateAvailable);
 
-    await Properties.updateAsync({
-      prop_id: propId,
-      prop_address: propAddress,
-      prop_pricepweek: pricePerWeek,
-      prop_numbeds: numBeds,
-      prop_numbaths: numBaths,
-      prop_numcarspots: numParkSpots,
-      prop_type: propType,
-      prop_desc: description,
-      prop_available_date: date,
-      prop_furnish: isFurnished,
-      prop_pets: petsAllowed,
-      prop_bond: bond,
-      prop_status: status,
-      agent_id: agentId,   // to be changed
-      landlord_id: landlord._id
-    });
+    await Properties.updateAsync(
+      {prop_id: propId,},
+      {$set:
+        {
+          prop_address: propAddress,
+          prop_pricepweek: pricePerWeek,
+          prop_numbeds: numBeds,
+          prop_numbaths: numBaths,
+          prop_numcarspots: numParkSpots,
+          prop_type: propType,
+          prop_desc: description,
+          prop_available_date: date,
+          prop_furnish: isFurnished,
+          prop_pets: petsAllowed,
+          prop_bond: bond,
+          prop_status: status,
+          agent_id: agentId,   // to be changed
+          landlord_id: landlord._id 
+        }
+      });
 
   },
 

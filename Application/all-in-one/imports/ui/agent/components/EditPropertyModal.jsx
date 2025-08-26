@@ -2,28 +2,66 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Meteor } from 'meteor/meteor';
 import {formatDate} from '../../globalComponents/DateTimeFormatting'
 import { Landlord } from '../../../api/database/collections';
+import { useNavigate } from 'react-router-dom';
 
 
 function EditPropertyModal({isOpen, onClose, propertyData}) {
 
   const currLandlordEmail = Landlord.findOne({ll_id: propertyData.landlord}).ll_email;
 
-  const [EOI, setEOI] = useState('');
-  const [propAddress, setPropAddress] = useState("");
-  const [pricePerWeek, setPricePerWeek] = useState(0);
-  const [numBeds, setNumBeds] = useState(0);
-  const [numBaths, setNumBaths] = useState(0);
-  const [numParkSpots, setNumParkSpots] = useState(0);
-  const [propType, setPropType] = useState("Townhouse");
+  const propId = propertyData.id;
+  const status = propertyData.status;
+  const [propAddress, setPropAddress] = useState(propertyData.address);
+  const [pricePerWeek, setPricePerWeek] = useState(propertyData.price);
+  const [numBeds, setNumBeds] = useState(propertyData.details.beds);
+  const [numBaths, setNumBaths] = useState(propertyData.details.baths);
+  const [numParkSpots, setNumParkSpots] = useState(propertyData.details.carSpots);
+  const [propType, setPropType] = useState(propertyData.type);
   const [description, setDescription] = useState(propertyData.description);
-  const [dateAvailable, setDateAvailable] = useState("");
-  const [isFurnished, setIsFurnished] = useState(true);
-  const [petsAllowed, setPetsAllowed] = useState(true);
-  const [bond, setBond] = useState(0);
-  const [landlordEmail, setLandlordEmail] = useState("");
+  const [dateAvailable, setDateAvailable] = useState(formatDate(propertyData.AvailableDate));
+  const [isFurnished, setIsFurnished] = useState(propertyData.details.furnished);
+  const [petsAllowed, setPetsAllowed] = useState(propertyData.Pets);
+  const [bond, setBond] = useState(propertyData.bond);
+  const [landlordEmail, setLandlordEmail] = useState(currLandlordEmail);
 
-  {/* Submitting an Expression of Interest */}
-  const handleSubmit = () => {
+  const navigate = useNavigate();
+
+  {/* Saving the changes */}
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    const agentId = Meteor.userId();
+
+    Meteor.call(
+      "EditPropertyListing",
+      {
+        propId,
+        propAddress,
+        pricePerWeek,
+        numBeds,
+        numBaths,
+        numParkSpots,
+        propType,
+        description,
+        dateAvailable,
+        isFurnished,
+        petsAllowed,
+        bond,
+        landlordEmail,
+        status,
+        agentId
+      },
+      (err) => {
+        if (err) {
+          alert("Updating Property Details Failed: " + err.reason);
+        }
+        else {
+          alert("Property Details Updated Successfully!");
+          onClose();
+          navigate(`/AgentDetailedListing/${propertyData.id}`)
+        }
+      }
+    );
     onClose();
   };
 
@@ -33,7 +71,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
 
         {/* Close Button */}
         <button
-          onClick={onClose}
+          onClick={() => onClose()}
           className="text-gray-600 hover:text-black text-2xl font-bold focus:outline-none place-self-end"
           aria-label="Close modal"
         >
@@ -43,16 +81,29 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
         {/* Title */}
         <div className="text-2xl font-bold text-gray-800"> Edit details of {propertyData.address} </div>
         <div className="text-gray-600 text-base mb-5"> Edit an existing rental property listing! </div>
-      
+        
+        {/*Address Input*/}
+        <label className="text-l font-semibold text-gray-600"> Address </label>
+        <input 
+          type="text" 
+          required
+          placeholder="Enter property address" 
+          defaultValue={propertyData.address}
+          value={propAddress}
+          onChange={(e) => setPropAddress(e.target.value)} 
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:placeholder-gray-400"
+        />
+        
         {/*Description Input*/}
-        <label className="text-l font-semibold text-gray-600 mb-5"> Description </label>
+        <label className="text-l font-semibold text-gray-600"> Description </label>
         <input 
           type="text"
           required
           placeholder="Enter a brief description of the property" 
           defaultValue={propertyData.description}
+          value={description}
           onChange={(e) => setDescription(e.target.value)} 
-          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"
+          class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400"
         />
 
 
@@ -67,6 +118,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
               required
               placeholder="$/week"
               defaultValue={propertyData.price}
+              value={pricePerWeek}
               min={0}
               onChange={(e) => setPricePerWeek(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
@@ -78,7 +130,8 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
               type="decimal"
               required
               placeholder="$0.00"
-              defaultValue={propertyData.price}
+              defaultValue={propertyData.bond}
+              value={bond}
               min={0}
               onChange={(e) => setBond(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
@@ -90,7 +143,8 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
               type="date" 
               required
               placeholder="DD/MM/YYYY"
-              defaultValue={formatDate(propertyData.AvailableDate)}   //can't get this to show
+              defaultValue={formatDate(propertyData.AvailableDate)}
+              value={dateAvailable}
               onChange={(e) => setDateAvailable(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-2.5 mb-5 w-3/5"
             />
@@ -99,6 +153,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
             <label className="text-l font-semibold text-gray-600 mb-5"> Property Type </label>
             <select 
               defaultValue={propertyData.type}
+              value={propType}
               onChange={(e) => setPropType(e.target.value)}
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5">
                 <option>Townhouse</option>
@@ -111,6 +166,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
             <label className="text-l font-semibold text-gray-600 mb-5"> Furnished? </label>
             <select 
               defaultValue={propertyData.details.furnished}
+              value={isFurnished}
               onChange={(e) => setIsFurnished(e.target.value == "Yes")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-10">
                 <option>Yes</option>
@@ -129,6 +185,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
               required
               placeholder="No. of Bedrooms"
               defaultValue={propertyData.details.beds}
+              value={numBeds}
               min={0}
               onChange={(e) => setNumBeds(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
@@ -141,6 +198,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
               required
               placeholder="No. of Bathrooms"
               defaultValue={propertyData.details.baths}
+              value={numBaths}
               min={0}
               onChange={(e) => setNumBaths(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
@@ -153,6 +211,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
               required
               placeholder="No. of Parking Spots"
               defaultValue={propertyData.details.carSpots}
+              value={numParkSpots}
               min={0}
               onChange={(e) => setNumParkSpots(Number(e.target.value))} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
@@ -164,6 +223,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
               type="text" 
               placeholder="example@example.com" 
               defaultValue={currLandlordEmail}
+              value={landlordEmail}
               onChange={(e) => setLandlordEmail(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
             />
@@ -172,6 +232,7 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
             <label className="text-l font-semibold text-gray-600 mb-5"> Pets Allowed? </label>
             <select 
               defaultValue={propertyData.Pets}
+              value={petsAllowed}
               onChange={(e) => setPetsAllowed(e.target.value == "Yes")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-10">
                 <option>Yes</option>
