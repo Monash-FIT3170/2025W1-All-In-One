@@ -18,15 +18,17 @@ export const EventDetailModal = ({ event, onClose }) => {
     ) &&
     (!mergedEvent.tenant || !mergedEvent.tenant.name);
 
+  const isOpenHouse =
+    (mergedEvent.type && mergedEvent.type.toLowerCase().includes('open house')) ||
+    (mergedEvent.title && mergedEvent.title.toLowerCase().includes('open house'));
+
   const startDate = useMemo(() => new Date(mergedEvent.start), [mergedEvent.start]);
   const endDate   = useMemo(() => new Date(mergedEvent.end),   [mergedEvent.end]);
 
   const [isEditing, setIsEditing] = useState(false);
-  const [draftStart, setDraftStart] = useState(toLocalInputValue(startDate));
-  const [draftEnd, setDraftEnd]     = useState(toLocalInputValue(endDate));
   const [draftNotes, setDraftNotes] = useState((mergedEvent.notes ?? mergedEvent.note ?? '').toString());
-
-  const isBooked = mergedEvent.status === 'booked';
+  const [draftStart, setDraftStart] = useState(toLocalInputValue(startDate));
+  const [draftEnd, setDraftEnd] = useState(toLocalInputValue(endDate));
 
   function toLocalInputValue(d) {
     if (!d) return '';
@@ -81,6 +83,147 @@ export const EventDetailModal = ({ event, onClose }) => {
       }
     );
   };
+
+  // --- Render for Open House ---
+  if (isOpenHouse) {
+    const property = mergedEvent.property || {};
+    const attendees = mergedEvent.attendees || mergedEvent.tenants || [];
+
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+        <div
+          className="relative bg-[#D6B4E7] p-10 rounded-[40px] w-full max-w-4xl"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          {/* Close (X) button */}
+          <button
+            onClick={onClose}
+            className="absolute top-6 right-8 text-black text-2xl"
+            aria-label="Close"
+            style={{ lineHeight: 1 }}
+          >
+            ×
+          </button>
+
+          {/* Date and Time */}
+          <div className="text-[2.5rem] font-bold mb-0" style={{ lineHeight: 1 }}>
+            {formatDate(mergedEvent.start)}
+          </div>
+          <div className="text-xl mb-6" style={{ marginTop: '-0.5rem' }}>
+            {formatTime(mergedEvent.start, mergedEvent.end)}
+          </div>
+
+          <div className="flex gap-10 mb-6">
+            {/* Open House Property Card */}
+            <div className="flex-1">
+              <div className="text-2xl font-bold mb-2">Open House</div>
+              <div className="relative rounded-xl overflow-hidden mb-2">
+                <img
+                  src={property.image || mergedEvent.image || '/images/default.jpg'}
+                  alt="Property"
+                  className="w-full h-48 object-cover"
+                  onError={e => { e.currentTarget.onerror = null; e.currentTarget.src = '/images/default.jpg'; }}
+                />
+                <div className="absolute bottom-0 left-0 w-full bg-black bg-opacity-60 text-white px-4 py-2 flex justify-between items-center">
+                  <span className="text-lg font-semibold">
+                    {property.price ? `$${property.price} per week` : ''}
+                  </span>
+                  <span className="text-lg font-semibold">
+                    {property.address || ''}
+                  </span>
+                </div>
+                <div className="absolute bottom-2 left-4 flex gap-6 text-white text-base drop-shadow">
+                  <span className="flex items-center gap-1">
+                    <BedDouble className="w-5 h-5" />{property.bedrooms ?? '—'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <ShowerHead className="w-5 h-5" />{property.bathrooms ?? '—'}
+                  </span>
+                  <span className="flex items-center gap-1">
+                    <CarFront className="w-5 h-5" />{property.parking ?? '—'}
+                  </span>
+                </div>
+              </div>
+            </div>
+            {/* Attendees */}
+            <div className="flex-1">
+              <div className="text-2xl font-bold mb-2">Attendees</div>
+              <div className="bg-[#FFF8E9] rounded-xl p-4 space-y-3">
+                {attendees.length > 0 ? attendees.map((a, i) => (
+                  <div key={i} className="bg-[#FFF8E9] rounded-lg px-4 py-2 flex flex-col md:flex-row md:items-center md:justify-between border border-[#E7E1D6]">
+                    <div>
+                      <span className="font-bold">{a.name}</span>
+                      <span className="ml-2 text-gray-600 text-sm">Age: {a.age ?? '—'}</span>
+                    </div>
+                    <div className="text-gray-700 text-sm mt-1 md:mt-0">
+                      Occupation: {a.occupation ?? '—'}
+                    </div>
+                  </div>
+                )) : (
+                  <div className="italic text-gray-500 text-center">No attendees yet.</div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div className="font-bold text-lg mb-2">Notes</div>
+          {!isEditing ? (
+            <div className="bg-[#FFF8E9] rounded-xl px-4 py-4 min-h-[60px] text-base flex items-center">
+              <span className="flex-1">{(mergedEvent.notes ?? mergedEvent.note ?? '').toString() || <span className="italic text-gray-500">No notes yet.</span>}</span>
+            </div>
+          ) : (
+            <textarea
+              className="bg-[#FFF8E9] rounded-xl px-4 py-4 min-h-[60px] text-base w-full"
+              value={draftNotes}
+              onChange={e => setDraftNotes(e.target.value)}
+              placeholder="Add a note for this open house..."
+            />
+          )}
+
+          {/* Buttons row */}
+          <div className="mt-6 flex flex-wrap gap-2 justify-end">
+            {isEditing ? (
+              <>
+                <button
+                  className="px-4 py-2 rounded bg-gray-300 text-black"
+                  onClick={() => {
+                    setDraftNotes((mergedEvent.notes ?? mergedEvent.note ?? '').toString());
+                    setIsEditing(false);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-[#9747FF] text-white"
+                  onClick={handleSave}
+                >
+                  Save
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  className="px-4 py-2 rounded flex items-center gap-2 bg-red-500 text-white"
+                  onClick={handleDelete}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </button>
+                <button
+                  className="px-4 py-2 rounded flex items-center gap-2 bg-[#9747FF] text-white"
+                  onClick={() => setIsEditing(true)}
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // --- Render for unbooked inspection: allow edit/delete ---
   if (isUnbookedInspection) {
