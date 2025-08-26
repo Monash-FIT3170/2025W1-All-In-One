@@ -110,7 +110,7 @@ export default function TenDetailedPropListing() {
           >Apply 
           </Link>
 
-          {rentalApp ? (
+          {typeof rentalApp !== 'undefined' && rentalApp ? (
             rentalApp.status === "Approved" ? (
               <button
                 disabled

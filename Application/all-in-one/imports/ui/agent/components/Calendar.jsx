@@ -110,6 +110,8 @@ export const Calendar = () => {
     setShowAvailabilityTypeDialog(false);
 
     const {
+      id,
+      agent_id,
       address,
       price,
       bedrooms,
@@ -124,6 +126,8 @@ export const Calendar = () => {
       type,
       start,
       end,
+      id,
+      agent_id,
       address, 
       price,
       bedrooms,
@@ -134,7 +138,7 @@ export const Calendar = () => {
     });
   };
 
-  const handleBookingSelect = async ({ type, start, end, address, price, bedrooms, bathrooms, parking, image, note }) => {
+  const handleBookingSelect = async ({ type, start, end, id, agent_id, address, price, bedrooms, bathrooms, parking, image, note }) => {
     const tempEvent = {
       id: Date.now(),
       start,
@@ -143,6 +147,8 @@ export const Calendar = () => {
       status: 'pending',
       title: `Pending: ${type} Availability`,
       property: {
+        id,
+        agent_id,
         address,
         price,
         bedrooms,

@@ -89,8 +89,9 @@ export const UpcomingInspections = () => {
       //   property = properties[0]; // Use first property as fallback
       // }
       
-      // Find corresponding agent details
-      const agent = agents.find(a => a.agent_id === property.agent_id) || {};
+      // Resolve agent by agent_id from property or from booking.property
+      const resolvedAgentId = property.agent_id || (booking.property && booking.property.agent_id);
+      const agent = agents.find(a => a.agent_id === resolvedAgentId) || {};
       
       // Find property photos
       const propertyPhotos = photos.filter(photo => photo.prop_id === property.prop_id);
@@ -332,9 +333,9 @@ export const UpcomingInspections = () => {
                   
                   {eventsByType[availabilityType].map(event => (
                     <Link
-                      key={event.property_id}
+                      key={event.id}
                       to={`/TenDetailedPropListing/${event.property_id}`}>
-                      <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
+                      <div className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
                         <div className="w-48 h-32 flex-shrink-0">
                           <img src={event.image} alt="Property" className="w-full h-full object-cover" />
                         </div>

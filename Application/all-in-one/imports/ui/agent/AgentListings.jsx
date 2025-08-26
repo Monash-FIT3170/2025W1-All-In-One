@@ -1,6 +1,6 @@
 import React from "react";
 import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter } from "react-icons/fa";
-import { Properties, Photos } from "../../api/database/collections";
+import { Properties } from "../../api/database/collections";
 import { Link } from "react-router-dom";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
@@ -9,18 +9,16 @@ import Footer from "./components/Footer";
 import PropertyCard from "../globalComponents/BasicPropertyCard";
 
 export default function AgentListings() {
-  const { isReady, properties, photos } = useTracker(() => {
+  const { isReady, properties } = useTracker(() => {
     const subProps = Meteor.subscribe("properties");
-    const subPhotos = Meteor.subscribe("photos");
 
-    const isReady = subProps.ready() && subPhotos.ready();
+    const isReady = subProps.ready();
     const agent = Meteor.user();
     const agentId = agent?._id;
 
     const properties = isReady ? Properties.find({ agent_id: agentId }).fetch() : [];
-    const photos = isReady ? Photos.find().fetch() : [];
 
-    return { isReady, properties, photos };
+    return { isReady, properties };
   });
 
   if (!isReady) {
@@ -28,12 +26,11 @@ export default function AgentListings() {
   }
 
   const propertyCards = properties.map((p) => {
-    const photo = photos.find((photo) => photo.prop_id === p.prop_id);
     return {
       id: p.prop_id,
       location: p.prop_address,
       price: `$${p.prop_pricepweek}`,
-      image: photo?.photo_url || "/images/default.jpg",
+      image: p.prop_id ? `/images/properties/${p.prop_id}/main.jpg` : "/images/default.jpg",
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
       cars: p.prop_numcarspots,
@@ -105,16 +102,16 @@ export default function AgentListings() {
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
           {propertyCards.map((property) => (
-                      
-                        <PropertyCard 
-                        key={property.id}
-                        property={property} 
-                        showFav={false} 
-                        onStarToggle={(p)=> console.log("Favourited:",p)} 
-                        linkTo={`/AgentDetailedListing/${property.id}`}
-                        />
-              
-                    ))}
+
+            <PropertyCard
+              key={property.id}
+              property={property}
+              showFav={false}
+              onStarToggle={(p) => console.log("Favourited:", p)}
+              linkTo={`/AgentDetailedListing/${property.id}`}
+            />
+
+          ))}
         </div>
       </div>
 

@@ -92,9 +92,8 @@ export default function ReviewApplication() {
     const tenant = tenants.find((t) => t.ten_id === app.ten_id);
     const property = properties.find((p) => p.prop_id === app.prop_id);
 
-    const tenantName = `${tenant?.ten_fn || ""} ${
-      tenant?.ten_ln || ""
-    }`.toLowerCase();
+    const tenantName = `${tenant?.ten_fn || ""} ${tenant?.ten_ln || ""
+      }`.toLowerCase();
     const propertyAddress = (property?.prop_address || "").toLowerCase();
     const searchTerm = allSearch.toLowerCase();
 
@@ -257,16 +256,15 @@ export default function ReviewApplication() {
                 {/* Applicant Info Card */}
                 <div className="w-3/4 p-8 bg-[#CBADD8] rounded-2xl flex flex-col justify-between">
                   <ApplicantCard
-                    name={`${tenant?.ten_fn || "Unknown"} ${
-                      tenant?.ten_ln || ""
-                    }`}
+                    name={`${tenant?.ten_fn || "Unknown"} ${tenant?.ten_ln || ""
+                      }`}
                     desc={app.app_desc || "N/A"}
                     age={
                       tenant?.ten_dob
                         ? Math.floor(
-                            (new Date() - new Date(tenant.ten_dob)) /
-                              (1000 * 60 * 60 * 24 * 365.25)
-                          )
+                          (new Date() - new Date(tenant.ten_dob)) /
+                          (1000 * 60 * 60 * 24 * 365.25)
+                        )
                         : "N/A"
                     }
                     finaliseButton={
@@ -320,12 +318,12 @@ export default function ReviewApplication() {
                           {app.status === "Shortlisted"
                             ? "🟢"
                             : app.status === "Flagged"
-                            ? "🔴"
-                            : app.status == "Approved"
-                            ? "✅"
-                            : app.status == "Rejected"
-                            ? "❌"
-                            : "⏳"}
+                              ? "🔴"
+                              : app.status == "Approved"
+                                ? "✅"
+                                : app.status == "Rejected"
+                                  ? "❌"
+                                  : "⏳"}
                         </button>
                         <StatusMenu
                           show={statusMenuAppId === app._id}

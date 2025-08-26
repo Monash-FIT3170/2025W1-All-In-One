@@ -58,6 +58,8 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       : null;
 
     onSelect(type, start, end, {
+      id: selected?.prop_id || property?.id,
+      agent_id: selected?.agent_id,
       address: selected?.prop_address || property?.prop_address || '-',
       image: selected ? `/images/properties/${selected.prop_id}/main.jpg` : '/property.png',
       price: selected?.prop_pricepweek || '-',
@@ -88,17 +90,15 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
         <div className="flex justify-center gap-4">
           <button
             onClick={() => setType('Inspection')}
-            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
-              type === 'Inspection' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
-            }`}
+            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${type === 'Inspection' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
+              }`}
           >
             Inspection
           </button>
           <button
             onClick={() => setType('Open House')}
-            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
-              type === 'Open House' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
-            }`}
+            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${type === 'Open House' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
+              }`}
           >
             Open House
           </button>
