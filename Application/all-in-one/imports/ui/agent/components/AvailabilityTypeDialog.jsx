@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { mockData } from '/imports/api/database/mockData.js';
+import { useTracker } from 'meteor/react-meteor-data';
+import { Meteor } from 'meteor/meteor';
+import { Properties } from '/imports/api/database/collections.js';
+
+
+
 
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
@@ -10,6 +15,18 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const [property, setProperty] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [note, setNote] = useState('');
+
+
+  const agent = Meteor.user();
+  const agentId = agent?._id;
+
+  // Subscribe to properties data from MongoDB
+  const { isReady, properties } = useTracker(() => {
+    const subProps = Meteor.subscribe("properties");
+    const isReady = subProps.ready();
+    const properties = isReady ? Properties.find({ agent_id: agentId }).fetch() : [];
+    return { isReady, properties };
+  });
 
   useEffect(() => {
     if (pendingSlot && isOpen) {
@@ -29,7 +46,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     const end = dayjs(`${date} ${endTime}`, 'YYYY-MM-DD HH:mm').toDate();
 
     const selected = property && property.prop_address
-      ? mockData.properties.find(p => p.prop_address === property.prop_address)
+      ? properties.find(p => p.prop_address === property.prop_address)
       : null;
 
     onSelect(type, start, end, {
@@ -42,7 +59,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     }, note);
   };
 
-  const filteredProperties = mockData.properties.filter(p =>
+  const filteredProperties = properties.filter(p =>
     p.prop_address.toLowerCase().includes((property?.prop_address || '').toLowerCase())
   );
 
