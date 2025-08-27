@@ -3,20 +3,18 @@ import { check, Match } from 'meteor/check';
 import { ExpressionOfInterest } from '../../database/collections';
 
 Meteor.methods({
-  async 'expressionOfInterest.insert' ( propertyID, propertyAddress, tenantName, tenantID, EOI) {
+  async 'expressionOfInterest.insert' ( propertyID, tenantID, EOI) {
     try{
       console.log('[DEBUG] insert args:', {
-        propertyID, propertyAddress, tenantName, tenantID, EOI
+        propertyID, tenantID, EOI
       });
 
       check(propertyID, String);
-      check(propertyAddress, String);
       check(tenantID, String);
-      check(tenantName, String);
       check(EOI, String);
 
       const result = await ExpressionOfInterest.insertAsync({
-        propertyID, propertyAddress, tenantName, tenantID, EOI,
+        propertyID, tenantID, EOI,
       });
 
       console.log(`[Server] Added Expression of Interest ${result}`);

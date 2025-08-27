@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { mockData } from '/imports/api/database/mockData.js';
+import { Properties, ExpressionOfInterest, Agents, Tenants } from "/imports/api/database/collections";
+import { useTracker } from 'meteor/react-meteor-data';
+import { EOI } from './EOI'; // Import the EOI component
 
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
@@ -10,6 +12,8 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const [property, setProperty] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [note, setNote] = useState('');
+  const [selectedEOI, setSelectedEOI] = useState(null);
+  const [isPrivate, setIsPrivate] = useState(false);
 
   useEffect(() => {
     if (pendingSlot && isOpen) {
@@ -21,6 +25,8 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       setProperty(null);
       setShowSuggestions(false);
       setNote('');
+      setSelectedEOI(null);
+      setIsPrivate(false);
     }
   }, [pendingSlot, isOpen]);
 
@@ -29,8 +35,16 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     const end = dayjs(`${date} ${endTime}`, 'YYYY-MM-DD HH:mm').toDate();
 
     const selected = property && property.prop_address
-      ? mockData.properties.find(p => p.prop_address === property.prop_address)
+      ? Properties.findOne({ prop_id: property.prop_id })
       : null;
+      
+    
+    // ✅ send acceptance email if this is a private open house with an EOI selected
+    if (type === 'Open House' && isPrivate && selectedEOI) {
+      Meteor.call('eoi.accept', selectedEOI, (err) => {
+        if (err) console.error('EOI accept email failed:', err);
+      });
+    }
 
     onSelect(type, start, end, {
       address: selected?.prop_address || property?.prop_address || '-',
@@ -39,18 +53,66 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       bedrooms: selected?.prop_numbeds || '-',
       bathrooms: selected?.prop_numbaths || '-',
       parking: selected?.prop_numcarspots || '-',
+      is_private: isPrivate
     }, note);
+
+
   };
 
-  const filteredProperties = mockData.properties.filter(p =>
-    p.prop_address.toLowerCase().includes((property?.prop_address || '').toLowerCase())
-  );
+  const filteredProperties = Properties.find(
+    {
+      prop_address: {
+        $regex: property?.prop_address || '', // Match the input address
+        $options: 'i', // Case-insensitive search
+      },
+    }
+  ).fetch();
+
+
+  // Filter EOIs to only those related to the logged-in agent's properties
+  const { filteredEOIs, agent, isReady } = useTracker(() => {
+    const agentsSub = Meteor.subscribe('agents');
+    const eoIsSub = Meteor.subscribe('expressionOfInterest'); // adjust publication name if different
+    const ready = agentsSub.ready() && eoIsSub.ready();
+
+    const userId = Meteor.userId();
+    const agent = userId ? Agents.findOne({ agent_id: userId }) : null;
+    if (!userId) console.log("Meteor.userId() not available yet");
+    if (userId && !agent) console.log("No logged-in agent found for userId:", userId);
+
+    let filteredEOIs = [];
+    if (agent) {
+      const allEOIs = ExpressionOfInterest.find().fetch();
+      console.log("All EOIs fetched:", allEOIs);
+
+      filteredEOIs = allEOIs.filter((eoi) => {
+        const property = Properties.findOne({ prop_id: eoi.propertyID, agent_id: userId });
+        console.log("Checking EOI:", eoi);
+        console.log("Associated property:", property);
+        return !!property;
+      });
+
+      console.log("Filtered EOIs for logged-in agent:", filteredEOIs);
+    }
+
+    return { filteredEOIs, agent, isReady: ready };
+  });
+
+  function getPropertyAddress(eoi) {
+    const property = Properties.findOne({ prop_id : eoi.propertyID });
+    return property ? property.prop_address : '';
+  }
+
+  function getProspectiveTenantName(eoi) {
+    const tenant = Tenants.findOne({ ten_id : eoi.tenantID });
+    return tenant ? tenant.ten_fn + ' ' + tenant.ten_ln : '';
+  };
 
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-      <div className="bg-[#CBADD8] p-6 rounded-3xl shadow-lg w-[440px] text-left space-y-6 relative">
+      <div className="bg-[#CBADD8] p-6 rounded-3xl shadow-lg w-[440px] text-left space-y-6 relative overflow-y-auto overscroll-contain max-h-[700px]">
         <button
           onClick={onClose}
           className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
@@ -81,7 +143,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
 
         {type === 'Open House' && (
           <div>
-            <label className="block text-black font-semibold mb-1">Property</label>
+            <label className="block text-lg text-black font-semibold mb-1">Property</label>
             <input
               type="text"
               placeholder="Search Property..."
@@ -112,6 +174,63 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
                 )}
               </div>
             )}
+
+            {/*EOIs*/}
+            <h3 className="text-lg font-bold mt-4 mb-2 text-black">Expressions of Interest</h3>
+            <p className="text-sm text-gray-800 mb-4">
+              Expressions of interest (EOI) for properties, with dates requested by prospective tenants. Choose to “remove” EOI or “select”, to send an invite to the prospective tenant for this open house.
+            </p>
+            {/*list of EOI*/}
+            <div
+              className="rounded-2xl bg-[#FAEEDA] p-6 overflow-y-auto overscroll-contain mb-4 max-h-[300px]"
+              role="region"
+            >
+              <div className="text-center text-sm text-black/70">
+                {filteredEOIs.length > 0 ? (
+                  filteredEOIs.map((eoi) => (
+                    <EOI
+                      key={eoi._id}
+                      eoiDoc={eoi}
+                      address={getPropertyAddress(eoi)}
+                      prospectiveTenName={getProspectiveTenantName(eoi)}
+                      isSelected={String(selectedEOI) === String(eoi._id)}
+                      onSelect={() => {
+                        setSelectedEOI(eoi._id);
+                        const prop = Properties.findOne({ prop_id: eoi.propertyID });
+                        if (prop) setProperty(prop);   // ✅ keep property in sync with EOI
+                      }}
+                      onRemoved={(id) => {
+                        // optional: if you removed the selected one, clear selection
+                        if (String(selectedEOI) === String(id)) setSelectedEOI(null);
+                        setProperty(null);
+                      }}
+                    />
+                  ))
+                ) : (
+                  <p>You currently have no EOIs.</p>
+                )}
+
+              </div>
+            </div>
+
+            {/*Private Open House checkbox*/}
+            <div>
+              <label className="block text-lg text-black font-semibold mb-1">Private Open House</label>
+              <p className="text-sm text-gray-800 mb-4">
+                Select the checkbox if this is a private open house for the selected EOI prospective tenant.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  id="privateOpenHouse"
+                  type="checkbox"
+                  onChange={(e) => setIsPrivate(e.target.checked)}
+                  className="rounded-lg border-gray-300"
+                />
+                <label htmlFor="privateOpenHouse" className="text-left">
+                  Private Open House
+                </label>
+              </div>
+            </div>
           </div>
         )}
 

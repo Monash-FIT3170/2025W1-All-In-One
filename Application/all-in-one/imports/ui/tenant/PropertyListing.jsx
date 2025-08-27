@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { Search, Filter, ChevronDown, X } from 'lucide-react';
 import { TenantBookings } from '../../api/database/collections';
 import { AgentAvailabilities } from '../../api/database/collections';
-import { Properties, Agents, Photos } from "../../api/database/collections";
+import { Properties, Agents, Photos, Tenants } from "../../api/database/collections"; // ✅ add Tenants
 import Navbar from "./components/TenNavbar";
 import { Link } from "react-router-dom";
 import { UpcomingInspections } from './UpcomingInspections.jsx';
@@ -13,9 +13,7 @@ import { UpcomingInspections } from './UpcomingInspections.jsx';
 const groupEventsByDate = (events) => {
   const grouped = {};
   events.forEach(event => {
-    if (!grouped[event.date]) {
-      grouped[event.date] = [];
-    }
+    if (!grouped[event.date]) grouped[event.date] = [];
     grouped[event.date].push(event);
   });
   return grouped;
@@ -62,22 +60,43 @@ export const PropertyListing = () => {
   const [selectedDates, setSelectedDates] = useState(['All Dates']);
   const [loading, setLoading] = useState(true);
 
-  // Subscribe to data - only get current user's bookings
+  // Subscribe to data - only get current user's bookings (by Tenants.ten_id)
   const { myBookings, availabilities, properties, agents, photos, isReady } = useTracker(() => {
     const bookingsHandle = Meteor.subscribe('tenantBookings');
     const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
     const propertiesHandle = Meteor.subscribe('properties');
     const agentsHandle = Meteor.subscribe('agents');
     const photosHandle = Meteor.subscribe('photos');
-    
+    const tenantsHandle = Meteor.subscribe('tenants'); // ✅ ensure we can read Tenants.ten_id
+
     const ready = bookingsHandle.ready() && 
                   availabilitiesHandle.ready() && 
                   propertiesHandle.ready() && 
                   agentsHandle.ready() &&
-                  photosHandle.ready();
+                  photosHandle.ready() &&
+                  tenantsHandle.ready?.() !== false;
+
+    // ✅ determine the current tenant's ten_id and use it to filter bookings
+    const currentUserId = Meteor.userId();
+    let tenId = null;
+
+    // most common: tenant record keyed by the Meteor user id
+    const tById = currentUserId ? Tenants.findOne({ ten_id: currentUserId }) : null;
+    if (tById?.ten_id) tenId = tById.ten_id;
+
+    // if you also store tenants by email, this helps in mixed setups
+    if (!tenId) {
+      const email = Meteor.user()?.emails?.[0]?.address;
+      const tByEmail = email ? Tenants.findOne({ ten_email: email }) : null;
+      if (tByEmail?.ten_id) tenId = tByEmail.ten_id;
+    }
+
+    const myBookings = tenId
+      ? TenantBookings.find({ tenantId: tenId }).fetch() // ✅ use Tenants.ten_id here
+      : [];
 
     return {
-      myBookings: TenantBookings.find({ tenantId: Meteor.userId() }).fetch(),
+      myBookings,
       availabilities: AgentAvailabilities.find({}).fetch(),
       properties: Properties.find({}).fetch(),
       agents: Agents.find({}).fetch(),
@@ -92,42 +111,61 @@ export const PropertyListing = () => {
 
   // Transform booked data for display 
   const transformedEvents = myBookings.map(booking => {
-    // Find the corresponding availability
-    const availability = availabilities.find(a => a._id === booking.agentAvailabilityId) || {};
+    // Find the corresponding availability (string-safe compare)
+    const availability = (availabilities.find(a => String(a._id) === String(booking.agentAvailabilityId)) || {});
     
     let property = {};
     
     // Try to find property by availability.property first
     if (availability.property && availability.property !== "") {
-      property = properties.find(p => p.prop_id === availability.property) || {};
-    }
-    
-    // If no property found, try to get from booking.property if it exists
-    if (!property.prop_id && booking.property) {
-      // Check if booking.property has property info directly
-      if (typeof booking.property === 'object' && booking.property.address) {
-        // Use property data directly from booking
+      // availability.property can be an object (common in your app) or a prop_id string
+      if (typeof availability.property === 'object' && availability.property.address) {
         property = {
-          prop_id: booking.property.id || 'unknown',
-          prop_address: booking.property.address,
-          prop_pricepweek: booking.property.price,
-          prop_numbeds: booking.property.bedrooms,
-          prop_numbaths: booking.property.bathrooms,
-          prop_numcarspots: booking.property.parking,
-          prop_type: booking.property.type || 'Property',
+          prop_id: availability.property.id || availability.property.prop_id || 'unknown',
+          prop_address: availability.property.address,
+          prop_pricepweek: availability.property.price,
+          prop_numbeds: availability.property.bedrooms,
+          prop_numbaths: availability.property.bathrooms,
+          prop_numcarspots: availability.property.parking,
+          prop_type: availability.property.type || 'Property',
           prop_available_date: new Date(),
           prop_pets: false,
           prop_furnish: false,
-          prop_desc: 'Booked property'
+          prop_desc: 'Booked property',
+          agent_id: availability.property.agent_id
         };
+      } else if (typeof availability.property === 'string') {
+        property = properties.find(p => p.prop_id === availability.property) || {};
       }
     }
     
-    // If still no property, use first available property as fallback
-    if (!property.prop_id && properties.length > 0) {
-      property = properties[0]; // Use first property as fallback
+    // If no property found, try to get from booking.property if it exists (snapshot)
+    if (!property.prop_id && booking.property && typeof booking.property === 'object' && booking.property.address) {
+      property = {
+        prop_id: booking.property.id || 'unknown',
+        prop_address: booking.property.address,
+        prop_pricepweek: booking.property.price,
+        prop_numbeds: booking.property.bedrooms,
+        prop_numbaths: booking.property.bathrooms,
+        prop_numcarspots: booking.property.parking,
+        prop_type: booking.property.type || 'Property',
+        prop_available_date: new Date(),
+        prop_pets: false,
+        prop_furnish: false,
+        prop_desc: 'Booked property',
+        agent_id: booking.property.agent_id
+      };
     }
     
+    // (Optional) If still no property, you can drop the fallback that picks properties[0]
+    // to avoid showing unrelated properties. If you prefer to keep it, leave as-is.
+    // if (!property.prop_id && properties.length > 0) {
+    //   property = properties[0];
+    // }
+    
+    // If still nothing, skip this booking
+    if (!property.prop_address) return null;
+
     // Find corresponding agent details
     const agent = agents.find(a => a.agent_id === property.agent_id) || {};
     
@@ -171,7 +209,7 @@ export const PropertyListing = () => {
       },
       fullPropertyData: propertyData
     };
-  });
+  }).filter(Boolean);
 
   // Filter events based on selected filters
   const filteredEvents = transformedEvents.filter(event => {
@@ -206,11 +244,7 @@ export const PropertyListing = () => {
           ? currentValues.filter(item => item !== value)
           : [...currentValues.filter(item => item !== `All ${type}`), value];
       
-      if (newValues.length === 0) {
-        setterFunction([`All ${type}`]);
-      } else {
-        setterFunction(newValues);
-      }
+      setterFunction(newValues.length === 0 ? [`All ${type}`] : newValues);
     }
   };
 

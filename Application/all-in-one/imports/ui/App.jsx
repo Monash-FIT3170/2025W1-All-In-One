@@ -1,18 +1,18 @@
 // App.js
-import React from "react";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
-import { LoginPage } from "./globalComponents/LoginPage.jsx";
-import { HomePage } from "./globalComponents/HomePage.jsx";
-import { SignUpPage } from "./globalComponents/SignUpPage.jsx";
-import { Dashboard } from "./agent/Dashboard.jsx";
+import React from 'react';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { LoginPage } from './globalComponents/LoginPage.jsx';
+import { HomePage } from './globalComponents/HomePage.jsx'; 
+import { SignUpPage } from './globalComponents/SignUpPage.jsx';
 
-import ProtectedAgentRoutes from "./utils/ProtectedAgentRoutes.jsx";
-import ProtectedLandlordRoutes from "./utils/ProtectedLandlordRoutes.jsx";
-import ProtectedTenantRoutes from "./utils/ProtectedTenantRoutes.jsx";
+
+import ProtectedAgentRoutes from './utils/ProtectedAgentRoutes.jsx'; 
+import ProtectedLandlordRoutes from './utils/ProtectedLandlordRoutes.jsx';
+import ProtectedTenantRoutes from './utils/ProtectedTenantRoutes.jsx';
 
 // Guest pagess
-import DetailedPropListing from "./globalComponents/DetailedPropListing.jsx";
-import GuestBasicPropListings from "./globalComponents/GuestBasicPropListings.jsx";
+import DetailedPropListing from './globalComponents/DetailedPropListing.jsx';
+import GuestBasicPropListings from './globalComponents/GuestBasicPropListings.jsx';
 
 // importing tenant pages
 import BasicLeases from "./tenant/BasicLeases.jsx";
@@ -68,6 +68,7 @@ const App = () => (
 
         {/* Protected Tenant Routes */}
         <Route element={<ProtectedTenantRoutes />}>
+
           {/* Signed In Tenant Page */}
           <Route
             path="/TenantBasicPropListings"
@@ -97,6 +98,7 @@ const App = () => (
 
         {/* Protected Agent Routes */}
         <Route element={<ProtectedAgentRoutes />}>
+          
           {/* Dashboard Page*/}
           <Route path="/dashboard" element={<AgentDashboard />} />{" "}
           {/* Dashboard after log in */}
@@ -116,7 +118,7 @@ const App = () => (
 
 
         </Route>
-
+        
         {/* Protected Landlord Routes */}
         <Route element={<ProtectedLandlordRoutes />}>
           {/* Signed In Landlord Page*/}
@@ -143,4 +145,3 @@ const App = () => (
   </BrowserRouter>
 );
 export default App;
-
