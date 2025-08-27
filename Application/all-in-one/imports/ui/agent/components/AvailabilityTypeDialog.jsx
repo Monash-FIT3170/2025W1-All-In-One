@@ -54,7 +54,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       bathrooms: selected?.prop_numbaths || '-',
       parking: selected?.prop_numcarspots || '-',
       is_private: isPrivate
-    }, note);
+    }, note, selectedEOI);
 
 
   };

@@ -8,6 +8,7 @@ import { Properties, Agents, Photos, Tenants } from "../../api/database/collecti
 import Navbar from "./components/TenNavbar";
 import { Link } from "react-router-dom";
 import { UpcomingInspections } from './UpcomingInspections.jsx';
+import { formatDisplayDate, getOrdinalSuffix, formatTime } from '../globalComponents/DateTimeFormatting.js';
 
 // Group events by date
 const groupEventsByDate = (events) => {
@@ -19,38 +20,6 @@ const groupEventsByDate = (events) => {
   return grouped;
 };
 
-// Format date for display
-const formatDisplayDate = (dateString) => {
-  const date = new Date(dateString);
-  const options = { month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('en-US', options) + getOrdinalSuffix(date.getDate());
-};
-
-// Get ordinal suffix for date
-const getOrdinalSuffix = (day) => {
-  if (day > 3 && day < 21) return 'th';
-  switch (day % 10) {
-    case 1: return 'st';
-    case 2: return 'nd';
-    case 3: return 'rd';
-    default: return 'th';
-  }
-};
-
-// Format time for display
-const formatTime = (start, end) => {
-  const startTime = new Date(start).toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
-  const endTime = new Date(end).toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
-  return `${startTime} - ${endTime}`;
-};
 
 export const PropertyListing = () => {
   const [searchTerm, setSearchTerm] = useState('');

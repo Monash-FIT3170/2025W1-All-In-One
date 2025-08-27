@@ -85,7 +85,7 @@ export const Calendar = () => {
     }
   };
 
-  const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note) => {
+  const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note, eoi) => {
     setShowAvailabilityTypeDialog(false);
 
     const {
@@ -112,6 +112,7 @@ export const Calendar = () => {
       image,
       note,
       is_private,
+      eoi
     });
   };
 
@@ -127,6 +128,7 @@ export const Calendar = () => {
     image,
     note,
     is_private,
+    eoi
   }) => {
     // Private Open House → different initial status
     const status = type === 'Open House' && is_private ? 'Invitation sent' : 'confirmed';
@@ -194,6 +196,17 @@ export const Calendar = () => {
             attendanceList
           );
         }
+      }
+
+      //Updates EOI collection to show the invite has been sent.
+      if (type === 'Open House' && is_private && eoi != null){
+        const curr_booking = AgentAvailabilities.findOne({ start: start.toISOString() });
+        const booking_id = curr_booking?._id;
+
+        Meteor.call('expressionOfInterest.sendInvite', eoi, booking_id, (err) => {
+        if (err) console.error('EOI invite send failed: ', err);
+        });
+
       }
 
     } catch (error) {

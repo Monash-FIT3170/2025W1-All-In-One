@@ -217,7 +217,10 @@ export const ExpressionOfInterest = new Mongo.Collection('expressionOfInterest')
 ExpressionOfInterest.schema = new SimpleSchema({
   propertyID: { type: String },
   tenantID: { type: String },
-  EOI: { type: String }
+  EOI: { type: String },
+  inviteSent: { type: Boolean },
+  inviteAccepted: { type: Boolean },
+
 });
 
 export const OpenHouseAttendance = new Mongo.Collection('openHouseAttendance');
