@@ -165,12 +165,11 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
             {/*Furnished Dropdown*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Furnished? </label>
             <select 
-              defaultValue={propertyData.details.furnished}
-              value={isFurnished}
+              defaultValue={propertyData.details.furnished ? "Yes" : "No"}
               onChange={(e) => setIsFurnished(e.target.value == "Yes")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-10">
-                <option>Yes</option>
-                <option>No</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
             </select>
 
           </div>  
@@ -231,12 +230,11 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
             {/*Pets Allowed Dropdown*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Pets Allowed? </label>
             <select 
-              defaultValue={propertyData.Pets}
-              value={petsAllowed}
-              onChange={(e) => setPetsAllowed(e.target.value == "Yes")} 
+              defaultValue={propertyData.Pets ? "Yes" : "No"}
+              onChange={(e) => setPetsAllowed(e.target.value === "Yes")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-10">
-                <option>Yes</option>
-                <option>No</option>
+                <option value="Yes">Yes</option>
+                <option value="No">No</option>
             </select>
 
           </div>
