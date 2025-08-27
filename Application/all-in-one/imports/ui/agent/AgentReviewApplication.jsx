@@ -19,6 +19,7 @@ import {
   Tenants,
   Employment,
 } from "/imports/api/database/collections";
+import { OpenHouseAttendance } from "/imports/api/database/collections";
 import FilterMenu from "./components/FilterMenu";
 import StatusMenu from "./components/StatusMenu";
 import Navbar from "./components/AgentNavbar";
@@ -35,19 +36,22 @@ export default function ReviewApplication() {
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [selectedApplicants, setSelectedApplicants] = useState([]);
   const [selectedProperties, setSelectedProperties] = useState([]);
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [selectedAttendee, setSelectedAttendee] = useState(null);
 
   const agent = Meteor.user();
   const agentId = agent?._id;
 
-  const { isReady, applications, tenants, properties, employments } =
+  const { isReady, applications, tenants, properties, employments, openHouseAttendance } =
     useTracker(() => {
       const sub1 = Meteor.subscribe("rentalApplications");
       const sub2 = Meteor.subscribe("properties");
       const sub3 = Meteor.subscribe("tenants");
       const sub4 = Meteor.subscribe("employment");
+      const sub5 = Meteor.subscribe("openHouseAttendance");
 
       const isReady =
-        sub1.ready() && sub2.ready() && sub3.ready() && sub4.ready();
+        sub1.ready() && sub2.ready() && sub3.ready() && sub4.ready() && sub5.ready();
 
       if (!isReady) {
         return {
@@ -56,6 +60,7 @@ export default function ReviewApplication() {
           applications: [],
           tenants: [],
           employments: [],
+          openHouseAttendance: [],
         };
       }
 
@@ -65,6 +70,7 @@ export default function ReviewApplication() {
       }).fetch();
       const tenants = Tenants.find().fetch();
       const employments = Employment.find().fetch();
+      const openHouseAttendance = OpenHouseAttendance.find().fetch();
 
       return {
         isReady: true,
@@ -72,6 +78,7 @@ export default function ReviewApplication() {
         applications,
         tenants,
         employments,
+        openHouseAttendance,
       };
     });
 
@@ -86,6 +93,47 @@ export default function ReviewApplication() {
     if (f.includes("review")) return "🟡 To be Reviewed";
     if (f.includes("flag")) return "🔴 Flagged";
     return flag;
+  };
+
+  // Function to check attendance status for an applicant
+  const getAttendanceStatus = (application) => {
+    const property = properties.find(p => p.prop_id === application.prop_id);
+    if (!property) return { status: 'unknown', notes: null };
+
+    // Find open house attendance records for this property
+    const attendanceRecords = openHouseAttendance.filter(record => 
+      record.propertyAddress === property.prop_address
+    );
+
+    if (attendanceRecords.length === 0) return { status: 'no_open_house', notes: null };
+
+    // Find the tenant in attendance records
+    const tenant = tenants.find(t => t.ten_id === application.ten_id);
+    if (!tenant) return { status: 'unknown', notes: null };
+
+    const tenantName = `${tenant.ten_fn} ${tenant.ten_ln}`;
+    
+    for (const record of attendanceRecords) {
+      const attendee = record.attendanceList.find(a => a.tenantName === tenantName);
+      if (attendee) {
+        return { 
+          status: attendee.tenantAttendance ? 'present' : 'registered', 
+          notes: attendee.notes || null,
+          attendee
+        };
+      }
+    }
+
+    return { status: 'absent', notes: null };
+  };
+
+  // Function to handle attendance tag click
+  const handleAttendanceClick = (application) => {
+    const attendanceStatus = getAttendanceStatus(application);
+    if (attendanceStatus.status === 'present' || attendanceStatus.status === 'registered') {
+      setSelectedAttendee(attendanceStatus);
+      setShowNotesModal(true);
+    }
   };
 
   const filteredApplications = applications.filter((app) => {
@@ -308,7 +356,6 @@ export default function ReviewApplication() {
                       </div>
                     }
                     status={app.status || "Pending"}
-                    extraInfo={extraInfo}
                     statusIcon={
                       <div className="relative flex items-center gap-3">
                         <button
@@ -348,6 +395,8 @@ export default function ReviewApplication() {
                         />
                       </div>
                     }
+                    attendanceStatus={getAttendanceStatus(app)}
+                    onAttendanceClick={() => handleAttendanceClick(app)}
                   />
 
                   {/* View Application Button */}
@@ -390,6 +439,56 @@ export default function ReviewApplication() {
           })}
         </div>
       </div>
+
+      {/* Notes Modal */}
+      {showNotesModal && selectedAttendee && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">Attendee Notes</h3>
+              <button
+                onClick={() => setShowNotesModal(false)}
+                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+            
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">Status:</p>
+              <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${
+                selectedAttendee.status === 'present' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-blue-100 text-blue-800'
+              }`}>
+                {selectedAttendee.status === 'present' ? '✅ PRESENT' : '📝 REGISTERED'}
+              </span>
+            </div>
+
+            <div className="mb-4">
+              <p className="text-sm text-gray-600 mb-2">Notes:</p>
+              {selectedAttendee.notes ? (
+                <div className="bg-gray-50 p-3 rounded border text-sm text-gray-800 whitespace-pre-line">
+                  {selectedAttendee.notes}
+                </div>
+              ) : (
+                <div className="bg-gray-50 p-3 rounded border text-sm text-gray-500 italic">
+                  No notes recorded for this attendee.
+                </div>
+              )}
+            </div>
+
+            <div className="text-right">
+              <button
+                onClick={() => setShowNotesModal(false)}
+                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
