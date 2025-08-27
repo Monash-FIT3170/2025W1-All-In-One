@@ -387,6 +387,11 @@ export const Calendar = () => {
                 backgroundColor = '#F2F2F2';
                 textColor = '#000000';
                 borderColor = '#000000';
+              } else if (slot.status === 'rejected') {
+                title = 'Private Open House (Invite Rejected)';
+                backgroundColor = '#888888';
+                textColor = '#353535ff';
+                borderColor = '#ff0000ff';
               } else if (type === 'Open House') {
                 title = 'Open House Availability';
                 backgroundColor = '#DCFFCD';
