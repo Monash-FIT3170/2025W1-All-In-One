@@ -187,7 +187,7 @@ export const UpcomingInspections = () => {
       <Navbar />
 
       {/* Main Content */}
-      <main className="flex-1 container mx_auto p-8">
+      <main className="flex-1 container mx-auto p-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">All Upcoming Open Houses and Inspections</h2>
           <p className="text-gray-600">All upcoming property open houses and inspections in one place!</p>
