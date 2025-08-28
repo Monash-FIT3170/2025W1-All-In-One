@@ -408,7 +408,7 @@ export const Calendar = () => {
                 classNames,
               };
             }),
-            ...ticketActivities.map(ticket => {
+            ...ticketActivities.map(ticket => ({
               id: act._id,
               title: `Ticket: ${act.title}`,
               start: new Date(act.start),
@@ -417,14 +417,7 @@ export const Calendar = () => {
               textColor: '#B91C1C',
               borderColor: '#FCA5A5',
               extendedProps: act,
-
-
-
-
-
-
-
-
+              })),
 
             ...newEvents.map(event => ({
               ...event,
