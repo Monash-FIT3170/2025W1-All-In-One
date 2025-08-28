@@ -1,5 +1,5 @@
 import React from "react";
-import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter} from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter, FaMapMarkedAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import NavBar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
@@ -88,6 +88,14 @@ export default function GuestBasicPropListings() {
                 >
                   <FaFilter className="mr-2" />
                   Filter
+                </button>
+
+                {/* Map button with icon */}
+                <button
+                  className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+                  >
+                  <FaMapMarkedAlt className="mr-2" />
+                  Map
                 </button>
               </div>
             </div>
