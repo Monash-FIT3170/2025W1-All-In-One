@@ -241,4 +241,4 @@ import '/imports/api/agent/expressionOfInterest/publication';
   
   return StarredProperties.find({ ten_id: tenant.ten_id });
 });
-
+ 

@@ -64,4 +64,4 @@ export const HomePage = () => {
       <img src="/images/logo.png" alt="Logo" className="w-40 h-40 mb-8" />
     </div>
   );
-};
+}; 

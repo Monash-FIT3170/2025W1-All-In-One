@@ -15,4 +15,4 @@ export const About = () => (
     <p>This is the about page.</p>
     <Link to="/">Back to Home</Link>
   </div>
-);
+); 
