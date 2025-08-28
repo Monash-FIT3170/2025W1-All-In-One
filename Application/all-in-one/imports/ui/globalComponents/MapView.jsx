@@ -14,7 +14,7 @@ const center = {
 
 export default function MapView() {
  
-  const apiKey = Meteor.settings.private.googleMapsApiKey;
+  const apiKey = Meteor.settings.public?.googleMapsApiKey;
 
   return (
     <LoadScript googleMapsApiKey={apiKey}>
