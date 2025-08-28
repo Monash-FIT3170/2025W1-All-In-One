@@ -29,21 +29,19 @@ export default function TenantBasicPropListings() {
     (p)=> p.prop_status==="Available"
   );
   
-    // const propertyCards= availableProperties.map((p)=>{
-    //   const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
-    //   return{
-    //     id: p.prop_id,
-    //     location: p.prop_address,
-    //     price:`$${p.prop_pricepweek}`,
-    //     image:photo?.photo_url ||
-    //     "/images/default.jpg",
-    //     beds: p.prop_numbeds,
-    //     baths: p.prop_numbaths,
-    //     cars:p.prop_numcarspots,
-    //   };
-    // });
-    const propertyCards = availableProperties.map((p) => p);
-
+    const propertyCards= availableProperties.map((p)=>{
+      const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
+      return{
+        id: p.prop_id,
+        location: p.prop_address,
+        price:`$${p.prop_pricepweek}`,
+        image:photo?.photo_url ||
+        "/images/default.jpg",
+        beds: p.prop_numbeds,
+        baths: p.prop_numbaths,
+        cars:p.prop_numcarspots,
+      };
+    });
 
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
@@ -101,7 +99,7 @@ export default function TenantBasicPropListings() {
           {propertyCards.map((property) => (
             <Link
               key={property.id}
-              to={`/TenDetailedPropListing/${property.prop_id}`}
+              to={`/TenDetailedPropListing/${property.id}`}
             >
               <BasicPropertyCard property={property} />
             </Link>

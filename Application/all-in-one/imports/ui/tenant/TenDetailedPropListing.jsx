@@ -1,159 +1,104 @@
 import React from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
-import { useParams, Link } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import {
-  Properties,
-  Photos,
-  Videos,
-  RentalApplications,
-} from "../../api/database/collections";
+import { Properties, Photos, Videos } from "../../api/database/collections"; // importing mock for now
+import { Link } from "react-router-dom";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a listed property (accessed through TenantBasicPropListing) //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function TenDetailedPropListing() {
-  const { id } = useParams();
-  const tenantID = Meteor.userId(); // ✅ moved up so we can use it in useTracker
-  console.log("propId received:", id);
-  console.log("tenantID:", tenantID);
-
-  const { isReady, property, photos, videos, rentalApp } = useTracker(() => {
-    const subProps = Meteor.subscribe("properties");
-    const subPhotos = Meteor.subscribe("photos");
-    const subVideos = Meteor.subscribe("videos");
-    const subApps = Meteor.subscribe("rentalApplications");
-
-    const isReady =
-      subProps.ready() &&
-      subPhotos.ready() &&
-      subVideos.ready() &&
-      subApps.ready();
-
-    let property = null;
-    let photos = [];
-    let videos = [];
-    let rentalApp = null;
-
-    if (isReady) {
-      property = Properties.findOne({ prop_id: id });
-      photos = Photos.find({ prop_id: id }, { sort: { photo_order: 1 } }).fetch();
-      videos = Videos.find({ prop_id: id }).fetch();
-      if (tenantID) {
-        rentalApp = RentalApplications.findOne({
-          ten_id: tenantID,
-          prop_id: id,
-        });
+    const { id } = useParams();
+    console.log("propId received:", id);
+     const { isReady, property, photos, videos }=  useTracker(()=>{
+        const subProps= Meteor.subscribe("properties");
+        const subPhotos= Meteor.subscribe("photos");
+        const subVideos= Meteor.subscribe("videos");
+    
+        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready();
+  
+        let property= null;
+        let photos= [];
+        let videos=[];
+  
+        // find property, photos and videos corresponding to the property ID passed.
+        if (isReady){
+          property= Properties.findOne({prop_id: id});
+          photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
+          videos= Videos.find({prop_id: id}).fetch();
+        }
+  
+        return {isReady, property, photos, videos};
+    
+      }, [id]);
+    
+      if (!isReady){
+        return (<div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Loading Properties...</div>);
       }
-    }
-
-    return { isReady, property, photos, videos, rentalApp };
-  }, [id, tenantID]); // ✅ include tenantID in deps
-
-  if (!isReady) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-xl text-gray-600">
-        Loading Properties...
-      </div>
-    );
-  }
-
-  if (!property) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-xl text-red-600">
-        Property Not Found!
-      </div>
-    );
-  }
-
-  const propertyData = {
-    id: property.prop_id,
-    address: property.prop_address,
-    price: property.prop_pricepweek,
-    type: property.prop_type,
-    AvailableDate: property.prop_available_date,
-    Pets: property.prop_pets ? "True" : "False",
-    imageUrls: photos.length
-      ? photos.map((photo) => photo.photo_url)
-      : ["/images/default.jpg"],
-    videoUrls: videos.length ? videos.map((video) => video.video_url) : [],
-    details: {
-      beds: property.prop_numbeds ?? "N/A",
-      baths: property.prop_numbaths ?? "N/A",
-      carSpots: property.prop_numcarspots ?? "N/A",
-      furnished: property.prop_furnish ? "Yes" : "No",
-    },
-    description: property.prop_desc,
-  };
-
+  
+      if (!property){
+        return (<div className="min-h-screen flex items-center justify-center text-xl text-red-600">Property Not Found!</div>);
+      }
+    
+      // data passed on to propertyDetailsCard
+      const propertyData= {
+          id: property.prop_id,
+          address: property.prop_address,
+          price:property.prop_pricepweek,
+          type:property.prop_type,
+          AvailableDate: property.prop_available_date,
+          Pets: property.prop_pets ? "True":"False",
+          imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
+          videoUrls: videos.length ? videos.map((video) => video.video_url) : [],
+          details:{
+          beds: property.prop_numbeds ?? "N/A",
+          baths: property.prop_numbaths ?? "N/A",
+          carSpots: property.prop_numcarspots ?? "N/A",
+          furnished: property.prop_furnish? "Yes":"No",
+          },
+          description: property.prop_desc,
+          
+        };
+        
+      const tenantID = Meteor.userId()
+      console.log(tenantID)
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
       <Navbar />
 
-      {/*Main content and buttons*/}
+      {/*Main content and butons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={property} />
+        <PropertyDetailsCard property={propertyData} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
           <Link
-            to={`/InspectionBooking/${id}`}
-            className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-          >
-            Book Inspection
+          to={`/InspectionBooking/${id}`} // TBD: replace with actual link to inspection booking page
+          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+          >Book Inspection 
+          </Link>
+          <Link
+          key={id}
+          to={`/Apply/${id}?tenantId=${tenantID}`} // TBD: replace with actual link to application page
+          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+          >Apply 
           </Link>
 
-          {rentalApp ? (
-            rentalApp.status === "Approved" ? (
-              <button
-                disabled
-                className="w-1/2 bg-gray-300 text-gray-500 font-base text-center py-2 rounded-md shadow-md cursor-not-allowed"
-              >
-                Application Approved
-              </button>
-            ) : rentalApp.status === "Rejected" ? (
-              <button
-                disabled
-                className="w-1/2 bg-gray-300 text-gray-500 font-base text-center py-2 rounded-md shadow-md cursor-not-allowed"
-              >
-                Application Rejected
-              </button>
-            ) : rentalApp.submitted === true ? (
-              <button
-                disabled
-                className="w-1/2 bg-gray-300 text-gray-500 font-base text-center py-2 rounded-md shadow-md cursor-not-allowed"
-              >
-                Application Submitted
-              </button>
-            ): (
-              <Link
-                key={id}
-                to={`/Apply/${id}?tenantId=${tenantID}`}
-                className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-              >
-                Apply
-              </Link>
-            )
-          ) : (
-            <Link
-              key={id}
-              to={`/Apply/${id}?tenantId=${tenantID}`}
-              className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-            >
-              Apply
-            </Link>
-          )}
         </div>
+
       </div>
 
+      
       {/*Description*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
+
         <p className="font-semibold text-lg text-[#434343]">
-          {property.prop_desc}
+          {propertyData.description}
         </p>
       </div>
 

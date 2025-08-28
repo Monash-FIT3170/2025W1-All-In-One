@@ -87,7 +87,6 @@ const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=
           furnished: property.prop_furnish? "Yes":"No",
           },
           description: property.prop_desc,
-          photo: property.photo,
           
         };
 
@@ -99,7 +98,7 @@ const { isReady, property, photos, videos, approvedLeaseStart }=  useTracker(()=
 
       {/*Main content using propertyDetailsCard*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={property} />
+        <PropertyDetailsCard property={propertyData} />
       </div>
 
       {/*Description and buttons (no buttons for now (milestone 2)*/}

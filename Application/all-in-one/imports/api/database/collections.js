@@ -15,14 +15,9 @@ Properties.schema = new SimpleSchema({
   prop_furnish: { type: Boolean },
   prop_pets: { type: Boolean },
   prop_bond: { type: Number },
-  prop_status: { type: String },
+
   agent_id: { type: String },
   landlord_id: { type: String },
-  photo: { type: Array, optional: true },
-  "photo.$": { type: String },
-
-  video: { type: Array, optional: true },
-  "video.$": { type: String },
 });
 
 export const Photos = new Mongo.Collection("photos");
@@ -54,17 +49,11 @@ RentalApplications.schema = new SimpleSchema({
     type: String,
     optional: true,
   },
+  landlordFlag: { type: String, optional: true }, // agent’s choice
   status: { type: String, optional: true },
   household_pets: { type: Boolean },
   pet_description: { type: String, optional: true },
   emergency_contact_id: { type: String },
-
-  landlordFlag: { type: String, optional: true }, // 'shortlisted', 'to_review', 'flagged'
-  agentFinalStatus: { type: String, optional: true }, // 'approved', 'rejected'
-  finalDecision: { type: String, optional: true },
-  // values: "Approved", "Rejected"
-
-  submitted : {type: Boolean, defaultValue: false},
 });
 
 export const Tenants = new Mongo.Collection("tenants");
@@ -124,8 +113,7 @@ Incomes.schema = new SimpleSchema({
   rental_app_id: { type: String },
   inc_type: { type: String },
   inc_amt: { type: Number },
-  inc_supporting_doc: { type: String , optional: true },
-  inc_public_id: { type: String , optional: true },
+  inc_supporting_doc: { type: String },
 });
 
 export const Identities = new Mongo.Collection("identities");
@@ -133,9 +121,7 @@ Identities.schema = new SimpleSchema({
   identity_id: { type: String },
   rental_app_id: { type: String },
   identity_type: { type: String },
-  identity_public_id: { type: String , optional: true },
-  identity_desc: { type: String, optional: true },
-  identity_scan: { type: String, optional: true },
+  identity_scan: { type: String },
 });
 
 export const Households = new Mongo.Collection("households");
@@ -155,5 +141,3 @@ Agents.schema = new SimpleSchema({
   agent_email: { type: String },
   agent_password: { type: String },
 });
-
-export const SharedLeaseGroups = new Mongo.Collection('sharedLeaseGroups');

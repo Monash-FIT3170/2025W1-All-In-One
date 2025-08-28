@@ -1,25 +1,4 @@
-import { Meteor } from 'meteor/meteor';
-import { Accounts } from 'meteor/accounts-base';
-function maskMongoUrl(uri) {
-  if (!uri) return '(not set)';
-  try {
-    // Only mask the password part in mongodb:// or mongodb+srv:// URIs
-    const match = uri.match(/^(mongodb(?:\+srv)?:\/\/)([^:@]+):([^@]+)@(.+)$/);
-    if (!match) return uri; // unexpected format, return as-is
-    const [, prefix, user, _pw, rest] = match;
-    return `${prefix}${user}:***@${rest}`;
-  } catch (e) {
-    return '(unable to parse MONGO_URL)';
-  }
-}
-
-function logDbTarget() {
-  const uri = process.env.MONGO_URL;
-  console.log('🗄️  MONGO_URL =>', maskMongoUrl(uri));
-  if (!uri) {
-    console.warn('⚠️  MONGO_URL is not set. The app will use the default local Meteor Mongo.');
-  }
-}
+import { Meteor } from "meteor/meteor";
 import {
   Properties,
   Photos,
@@ -32,22 +11,16 @@ import {
   Identities,
   Households,
   Agents,
-  Landlord
-} from '/imports/api/database/collections';
-import { mockData } from '/imports/api/database/mockData';
-import '/imports/api/methods/account.js';
-import '/imports/api/agent/rentalApplications/methods'
-import { LinksCollection } from '/imports/api/links';
-import '/imports/api/AgentAvailabilities';
-import '/imports/api/TenantBookings.js';
+  Landlord,
+} from "/imports/api/database/collections";
+import { mockData } from "/imports/api/database/mockData";
+import "/imports/api/methods/account.js";
+import "/imports/api/agent/rentalApplications/methods";
+import { LinksCollection } from "/imports/api/links";
+import "/imports/api/AgentAvailabilities";
+import "/imports/api/TenantBookings.js";
 
-import 'dotenv/config';
-
-
-Meteor.startup(async () => { 
-
-  logDbTarget();
-
+Meteor.startup(async () => {
   // Insert mock data only if collections are empty
   if ((await Properties.find().countAsync()) === 0) {
     for (const property of mockData.properties) {
@@ -73,7 +46,8 @@ Meteor.startup(async () => {
     }
   }
 
-  if ((await RentalApplications.find().countAsync()) === 0) {
+  if ((await RentalApplications.find().countAsync()) !== 0) {
+    await RentalApplications.removeAsync({});
     for (const application of mockData.rentalApplications) {
       await RentalApplications.insertAsync(application);
     }
@@ -165,6 +139,7 @@ Meteor.startup(async () => {
     });
 
     await Landlord.insertAsync({
+      // ll_id: landlordUserId,
       ll_id: landlordUserId,
       ll_fn: "John",
       ll_ln: "Doe",

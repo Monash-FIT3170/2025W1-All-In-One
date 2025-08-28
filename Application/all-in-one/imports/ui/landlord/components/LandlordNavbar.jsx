@@ -10,7 +10,7 @@ function Navbar() {
       navigate("/");
     });
   };
-  
+
   return (
     <div className="flex items-center justify-between px-6 h-[63px] bg-[#CBADD8]">
       {/*Logo linked back to search bar*/}
@@ -24,15 +24,13 @@ function Navbar() {
       {/*Nav bar options*/}
       <div className="flex items-center gap-4">
         {/*TODO: Add route to Landlord applications*/}
-        <NavButton to="/LandlordDetailedPropListing">Applications</NavButton>
+        <NavButton to="/LandlordApplications">Applications</NavButton>
 
         {/*Route to properties connected to landloard*/}
         <NavButton to="/LandlordProperties">Properties</NavButton>
 
         {/*TODO: Add logout function*/}
-        <NavButton onClick={logout}>
-          Log Out
-        </NavButton>
+        <NavButton onClick={logout}>Log Out</NavButton>
 
         {/*TODO: Add route to the Landlord's profile settings*/}
         <Link to="/PLACEHOLDER">
