@@ -9,6 +9,7 @@
  * - Update application status and make final decisions
  * - Real-time data from MongoDB collections (RentalApplications, Properties, Tenants, Employment)
  */
+
 import React, { useState } from "react";
 import { Meteor } from "meteor/meteor";
 import { ApplicantCard } from "./components/ApplicantCard";
@@ -19,132 +20,85 @@ import {
   Tenants,
   Employment,
 } from "/imports/api/database/collections";
-import { OpenHouseAttendance } from "/imports/api/database/collections";
 import FilterMenu from "./components/FilterMenu";
-import StatusMenu from "./components/StatusMenu";
+// import StatusMenu from "../landlord/components/StatusMenu";
 import Navbar from "./components/AgentNavbar";
-import { Link } from "react-router-dom";
 
 export default function ReviewApplication() {
   // State for the search bar
   const [allSearch, setAllSearch] = useState("");
   // State to show/hide the filter menu
   const [showFilterMenu, setShowFilterMenu] = useState(false);
-  // State to track which application's status menu is open
-  const [statusMenuAppId, setStatusMenuAppId] = useState(null);
+
   // State for selected filters
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [selectedApplicants, setSelectedApplicants] = useState([]);
   const [selectedProperties, setSelectedProperties] = useState([]);
-  const [showNotesModal, setShowNotesModal] = useState(false);
-  const [selectedAttendee, setSelectedAttendee] = useState(null);
 
-  const agent = Meteor.user();
-  const agentId = agent?._id;
+  //States for application status
+  const [statuses, setStatuses] = useState({});
+  const [loadingIds, setLoadingIds] = useState({});
 
-  const { isReady, applications, tenants, properties, employments, openHouseAttendance } =
+  // Subscribe to and fetch all necessary collections from the database
+  const { isReady, applications, tenants, properties, employments } =
     useTracker(() => {
       const sub1 = Meteor.subscribe("rentalApplications");
       const sub2 = Meteor.subscribe("properties");
       const sub3 = Meteor.subscribe("tenants");
       const sub4 = Meteor.subscribe("employment");
-      const sub5 = Meteor.subscribe("openHouseAttendance");
 
       const isReady =
-        sub1.ready() && sub2.ready() && sub3.ready() && sub4.ready() && sub5.ready();
-
-      if (!isReady) {
-        return {
-          isReady: false,
-          properties: [],
-          applications: [],
-          tenants: [],
-          employments: [],
-          openHouseAttendance: [],
-        };
-      }
-
-      const properties = Properties.find({ agent_id: agentId }).fetch();
-      const applications = RentalApplications.find({
-        prop_id: { $in: properties.map((p) => p.prop_id) },
-      }).fetch();
-      const tenants = Tenants.find().fetch();
-      const employments = Employment.find().fetch();
-      const openHouseAttendance = OpenHouseAttendance.find().fetch();
+        sub1.ready() && sub2.ready() && sub3.ready() && sub4.ready();
 
       return {
-        isReady: true,
-        properties,
-        applications,
-        tenants,
-        employments,
-        openHouseAttendance,
+        isReady,
+        applications: isReady ? RentalApplications.find().fetch() : [],
+        tenants: isReady ? Tenants.find().fetch() : [],
+        properties: isReady ? Properties.find().fetch() : [],
+        employments: isReady ? Employment.find().fetch() : [],
       };
     });
 
+  //Flag icons for application status
+  const flags = [
+    { src: "/icons/flag-green.png", label: "Shortlisted" },
+    { src: "/icons/flag-red.png", label: "Flagged" },
+    { src: "/icons/flag-yellow.png", label: "To be Reviewed" },
+  ];
+
+  // Handle agent clicking a flag
+  const handleClick = (appId, label) => {
+    setLoadingIds((prev) => ({ ...prev, [appId]: true }));
+
+    Meteor.call("rentalApplications.setLandlordFlag", appId, label, (err) => {
+      setLoadingIds((prev) => ({ ...prev, [appId]: false }));
+      if (err) {
+        alert("Error saving agent flag: " + err.reason);
+      } else {
+        setStatuses((prev) => ({ ...prev, [appId]: label }));
+      }
+    });
+  };
+
+  // Show loading message until all subscriptions are ready
   if (!isReady) {
     return <div className="p-8 text-gray-600">Loading applications...</div>;
   }
 
-  const formatFlagLabel = (flag) => {
-    if (!flag) return "";
-    const f = String(flag).toLowerCase();
-    if (f.includes("short")) return "🟢 Shortlisted";
-    if (f.includes("review")) return "🟡 To be Reviewed";
-    if (f.includes("flag")) return "🔴 Flagged";
-    return flag;
-  };
-
-  // Function to check attendance status for an applicant
-  const getAttendanceStatus = (application) => {
-    const property = properties.find(p => p.prop_id === application.prop_id);
-    if (!property) return { status: 'unknown', notes: null };
-
-    // Find open house attendance records for this property
-    const attendanceRecords = openHouseAttendance.filter(record => 
-      record.propertyAddress === property.prop_address
-    );
-
-    if (attendanceRecords.length === 0) return { status: 'no_open_house', notes: null };
-
-    // Find the tenant in attendance records
-    const tenant = tenants.find(t => t.ten_id === application.ten_id);
-    if (!tenant) return { status: 'unknown', notes: null };
-
-    const tenantName = `${tenant.ten_fn} ${tenant.ten_ln}`;
-    
-    for (const record of attendanceRecords) {
-      const attendee = record.attendanceList.find(a => a.tenantName === tenantName);
-      if (attendee) {
-        return { 
-          status: attendee.tenantAttendance ? 'present' : 'registered', 
-          notes: attendee.notes || null,
-          attendee
-        };
-      }
-    }
-
-    return { status: 'absent', notes: null };
-  };
-
-  // Function to handle attendance tag click
-  const handleAttendanceClick = (application) => {
-    const attendanceStatus = getAttendanceStatus(application);
-    if (attendanceStatus.status === 'present' || attendanceStatus.status === 'registered') {
-      setSelectedAttendee(attendanceStatus);
-      setShowNotesModal(true);
-    }
-  };
-
+  // Filter applications based on search bar and selected filters
   const filteredApplications = applications.filter((app) => {
+    // Find the tenant and property for this application
     const tenant = tenants.find((t) => t.ten_id === app.ten_id);
     const property = properties.find((p) => p.prop_id === app.prop_id);
 
-    const tenantName = `${tenant?.ten_fn || ""} ${tenant?.ten_ln || ""
-      }`.toLowerCase();
+    // Prepare search terms
+    const tenantName = `${tenant?.ten_fn || ""} ${
+      tenant?.ten_ln || ""
+    }`.toLowerCase();
     const propertyAddress = (property?.prop_address || "").toLowerCase();
     const searchTerm = allSearch.toLowerCase();
 
+    // Check if the application matches the selected filters
     const matchStatus =
       selectedStatuses.length === 0 || selectedStatuses.includes(app.status);
     const matchApplicant =
@@ -154,6 +108,7 @@ export default function ReviewApplication() {
       selectedProperties.length === 0 ||
       selectedProperties.includes(app.prop_id);
 
+    // Return true if all filters match and the search term matches either the tenant or property
     return (
       matchStatus &&
       matchApplicant &&
@@ -162,32 +117,10 @@ export default function ReviewApplication() {
     );
   });
 
-  const approveApplicantFinal = (appId, propId) => {
-    if (!propId) {
-      alert("Property ID is missing");
-      return;
-    }
-
-    if (
-      !confirm(
-        "Mark this applicant as final (this will reject other applications for the property)?"
-      )
-    ) {
-      return;
-    }
-
-    Meteor.call("setFinalDecision", propId, appId, (err) => {
-      if (err) {
-        alert("Error approving: " + (err.reason || err.message || err));
-      } else {
-        alert("Applicant approved successfully.");
-      }
-    });
-  };
-
   return (
     <div className="bg-[#FFF8EB] min-h-screen pb-20">
       <Navbar />
+      {/* Main content container */}
       <div className="px-12 py-8">
         <h2 className="text-2xl font-semibold">Review Applications</h2>
         <p className="text-sm text-gray-600">All applications in one place!</p>
@@ -203,6 +136,7 @@ export default function ReviewApplication() {
 
         {/* Search bar and filter button */}
         <div className="mt-4 bg-[#CBADD8] px-6 py-4 rounded-lg flex gap-4 relative">
+          {/* Search input for applicants and properties */}
           <input
             type="text"
             placeholder="Search Applicant..."
@@ -211,6 +145,7 @@ export default function ReviewApplication() {
             value={allSearch}
             onChange={(e) => setAllSearch(e.target.value)}
           />
+          {/* Button to open the filter menu */}
           <button
             className="w-1/5 px-4 py-2 rounded-md text-white"
             style={{ backgroundColor: "#9747FF" }}
@@ -218,6 +153,7 @@ export default function ReviewApplication() {
           >
             Filter
           </button>
+          {/* Filter menu component, receives all filter state and setters */}
           <FilterMenu
             show={showFilterMenu}
             onClose={() => setShowFilterMenu(false)}
@@ -233,37 +169,25 @@ export default function ReviewApplication() {
           />
         </div>
 
-        {/* Applications Grid */}
+        {/* Applications Grid: displays filtered applications */}
         <div className="grid grid-cols-1 gap-6 mt-6 ">
           {filteredApplications.map((app) => {
+            // Find the tenant, property, and employment for this application
             const tenant = tenants.find((t) => t.ten_id === app.ten_id);
             const property = properties.find((p) => p.prop_id === app.prop_id);
             const employment = employments.find(
               (e) => e.employment_id === app.employment_id
             );
 
-            const relatedApplications = applications.filter(
-              (otherApp) =>
-                otherApp._id !== app._id &&
-                otherApp.shared_lease_id &&
-                otherApp.shared_lease_id === app.shared_lease_id
-            );
-
-            const relatedTenants = relatedApplications
-              .map((ra) => tenants.find((t) => t.ten_id === ra.ten_id))
-              .filter(Boolean);
-
-            const extraInfoParts = [];
-            if (app.landlordFeedback)
-              extraInfoParts.push(`Landlord: ${app.landlordFeedback}`);
-            if (app.landlordFlag)
-              extraInfoParts.push(formatFlagLabel(app.landlordFlag));
-            const extraInfo = extraInfoParts.join(" • ");
+            const currentStatus = statuses[app._id] || app.landlordFlag || null;
+            const isLoading = loadingIds[app._id];
 
             return (
+              // Card for each application
               <div key={app._id} className="flex overflow-hidden gap-8">
-                {/* Property image */}
+                {/* Left: Property image and overlay info */}
                 <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden ">
+                  {/* Property Image as Background (safe fallback) */}
                   <img
                     src={
                       property?.prop_id
@@ -273,6 +197,8 @@ export default function ReviewApplication() {
                     alt="Property"
                     className="absolute inset-0 w-full h-full object-cover"
                   />
+
+                  {/* White Overlay Box at the bottom */}
                   <div
                     className="absolute bottom-0 left-0 w-full"
                     style={{ height: "35%" }}
@@ -301,194 +227,95 @@ export default function ReviewApplication() {
                   </div>
                 </div>
 
-                {/* Applicant Info Card */}
+                {/* Right: Applicant Info Card and Status Menu */}
                 <div className="w-3/4 p-8 bg-[#CBADD8] rounded-2xl flex flex-col justify-between">
                   <ApplicantCard
-                    name={`${tenant?.ten_fn || "Unknown"} ${tenant?.ten_ln || ""
-                      }`}
+                    name={`${tenant?.ten_fn || "Unknown"} ${
+                      tenant?.ten_ln || ""
+                    }`}
                     desc={app.app_desc || "N/A"}
-                    age={
-                      tenant?.ten_dob
-                        ? Math.floor(
-                          (new Date() - new Date(tenant.ten_dob)) /
-                          (1000 * 60 * 60 * 24 * 365.25)
-                        )
-                        : "N/A"
-                    }
-                    finaliseButton={
-                      <div className="flex items-center gap-2">
-                        {app.finalDecision === "Approved" && (
-                          <span
-                            title="Final Decision: Approved"
-                            className="text-green-600 text-xl"
-                          >
-                            <img
-                              src="/icons/Frame31.png"
-                              alt="Green Flag"
-                              width={20}
-                              height={20}
-                            />
-                          </span>
-                        )}
-                        {app.finalDecision === "Rejected" && (
-                          <span
-                            title="Final Decision: Rejected"
-                            className="text-red-600 text-xl"
-                          >
-                            <img
-                              src="/icons/Frame32.png"
-                              alt="Red Flag"
-                              width={20}
-                              height={20}
-                            />
-                          </span>
-                        )}
-                        {!app.finalDecision && (
-                          <button
-                            onClick={() =>
-                              approveApplicantFinal(app._id, app.prop_id)
-                            }
-                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-                          >
-                            Select as Tenant (Final)
-                          </button>
-                        )}
-                      </div>
-                    }
-                    status={app.status || "Pending"}
+                    occupation={employment?.emp_job_title || "N/A"}
+                    status={currentStatus || "Pending"}
                     statusIcon={
-                      <div className="relative flex items-center gap-3">
-                        <button
-                          className="px-2 py-1 rounded bg-white text-sm"
-                          onClick={() => setStatusMenuAppId(app._id)}
-                        >
-                          {app.status === "Shortlisted"
-                            ? "🟢"
-                            : app.status === "Flagged"
-                              ? "🔴"
-                              : app.status == "Approved"
-                                ? "✅"
-                                : app.status == "Rejected"
-                                  ? "❌"
-                                  : "⏳"}
-                        </button>
-                        <StatusMenu
-                          show={statusMenuAppId === app._id}
-                          onClose={() => setStatusMenuAppId(null)}
-                          onAccept={() => {
-                            Meteor.call(
-                              "rentalApplications.setStatus",
-                              app._id,
-                              "Shortlisted"
-                            );
-                            setStatusMenuAppId(null);
-                          }}
-                          onReject={() => {
-                            Meteor.call(
-                              "rentalApplications.setStatus",
-                              app._id,
-                              "Flagged"
-                            );
-                            setStatusMenuAppId(null);
-                          }}
-                          status={app.status}
-                        />
+                      <div className="flex gap-2 items-center">
+                        {currentStatus === null ? (
+                          flags.map((flag) => (
+                            <img
+                              key={flag.label}
+                              src={flag.src}
+                              alt={flag.label}
+                              className={`w-10 h-10 cursor-pointer hover:scale-110 transition ${
+                                isLoading ? "opacity-50 cursor-wait" : ""
+                              }`}
+                              onClick={() =>
+                                !isLoading && handleClick(app._id, flag.label)
+                              }
+                            />
+                          ))
+                        ) : (
+                          <div className="flex gap-2 items-center">
+                            {(() => {
+                              const matchedFlag = flags.find(
+                                (f) => f.label === currentStatus
+                              );
+                              if (!matchedFlag) {
+                                return (
+                                  <span className="text-sm text-red-500">
+                                    Unknown flag: {currentStatus}
+                                  </span>
+                                );
+                              }
+                              return (
+                                <>
+                                  <img
+                                    src={matchedFlag.src}
+                                    alt={currentStatus}
+                                    className="w-10 h-10"
+                                  />
+                                  <span className="text-lg font-medium">
+                                    {currentStatus}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      // Reset UI
+                                      setStatuses((prev) => ({
+                                        ...prev,
+                                        [app._id]: null,
+                                      }));
+
+                                      // Reset DB
+                                      Meteor.call(
+                                        "rentalApplications.clearLandlordFlag",
+                                        app._id,
+                                        (err) => {
+                                          if (err) {
+                                            alert(
+                                              "Error clearing flag: " +
+                                                err.reason
+                                            );
+                                          }
+                                        }
+                                      );
+                                    }}
+                                    className="ml-2 text-sm text-blue-500 underline"
+                                    disabled={isLoading}
+                                  >
+                                    Change
+                                  </button>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
                     }
-                    attendanceStatus={getAttendanceStatus(app)}
-                    onAttendanceClick={() => handleAttendanceClick(app)}
                   />
-
-                  {/* View Application Button */}
-                  <div className="mt-4">
-                    <Link
-                      to={`/agent/application/${app._id}`}
-                      className="inline-block bg-white text-purple-700 font-semibold px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
-                    >
-                      View Application
-                    </Link>
-                  </div>
-
-                  {/* Shared Lease Members */}
-                  {relatedTenants.length > 0 && (
-                    <div className="mt-4 bg-white bg-opacity-80 rounded p-3 h-auto text-gray-800">
-                      <h4 className="font-semibold mb-2">
-                        Shared Lease Group Members:
-                      </h4>
-                      {relatedTenants.map((member) => {
-                        // Find the application belonging to this related member
-                        const memberApp = applications.find(
-                          (a) => a.ten_id === member.ten_id && a.shared_lease_id === app.shared_lease_id
-                        );
-
-                        return (
-                          <Link
-                            key={member.ten_id}
-                            to={`/agent/application/${memberApp?._id}`}
-                            className="block py-1 px-2 bg-white rounded-md shadow-sm mb-1 hover:bg-purple-50 cursor-pointer"
-                          >
-                            {member.ten_fn} {member.ten_ln}
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
               </div>
             );
           })}
         </div>
       </div>
-
-      {/* Notes Modal */}
-      {showNotesModal && selectedAttendee && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold">Attendee Notes</h3>
-              <button
-                onClick={() => setShowNotesModal(false)}
-                className="text-gray-500 hover:text-gray-700 text-2xl font-bold"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">Status:</p>
-              <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${
-                selectedAttendee.status === 'present' 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-blue-100 text-blue-800'
-              }`}>
-                {selectedAttendee.status === 'present' ? '✅ PRESENT' : '📝 REGISTERED'}
-              </span>
-            </div>
-
-            <div className="mb-4">
-              <p className="text-sm text-gray-600 mb-2">Notes:</p>
-              {selectedAttendee.notes ? (
-                <div className="bg-gray-50 p-3 rounded border text-sm text-gray-800 whitespace-pre-line">
-                  {selectedAttendee.notes}
-                </div>
-              ) : (
-                <div className="bg-gray-50 p-3 rounded border text-sm text-gray-500 italic">
-                  No notes recorded for this attendee.
-                </div>
-              )}
-            </div>
-
-            <div className="text-right">
-              <button
-                onClick={() => setShowNotesModal(false)}
-                className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

@@ -1,68 +1,94 @@
 import React from "react";
-import {
-  FaBath,
-  FaBed,
-  FaCar,
-  FaCouch,
-  FaSearch,
-  FaFilter,
-} from "react-icons/fa";
-import { Link } from "react-router-dom";
+import { FaSearch, FaFilter } from "react-icons/fa";
 import Navbar from "./components/LandlordNavbar";
 import Footer from "./components/Footer";
-import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos } from "../../api/database/collections"; // importing mock for now
+import { Photos, RentalApplications } from "../../api/database/collections"; // importing mock for now
+import { mockData } from "../../api/database/mockData";
+import LandlordApplicationCard from "./components/LandlordApplicationCard";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// This page will display all the listings connected to the Landlord (should be linked to property tab in nav bar) //
+// This page will display all the applications to the Landlord //
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-export default function LandlordProperties() {
-  const { isReady, properties, photos } = useTracker(() => {
-    const subProps = Meteor.subscribe("properties");
+export default function LandlordApplications() {
+  const { isReady, applications, photos } = useTracker(() => {
+    const subAppls = Meteor.subscribe("rentalApplications");
     const subPhotos = Meteor.subscribe("photos");
 
-    const isReady = subProps.ready() && subPhotos.ready();
+    const isReady = subAppls.ready() && subPhotos.ready();
 
     const landlord = Meteor.user();
     const LandLordId = "L001"; // Placeholder for Landlord ID, replace with actual logic to get Landlord ID
 
     // const LandLordId = landlord?._id;
-    const properties = isReady
-      ? Properties.find({ landlord_id: LandLordId }).fetch()
-      : [];
+    const applications = isReady ? RentalApplications.find().fetch() : [];
 
     const photos = isReady ? Photos.find().fetch() : [];
 
-    // Debugging output to check if properties are fetched correctly according to Landlord ID
+    // Debugging output to check if applications are fetched correctly according to Landlord ID
     console.log("LandLordId:", LandLordId);
-    console.log("Fetched properties:", properties);
+    console.log("Fetched applications:", applications);
 
-    return { isReady, properties, photos };
+    return { isReady, applications, photos };
   });
 
   if (!isReady) {
     return (
       <div className="text-center text-gray-600 mt-10">
-        Loading Properties...
+        Loading applications...
       </div>
     );
   }
 
-  const propertyCards = properties.map((p) => {
-    const photo = photos.find((photo) => photo.prop_id === p.prop_id);
-    return {
-      id: p.prop_id,
-      location: p.prop_address,
-      price: `$${p.prop_pricepweek}`,
-      image: `/images/properties/${p.prop_id}/main.jpg`,
-      beds: p.prop_numbeds,
-      baths: p.prop_numbaths,
-      cars: p.prop_numcarspots,
-    };
-  });
+  // Helper: Calculate age from DOB
+  const calculateAge = (dob) => {
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+    return age;
+  };
+
+  // Pair each tenant with a property manually
+  const tenantsWithProperties = mockData.rentalApplications
+    .slice(0, mockData.properties.length)
+    .map((application, idx) => {
+      const property = mockData.properties[idx];
+      const tenant = mockData.tenants.find(
+        (t) => t.ten_id === application.ten_id
+      );
+      const employment = mockData.employment.find(
+        (emp) => emp.ten_id === application.ten_id
+      );
+
+      return {
+        ...application,
+        property: {
+          image: `/images/properties/${property.prop_id}/main.jpg`,
+          address: property.prop_address,
+          price: property.prop_pricepweek,
+          bedrooms: property.prop_numbeds,
+          bathrooms: property.prop_numbaths,
+          parking: property.prop_numcarspots,
+        },
+        tenant: tenant
+          ? {
+              firstName: tenant.ten_fn,
+              lastName: tenant.ten_ln,
+            }
+          : null,
+        age: tenant ? calculateAge(tenant.ten_dob) : "—",
+        occupation: employment ? employment.emp_job_title : "—",
+      };
+    });
 
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
@@ -76,7 +102,7 @@ export default function LandlordProperties() {
             Your Properties
           </h1>
           <p className="text-gray-600 text-base mt-1">
-            All your properties in one place!
+            All your applications in one place!
           </p>
           <hr className="my-6 border-t-2 border-gray-300 w-full" />
         </div>
@@ -114,11 +140,9 @@ export default function LandlordProperties() {
 
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
-          {propertyCards.map((property) => (
-            <Link key={property.id} to={`/LandlordDetailedProp/${property.id}`}>
-              <BasicPropertyCard property={property} />
-            </Link>
+        <div className="flex flex-col gap-8 w-full max-w-[1230px] px-6">
+          {tenantsWithProperties.map((application, index) => (
+            <LandlordApplicationCard key={index} application={application} />
           ))}
         </div>
       </div>

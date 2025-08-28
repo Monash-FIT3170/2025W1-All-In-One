@@ -15,14 +15,9 @@ Properties.schema = new SimpleSchema({
   prop_furnish: { type: Boolean },
   prop_pets: { type: Boolean },
   prop_bond: { type: Number },
-  prop_status: { type: String },
+
   agent_id: { type: String },
   landlord_id: { type: String },
-  photo: { type: Array, optional: true },
-  "photo.$": { type: String },
-
-  video: { type: Array, optional: true },
-  "video.$": { type: String },
 });
 
 export const Photos = new Mongo.Collection("photos");
@@ -54,17 +49,11 @@ RentalApplications.schema = new SimpleSchema({
     type: String,
     optional: true,
   },
+  landlordFlag: { type: String, optional: true }, // agent’s choice
   status: { type: String, optional: true },
   household_pets: { type: Boolean },
   pet_description: { type: String, optional: true },
   emergency_contact_id: { type: String },
-
-  landlordFlag: { type: String, optional: true }, // 'shortlisted', 'to_review', 'flagged'
-  agentFinalStatus: { type: String, optional: true }, // 'approved', 'rejected'
-  finalDecision: { type: String, optional: true },
-  // values: "Approved", "Rejected"
-
-  submitted : {type: Boolean, defaultValue: false},
 });
 
 export const Tenants = new Mongo.Collection("tenants");
@@ -124,8 +113,7 @@ Incomes.schema = new SimpleSchema({
   rental_app_id: { type: String },
   inc_type: { type: String },
   inc_amt: { type: Number },
-  inc_supporting_doc: { type: String , optional: true },
-  inc_public_id: { type: String , optional: true },
+  inc_supporting_doc: { type: String },
 });
 
 export const Identities = new Mongo.Collection("identities");
@@ -133,9 +121,7 @@ Identities.schema = new SimpleSchema({
   identity_id: { type: String },
   rental_app_id: { type: String },
   identity_type: { type: String },
-  identity_public_id: { type: String , optional: true },
-  identity_desc: { type: String, optional: true },
-  identity_scan: { type: String, optional: true },
+  identity_scan: { type: String },
 });
 
 export const Households = new Mongo.Collection("households");
@@ -154,62 +140,4 @@ Agents.schema = new SimpleSchema({
   agent_ph: { type: String },
   agent_email: { type: String },
   agent_password: { type: String },
-});
-
-export const AgentAvailabilities = new Mongo.Collection('agentAvailabilities');
-AgentAvailabilities.schema = new SimpleSchema({
-  start: { type: String },
-  end: { type: String },
-  activity_type: { type: String },
-  availability_type: { type: String },
-  property: { type: Object, blackbox: true },
-  price: { type: String, optional: true },
-  bedrooms: { type: String, optional: true },
-  bathrooms: { type: String, optional: true },
-  parking: { type: String, optional: true },
-  image: { type: String, optional: true },
-  status: { type: String, optional: true },
-  createdAt: { type: Date, optional: true }
-});
-
-export const TenantBookings = new Mongo.Collection('tenantBookings');
-TenantBookings.schema = new SimpleSchema({
-  agentAvailabilityId: { type: String },
-  tenantName: { type: String },
-  tenantId: { type: String },
-  start: { type: Date },
-  end: { type: Date },
-  property: { type: Object, blackbox: true },
-  status: { type: String },
-  createdAt: { type: Date, optional: true }
-});
-
-export const ExpressionOfInterest = new Mongo.Collection('expressionOfInterest');
-ExpressionOfInterest.schema = new SimpleSchema({
-  EOI_id: { type: String },
-  propertyAddress: { type: String },
-  tenantName: { type: String },
-  tenantID: { type: String },
-  EOI: { type: String }
-});
-
-export const OpenHouseAttendance = new Mongo.Collection('openHouseAttendance');
-OpenHouseAttendance.schema = new SimpleSchema({
-  bookingID: { type: String },
-  propertyAddress: { type: String },
-  start: { type: String },
-  end: { type: String },
-  attendanceList: { type: Array },
-    'attendanceList.$': { type: Object },
-    'attendanceList.$.tenantID': { type: String },
-    'attendanceList.$.tenantName': { type: String },
-    'attendanceList.$.tenantAttendance': { type: Boolean },
-    'attendanceList.$.notes': { type: String, optional: true } // Optional notes for the attendee (entered by agent)
-});
-
-export const StarredProperties = new Mongo.Collection('starredProperties');
-StarredProperties.schema = new SimpleSchema({
-  tent_id: { type: String }, // assuming only tenant gets to star properties
-  prop_id: { type: String },
-  starredAt: { type: Date, defaultValue: new Date() },
 });
