@@ -232,3 +232,20 @@ OpenHouseAttendance.schema = new SimpleSchema({
     'attendanceList.$.tenantName': { type: String },
     'attendanceList.$.tenantAttendance': { type: Boolean }
 });
+
+
+export const TicketActivities = new Mongo.Collection('ticketActivities');
+TicketActivities.schema = new SimpleSchema({
+  start: { type: String }, // stored as ISO string
+  end: { type: String },
+  ticket_id: { type: String }, // link back to parent ticket
+  agent_id: { type: String },  // who created it
+  title: { type: String },     // ticket title or short label
+  notes: { type: String, optional: true },
+  status: { 
+    type: String, 
+    allowedValues: ['pending', 'in-progress', 'completed'],
+    defaultValue: 'pending'
+  },
+  createdAt: { type: Date, defaultValue: new Date() },
+});

@@ -5,12 +5,14 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { AgentAvailabilities, OpenHouseAttendance } from '../../../api/database/collections';
+import { AgentAvailabilities, OpenHouseAttendance, TicketActivities } from '../../../api/database/collections';
 import { ClearDialog } from './ClearDialog.jsx'; 
 import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
 import { EventDetailModal } from './EventDetailModal.jsx';
 import { TicketTypeDialog } from './TicketTypeDialog.jsx';
 import { TicketActivityDialog } from './TicketActivityDialog.jsx';
+
 
 const callAsync = (methodName, ...args) => {
   return new Promise((resolve, reject) => {
@@ -67,6 +69,15 @@ export const Calendar = () => {
     return {
       availabilities: data,
       isLoading: !handler.ready(),
+    };
+  });
+
+    const { ticketActivities, loadingTickets } = useTracker(() => {
+    const handler = Meteor.subscribe('ticketActivities');
+    const data = TicketActivities.find().fetch();
+    return {
+      ticketActivities: data,
+      loadingTickets: !handler.ready(),
     };
   });
 
@@ -397,6 +408,24 @@ export const Calendar = () => {
                 classNames,
               };
             }),
+            ...ticketActivities.map(ticket => {
+              id: act._id,
+              title: `Ticket: ${act.title}`,
+              start: new Date(act.start),
+              end: new Date(act.end),
+              backgroundColor: '#FFE4E6',
+              textColor: '#B91C1C',
+              borderColor: '#FCA5A5',
+              extendedProps: act,
+
+
+
+
+
+
+
+
+
             ...newEvents.map(event => ({
               ...event,
               backgroundColor: '#F2F2F2',
