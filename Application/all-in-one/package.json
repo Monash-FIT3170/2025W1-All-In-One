@@ -17,6 +17,7 @@
     "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^7.3.0",
     "@mui/material": "^7.3.0",
+    "@react-google-maps/api": "^2.20.7",
     "clone": "^2.1.2",
     "dayjs": "^1.11.13",
     "dotenv": "^17.2.1",
