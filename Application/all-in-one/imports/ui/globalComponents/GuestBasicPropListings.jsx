@@ -3,6 +3,7 @@ import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter, FaMapMarkedAlt } fr
 import { Link } from "react-router-dom";
 import NavBar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
+import MapView from "./MapView.jsx";
 import BasicPropertyCard from "./BasicPropertyCard.jsx";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
@@ -123,21 +124,25 @@ export default function GuestBasicPropListings() {
       <div className="h-40" />
       {/* Map Popup */}
       {showMap && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white w-3/4 h-3/4 rounded-lg shadow-lg relative flex flex-col"></div>
-            {/* Close button */}
-            <button
-              onClick={() => setShowMap(false)}
-              className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1"
-            >
-              Close
-            </button>
-            {/* Map content */}
-            <p className="text-lg text-gray-600 text-center">
-            
-              Map would be displayed here.</p>
-            </div>
-      )}
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white w-3/4 h-3/4 rounded-lg shadow-lg relative flex flex-col">
+        {/* Close button */}
+          <button
+            onClick={() => setShowMap(false)}
+            className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1 z-10"
+          >
+            Close
+          </button>
+
+          {/* Map content */}
+          <div className="flex-1">
+            <MapView />
+          </div>
+        </div>
+      </div>
+)}
+
+     
           
       
       
