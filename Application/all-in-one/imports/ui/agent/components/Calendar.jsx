@@ -35,7 +35,8 @@ export const Calendar = () => {
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
 
-  // 👇 these are for the ticket flow
+  // 👇 these are for the ticket flow adding the ticke flow
+  // (selecting a ticket, then creating a ticket activity)
   const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false);
   const [showTicketActivityDialog, setShowTicketActivityDialog] = useState(false);
   const [selectedTicketForActivity, setSelectedTicketForActivity] = useState(null);

@@ -9,6 +9,7 @@ import StatusMenu from './components/StatusMenu';
 import Navbar from "../landlord/components/LandlordNavbar";
 import Footer from "../landlord/components/Footer";
 
+// Main component to review rental applications
 export const ReviewApplication = () => {
     const [applicantSearch, setApplicantSearch] = useState('');
     const [propertySearch, setPropertySearch] = useState('');
