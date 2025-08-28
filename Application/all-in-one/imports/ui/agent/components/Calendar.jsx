@@ -4,7 +4,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { AgentAvailabilities, OpenHouseAttendance } from '../../../api/database/collections';
+/*import { AgentAvailabilities, OpenHouseAttendance } from '../../../api/database/collections';*/
 import { AgentAvailabilities, OpenHouseAttendance, TicketActivities } from '../../../api/database/collections';
 import { ClearDialog } from './ClearDialog.jsx'; 
 import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
