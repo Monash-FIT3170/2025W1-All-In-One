@@ -133,8 +133,9 @@ export default function GuestBasicPropListings() {
               Close
             </button>
             {/* Map content */}
-            <div className="flex-1 flex items-center justify-center text-gray-600"></div>
-              <p>Map would be displayed here.</p>
+            <p className="text-lg text-gray-600 text-center">
+            
+              Map would be displayed here.</p>
             </div>
       )}
           
