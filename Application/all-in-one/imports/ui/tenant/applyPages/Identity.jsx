@@ -11,6 +11,7 @@ function Identity({ propId, tenId }) {
   const [statusMessage, setStatusMessage] = useState('');
   const [editingIdentity, setEditingIdentity] = useState(null);
 
+  // Subscribe to rental application
   const rentalApp = useTracker(() => {
     Meteor.subscribe('rentalApplications');
     return RentalApplications.findOne({ prop_id: propId, ten_id: tenId });
@@ -22,8 +23,9 @@ function Identity({ propId, tenId }) {
     }
   }, [rentalApp]);
 
+  // Subscribe to all identities (no param)
   const identities = useTracker(() => {
-    Meteor.subscribe('identities');
+    Meteor.subscribe('identities'); // subscribe to all identities
     if (!rentalAppId) return [];
     return Identities.find({ rental_app_id: rentalAppId }).fetch();
   }, [rentalAppId]);
@@ -39,26 +41,13 @@ function Identity({ propId, tenId }) {
       rental_app_id: rentalAppId,
       identity_type: newIdentity.type,
       identity_scan: newIdentity.scan || '',
-      identity_desc: newIdentity.description || '',
-      identity_public_id: newIdentity.public_id || '',
     };
 
     Meteor.call('identities.insert', identityDoc, (err) => {
       if (err) {
-        setStatusMessage(`Error saving identity document: ${err.message}`);
+        setStatusMessage(`Error adding identity document: ${err.message}`);
       } else {
-        setStatusMessage(editingIdentity
-          ? 'Identity document updated successfully.'
-          : 'Identity document added successfully.');
-
-        // If editing, delete the old identity
-        if (editingIdentity?.identity_id) {
-          Meteor.call('identities.remove', editingIdentity.identity_id, (removeErr) => {
-            if (removeErr) {
-              console.warn('Failed to remove old identity during edit:', removeErr.message);
-            }
-          });
-        }
+        setStatusMessage('Identity document added successfully.');
       }
     });
 
@@ -83,57 +72,14 @@ function Identity({ propId, tenId }) {
       identity_id: identity.identity_id,
       type: identity.identity_type,
       scan: identity.identity_scan,
-      description: identity.description || '',
     });
     setOpenModal(true);
-  };
-
-  const renderMedia = (url) => {
-    if (!url) return null;
-    const extension = url.split('.').pop().toLowerCase();
-
-    if (['mp4', 'webm', 'mov'].includes(extension)) {
-      return (
-        <div>
-          <span className="text-xs text-purple-500">[Video]</span>
-          <video
-            className="w-full rounded-md border border-gray-300 mt-1"
-            controls
-            preload="metadata"
-            style={{ maxHeight: '200px' }}
-          >
-            <source src={url} type={`video/${extension}`} />
-            Your browser does not support the video tag.
-          </video>
-        </div>
-      );
-    } else if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
-      return (
-        <div>
-          <span className="text-xs text-green-600">[Image]</span>
-          <img
-            src={url}
-            alt="Uploaded Identity"
-            className="w-full rounded-md border border-gray-300 mt-1 max-h-48 object-contain"
-          />
-        </div>
-      );
-    } else {
-      return (
-        <div>
-          <span className="text-xs text-yellow-600">[Link]</span>
-          <a href={url} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">
-            View Document
-          </a>
-        </div>
-      );
-    }
   };
 
   return (
     <div>
       <h3 className="text-xl font-semibold mb-2">Identity Documents</h3>
-      <p className="text-gray-600 text-sm mb-6">Please upload supporting identity documents (image/video/file link).</p>
+      <p className="text-gray-600 text-sm mb-6">Please upload supporting identity documents.</p>
 
       <div className="mb-4">
         <button
@@ -172,19 +118,17 @@ function Identity({ propId, tenId }) {
               </button>
             </div>
 
-            <p className="font-semibold text-lg truncate">{identity.identity_type}</p>
-
-            {identity.description && (
-              <p className="text-sm text-gray-600 mt-1 italic">"{identity.description}"</p>
-            )}
+            <p className="font-semibold text-lg mb-2 truncate">{identity.identity_type}</p>
 
             {identity.identity_scan && (
-              <div className="mt-3">{renderMedia(identity.identity_scan)}</div>
+              <p className="text-gray-700 text-sm mt-1 truncate">Docs: {identity.identity_scan}</p>
             )}
           </div>
+
         ))}
       </div>
 
+      {/* Save Details Button (disabled placeholder) */}
       <button
         className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 hover:text-white transition"
         disabled

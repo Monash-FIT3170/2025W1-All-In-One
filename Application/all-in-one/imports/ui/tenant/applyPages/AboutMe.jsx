@@ -61,6 +61,9 @@ const AboutMe = ({ propId, tenId}) => {
           value={description}
           onChange={(e) => setDescription(e.target.value)}
         />
+        <p className="text-gray-600 text-sm mb-6">
+          You can&nbsp;@mention&nbsp;other users and organizations.
+        </p>
       </div>
 
       <button

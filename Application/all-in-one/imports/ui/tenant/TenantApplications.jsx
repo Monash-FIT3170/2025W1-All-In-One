@@ -1,7 +1,4 @@
 // TenantApplications.jsx
-// This component displays all rental applications submitted by the currently logged-in tenant
-// It shows property details, application status, and tenant information for each application
-
 import React from "react";
 import { Meteor } from "meteor/meteor";
 import { useTracker } from "meteor/react-meteor-data";
