@@ -1,4 +1,4 @@
-import React from "react";
+/*import React from "react";*/
 import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter, FaMapMarkedAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import NavBar from "./Navbar.jsx";
@@ -7,11 +7,16 @@ import BasicPropertyCard from "./BasicPropertyCard.jsx";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos } from "../../api/database/collections.js"; // importing mock for now
+import React, { useState } from "react";
 
 export default function GuestBasicPropListings() {
+  /* the map pop up restriction */ 
+  const [showMap, setShowMap] = useState(false);
+
   const { isReady, properties, photos }=  useTracker(()=>{
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
+      
   
       const isReady= subProps.ready() && subPhotos.ready();
       const properties= isReady ? Properties.find().fetch(): [];
@@ -92,6 +97,7 @@ export default function GuestBasicPropListings() {
 
                 {/* Map button with icon */}
                 <button
+                  onClick={() => setShowMap(true)}
                   className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
                   >
                   <FaMapMarkedAlt className="mr-2" />
@@ -115,7 +121,27 @@ export default function GuestBasicPropListings() {
       </div>
       {/* Blank space before footer */}
       <div className="h-40" />
-
+      {/* Map Popup */}
+      {showMap && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white w-3/4 h-3/4 rounded-lg shadow-lg relative flex flex-col"></div>
+            {/* Close button */}
+            <button
+              onClick={() => setShowMap(false)}
+              className="absolute top-3 right-3 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full px-3 py-1"
+            >
+              Close
+            </button>
+            {/* Map content */}
+            <div className="flex-1 flex items-center justify-center text-gray-600"></div>
+              <p>Map would be displayed here.</p>
+            </div>
+      )}
+          
+      
+      
+      
+      
       {/*Footer*/}
       <Footer />
     </div>
