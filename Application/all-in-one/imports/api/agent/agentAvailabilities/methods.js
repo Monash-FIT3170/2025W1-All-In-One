@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
-import { AgentAvailabilities } from '/imports/api/database/collections';
+import { AgentAvailabilities, TicketActivities } from '/imports/api/database/collections';
 
 Meteor.methods({
   async 'agentAvailabilities.insert'(
@@ -93,10 +93,16 @@ Meteor.methods({
     return result;
   },
 
-  async 'agentAvailabilities.clear'() {
-    console.log('Clearing all availabilities...');
-    return await AgentAvailabilities.removeAsync({});
+  // async 'agentAvailabilities.clear'() {
+  //   console.log('Clearing all availabilities...');
+  //   return await AgentAvailabilities.removeAsync({});
+  // },
+  async 'calendar.clearAll'() {
+    await AgentAvailabilities.removeAsync({});
+    await TicketActivities.removeAsync({});
+    return true;
   },
+
   async 'agentAvailabilities.update'(availabilityId, updateData) {
     check(availabilityId, String);
     check(updateData, Object);

@@ -149,15 +149,25 @@ export const Calendar = () => {
 
   const handleClearButtonClick = () => setShowClearDialog(true);
 
+  // const handleClearConfirm = () => {
+  //   Meteor.call('agentAvailabilities.clear', (error) => {
+  //     if (error) {
+  //       console.error(error);
+  //     } else {
+  //       setShowClearDialog(false);
+  //     }
+  //   });
+  // };
   const handleClearConfirm = () => {
-    Meteor.call('agentAvailabilities.clear', (error) => {
-      if (error) {
-        console.error(error);
-      } else {
-        setShowClearDialog(false);
-      }
+  Meteor.call('calendar.clearAll', (error) => {
+    if (error) {
+      console.error(error);
+    } else {
+      setShowClearDialog(false);
+    }
     });
   };
+
 
   const handleEventClick = (info) => {
     // ✅ Only show booked event details
