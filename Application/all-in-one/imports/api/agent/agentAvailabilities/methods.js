@@ -100,26 +100,4 @@ Meteor.methods({
 
 });
 
-// after agentAvailabilities.clear
-Meteor.methods({
-  async 'ticketActivities.insert'(start, end, ticket_id, agent_id, title, notes) {
-    check(start, String);
-    check(end, String);
-    check(ticket_id, String);
-    check(agent_id, String);
-    check(title, String);
-    check(notes, String);
-
-    return await TicketActivities.insertAsync({
-      start,
-      end,
-      ticket_id,
-      agent_id,
-      title,
-      notes,
-      status: 'pending',
-      createdAt: new Date(),
-    });
-  },
-});
 
