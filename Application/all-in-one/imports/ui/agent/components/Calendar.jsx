@@ -5,7 +5,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 
-// ✅ All needed collections
+// ✅ All collections
 import { 
   AgentAvailabilities, 
   OpenHouseAttendance, 
@@ -28,15 +28,7 @@ const callAsync = (methodName, ...args) => {
   });
 };
 
-function toDatetimeLocal(date) {
-  if (!date) return '';
-  const d = new Date(date);
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0, 16);
-}
-
 export const Calendar = () => {
-  const [newEvents, setNewEvents] = useState([]);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
@@ -49,8 +41,6 @@ export const Calendar = () => {
 
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
-  const [editEvent, setEditEvent] = useState(null);
-  const [showEditDialog, setShowEditDialog] = useState(false);
 
   const closeDialogs = () => {
     setShowClearDialog(false);
@@ -100,24 +90,10 @@ export const Calendar = () => {
 
   const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note) => {
     setShowAvailabilityTypeDialog(false);
-
-    const { address, price, bedrooms, bathrooms, parking, image, is_private } = propertyInfo;
-
-    handleBookingSelect({
-      type,
-      start,
-      end,
-      address,
-      price,
-      bedrooms,
-      bathrooms,
-      parking,
-      image,
-      note,
-      is_private,
-    });
+    handleBookingSelect({ type, start, end, ...propertyInfo, note });
   };
 
+  // === INSERT availability immediately into DB ===
   const handleBookingSelect = async ({
     type,
     start,
@@ -134,7 +110,7 @@ export const Calendar = () => {
     const status = type === 'Open House' && is_private ? 'Invitation sent' : 'confirmed';
 
     try {
-      await callAsync(
+      const insertedId = await callAsync(
         'agentAvailabilities.insert',
         start.toISOString(),
         end.toISOString(),
@@ -152,18 +128,14 @@ export const Calendar = () => {
       );
 
       if (type === 'Open House' && !is_private) {
-        const curr_booking = AgentAvailabilities.findOne({ start: start.toISOString() });
-        const booking_id = curr_booking?._id;
-        if (booking_id) {
-          await callAsync(
-            'openHouseAttendance.insert',
-            booking_id,
-            address,
-            start.toISOString(),
-            end.toISOString(),
-            []
-          );
-        }
+        await callAsync(
+          'openHouseAttendance.insert',
+          insertedId,
+          address,
+          start.toISOString(),
+          end.toISOString(),
+          []
+        );
       }
     } catch (error) {
       alert('Insert failed: ' + error.reason);
@@ -182,18 +154,14 @@ export const Calendar = () => {
       if (error) {
         console.error(error);
       } else {
-        setNewEvents([]);
         setShowClearDialog(false);
       }
     });
   };
 
   const handleEventClick = (info) => {
-    if (!info.event.id || (info.event.id.length !== 17 && info.event.id.length !== 24)) {
-      alert('You can only edit saved availabilities.');
-      return;
-    }
-    if (info.event.extendedProps.status === 'booked') {
+    // ✅ Only show booked event details
+    //if (info.event.extendedProps.status === 'booked') {
       setSelectedEvent({
         id: info.event.id,
         title: info.event.title,
@@ -201,16 +169,7 @@ export const Calendar = () => {
         end: info.event.end,
         ...info.event.extendedProps,
       });
-      return;
-    }
-    setEditEvent({
-      id: info.event.id,
-      title: info.event.title,
-      start: info.event.start,
-      end: info.event.end,
-      ...info.event.extendedProps,
-    });
-    setShowEditDialog(true);
+    //}
   };
 
   // === Ticket flow ===
@@ -316,13 +275,6 @@ export const Calendar = () => {
               textColor: '#000000',
               borderColor: '#FF9900',
             })),
-            // Local temp events
-            ...newEvents.map(event => ({
-              ...event,
-              backgroundColor: '#F2F2F2',
-              textColor: '#000000',
-              borderColor: '#000000',
-            })),
           ]}
           eventClick={handleEventClick}
           headerToolbar={{ left: 'prev today next', center: '', right: 'title' }}
@@ -346,43 +298,6 @@ export const Calendar = () => {
       </div>
 
       {selectedEvent && <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
-
-      {showEditDialog && editEvent && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
-          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-            <h2 className="text-xl font-bold mb-4">Edit Availability</h2>
-            <label className="block mb-2">Start Time</label>
-            <input type="datetime-local" className="w-full mb-4 border rounded p-2"
-              value={toDatetimeLocal(editEvent.start)}
-              onChange={e => setEditEvent(ev => ({ ...ev, start: new Date(e.target.value) }))} />
-            <label className="block mb-2">End Time</label>
-            <input type="datetime-local" className="w-full mb-4 border rounded p-2"
-              value={toDatetimeLocal(editEvent.end)}
-              onChange={e => setEditEvent(ev => ({ ...ev, end: new Date(e.target.value) }))} />
-
-            <div className="flex justify-end gap-2">
-              <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => setShowEditDialog(false)}>Cancel</button>
-              <button className="bg-red-500 text-white px-4 py-2 rounded"
-                onClick={async () => {
-                  try {
-                    await callAsync('agentAvailabilities.remove', String(editEvent.id));
-                    setShowEditDialog(false); setEditEvent(null);
-                  } catch (error) { alert('Delete failed: ' + error.reason); }
-                }}>Delete</button>
-              <button className="bg-purple-500 text-white px-4 py-2 rounded"
-                onClick={async () => {
-                  try {
-                    await callAsync('agentAvailabilities.update', String(editEvent.id), {
-                      start: editEvent.start.toISOString(),
-                      end: editEvent.end.toISOString(),
-                    });
-                    setShowEditDialog(false); setEditEvent(null);
-                  } catch (error) { alert('Update failed: ' + error.reason); }
-                }}>Save</button>
-            </div>
-          </div>
-        </div>
-      )}
 
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
         <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
