@@ -38,6 +38,10 @@ export default function ReviewApplication() {
   const [selectedProperties, setSelectedProperties] = useState([]);
   const [showNotesModal, setShowNotesModal] = useState(false);
   const [selectedAttendee, setSelectedAttendee] = useState(null);
+  const [statuses, setStatuses] = useState({});
+  const [loadingIds, setLoadingIds] = useState({});
+
+
 
   const agent = Meteor.user();
   const agentId = agent?._id;
@@ -101,7 +105,7 @@ export default function ReviewApplication() {
     if (!property) return { status: 'unknown', notes: null };
 
     // Find open house attendance records for this property
-    const attendanceRecords = openHouseAttendance.filter(record => 
+    const attendanceRecords = openHouseAttendance.filter(record =>
       record.propertyAddress === property.prop_address
     );
 
@@ -112,12 +116,12 @@ export default function ReviewApplication() {
     if (!tenant) return { status: 'unknown', notes: null };
 
     const tenantName = `${tenant.ten_fn} ${tenant.ten_ln}`;
-    
+
     for (const record of attendanceRecords) {
       const attendee = record.attendanceList.find(a => a.tenantName === tenantName);
       if (attendee) {
-        return { 
-          status: attendee.tenantAttendance ? 'present' : 'registered', 
+        return {
+          status: attendee.tenantAttendance ? 'present' : 'registered',
           notes: attendee.notes || null,
           attendee
         };
@@ -184,6 +188,27 @@ export default function ReviewApplication() {
       }
     });
   };
+  //Flag icons for application status
+  const flags = [
+    { src: "/icons/flag-green.png", label: "Shortlisted" },
+    { src: "/icons/flag-red.png", label: "Flagged" },
+    { src: "/icons/flag-yellow.png", label: "To be Reviewed" },
+  ];
+
+  // Handle agent clicking a flag
+  const handleClick = (appId, label) => {
+    setLoadingIds((prev) => ({ ...prev, [appId]: true }));
+
+    Meteor.call("rentalApplications.setLandlordFlag", appId, label, (err) => {
+      setLoadingIds((prev) => ({ ...prev, [appId]: false }));
+      if (err) {
+        alert("Error saving agent flag: " + err.reason);
+      } else {
+        setStatuses((prev) => ({ ...prev, [appId]: label }));
+      }
+    });
+  };
+
 
   return (
     <div className="bg-[#FFF8EB] min-h-screen pb-20">
@@ -259,7 +284,8 @@ export default function ReviewApplication() {
             if (app.landlordFlag)
               extraInfoParts.push(formatFlagLabel(app.landlordFlag));
             const extraInfo = extraInfoParts.join(" • ");
-
+            const currentStatus = statuses[app._id] || app.landlordFlag || null;
+            const isLoading = loadingIds[app._id];
             return (
               <div key={app._id} className="flex overflow-hidden gap-8">
                 {/* Property image */}
@@ -357,44 +383,87 @@ export default function ReviewApplication() {
                     }
                     status={app.status || "Pending"}
                     statusIcon={
-                      <div className="relative flex items-center gap-3">
-                        <button
-                          className="px-2 py-1 rounded bg-white text-sm"
-                          onClick={() => setStatusMenuAppId(app._id)}
-                        >
-                          {app.status === "Shortlisted"
-                            ? "🟢"
-                            : app.status === "Flagged"
-                              ? "🔴"
-                              : app.status == "Approved"
-                                ? "✅"
-                                : app.status == "Rejected"
-                                  ? "❌"
-                                  : "⏳"}
-                        </button>
-                        <StatusMenu
-                          show={statusMenuAppId === app._id}
-                          onClose={() => setStatusMenuAppId(null)}
-                          onAccept={() => {
-                            Meteor.call(
-                              "rentalApplications.setStatus",
-                              app._id,
-                              "Shortlisted"
-                            );
-                            setStatusMenuAppId(null);
-                          }}
-                          onReject={() => {
-                            Meteor.call(
-                              "rentalApplications.setStatus",
-                              app._id,
-                              "Flagged"
-                            );
-                            setStatusMenuAppId(null);
-                          }}
-                          status={app.status}
-                        />
+                      <div className="flex gap-2 items-center">
+                        {currentStatus === null ? (
+                          flags.map((flag) => (
+                            <img
+                              // src="/icons/Frame32.png"
+                              // alt="Red Flag"
+                              width={20}
+                              height={20}
+                              key={flag.label}
+                              src={flag.src}
+                              alt={flag.label}
+                              className={`w-10 h-10 cursor-pointer hover:scale-110 transition ${isLoading ? "opacity-50 cursor-wait" : ""
+                                }`}
+                              onClick={() =>
+                                !isLoading && handleClick(app._id, flag.label)
+                              }
+                            />
+                          ))
+                        ) : (
+                          <div className="flex gap-2 items-center">
+                            {(() => {
+                              const matchedFlag = flags.find(
+                                (f) => f.label === currentStatus
+                              );
+                              if (!matchedFlag) {
+                                return (
+                                  <span className="text-sm text-red-500">
+                                    Unknown flag: {currentStatus}
+                                  </span>
+                                );
+                              }
+                              return (
+                                <>
+                                  <img
+                                    src={matchedFlag.src}
+                                    alt={currentStatus}
+                                    className="w-10 h-10"
+                                  />
+                                  <span className="text-lg font-medium">
+                                    {currentStatus}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      // Reset UI
+                                      setStatuses((prev) => ({
+                                        ...prev,
+                                        [app._id]: null,
+                                      }));
+
+
+                                      // Reset DB
+                                      Meteor.call(
+                                        "rentalApplications.clearLandlordFlag",
+                                        app._id,
+                                        (err) => {
+                                          if (err) {
+                                            alert(
+                                              "Error clearing flag: " +
+                                              err.reason
+                                            );
+                                          }
+                                        }
+                                      );
+                                    }}
+                                    className="ml-2 text-sm text-blue-500 underline"
+                                    disabled={isLoading}
+                                  >
+                                    Change
+                                  </button>
+                                </>
+                              );
+                            })()}
+                          </div>
+                        )}
                       </div>
                     }
+
+
+
+
+
                     attendanceStatus={getAttendanceStatus(app)}
                     onAttendanceClick={() => handleAttendanceClick(app)}
                   />
@@ -453,14 +522,13 @@ export default function ReviewApplication() {
                 ×
               </button>
             </div>
-            
+
             <div className="mb-4">
               <p className="text-sm text-gray-600 mb-2">Status:</p>
-              <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${
-                selectedAttendee.status === 'present' 
-                  ? 'bg-green-100 text-green-800' 
+              <span className={`inline-block px-3 py-1 text-sm font-semibold rounded-full ${selectedAttendee.status === 'present'
+                  ? 'bg-green-100 text-green-800'
                   : 'bg-blue-100 text-blue-800'
-              }`}>
+                }`}>
                 {selectedAttendee.status === 'present' ? '✅ PRESENT' : '📝 REGISTERED'}
               </span>
             </div>

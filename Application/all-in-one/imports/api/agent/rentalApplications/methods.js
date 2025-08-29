@@ -329,6 +329,36 @@ Meteor.methods({
     return leaseId;
   },
 
+  
+
+//Flag from agent to landlord
+ async "rentalApplications.setLandlordFlag"(id, status) {
+   check(id, String);
+   check(status, String);
+   console.log(
+     `[METHOD] rentalApplications.setStatus called for id: ${id} status: ${status}`
+   );
+   return await RentalApplications.updateAsync(id, {
+     $set: { landlordFlag: status },
+   });
+ },
+
+
+ //Agent to change flag status
+ async "rentalApplications.clearLandlordFlag"(appId) {
+   check(appId, String);
+
+
+   return await RentalApplications.updateAsync(appId, {
+     $unset: { landlordFlag: "" }, // remove the flag field
+   });
+ },
+
+
+
+
+
+
   async 'sharedLease.join'(leaseId, rentalAppId) {
     check(leaseId, String);
     check(rentalAppId, String);
