@@ -96,7 +96,36 @@ Meteor.methods({
   async 'agentAvailabilities.clear'() {
     console.log('Clearing all availabilities...');
     return await AgentAvailabilities.removeAsync({});
+  },
+  async 'agentAvailabilities.update'(availabilityId, updateData) {
+    check(availabilityId, String);
+    check(updateData, Object);
+    const result = await AgentAvailabilities.updateAsync(
+      { _id: availabilityId },
+      { $set: updateData }
+    );
+
+    if (result === 0) {
+      throw new Meteor.Error('not-found', 'No matching availability found.');
+    }
+
+    return result;
+  },
+  async 'agentAvailabilities.remove'(availabilityId) {
+    check(availabilityId, String);
+
+    const result = await AgentAvailabilities.removeAsync({ _id: availabilityId });
+
+    if (result === 0) {
+      throw new Meteor.Error('not-found', 'No matching availability found.');
+    }
+
+    return result;
   }
+
+
+
+  
 
 });
 
