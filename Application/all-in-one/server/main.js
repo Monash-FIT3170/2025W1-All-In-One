@@ -33,6 +33,10 @@ import '/imports/api/agent/expressionOfInterest/publication';
 import '/imports/api/tenant/tickets/ticketsMethods';
 import '/imports/api/tenant/tickets/ticketsPublications'
 import '/imports/api/methods/eoi.js';
+import '/imports/api/agent/ticketActivities/methods.js';
+import '/imports/api/agent/ticketActivities/publications.js';
+
+
 
 Meteor.startup(async () => { 
   // Insert mock data only if collections are empty

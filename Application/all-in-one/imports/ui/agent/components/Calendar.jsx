@@ -1,10 +1,17 @@
-import React, { useState , useEffect } from 'react';
+import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { AgentAvailabilities, OpenHouseAttendance } from '../../../api/database/collections';
+
+// ✅ All needed collections
+import { 
+  AgentAvailabilities, 
+  OpenHouseAttendance, 
+  TicketActivities 
+} from '../../../api/database/collections';
+
 import { ClearDialog } from './ClearDialog.jsx'; 
 import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
@@ -25,7 +32,7 @@ function toDatetimeLocal(date) {
   if (!date) return '';
   const d = new Date(date);
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0,16);
+  return d.toISOString().slice(0, 16);
 }
 
 export const Calendar = () => {
@@ -35,7 +42,7 @@ export const Calendar = () => {
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
 
-  // 👇 these are for the ticket flow
+  // 👇 ticket flow state
   const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false);
   const [showTicketActivityDialog, setShowTicketActivityDialog] = useState(false);
   const [selectedTicketForActivity, setSelectedTicketForActivity] = useState(null);
@@ -52,53 +59,49 @@ export const Calendar = () => {
     setShowTicketTypeDialog(false);
     setShowOpenHouseDialog(false);
     setShowTicketActivityDialog(false);
-    setPendingSlot(null);                 // ← this clears the slot!
+    setPendingSlot(null);
     setSelectedEvent(null);
     setSelectedTicketForActivity(null);
   };
 
-  // 👇 helper: close only the ticket picker (KEEP the slot)
   const closeTicketPicker = () => setShowTicketTypeDialog(false);
 
-  const { availabilities, isLoading } = useTracker(() => {
+  // === Subscriptions ===
+  const { availabilities } = useTracker(() => {
     const handler = Meteor.subscribe('agentAvailabilities');
-    const data = AgentAvailabilities.find().fetch();
     return {
-      availabilities: data,
+      availabilities: AgentAvailabilities.find().fetch(),
       isLoading: !handler.ready(),
     };
   });
 
-  // When the user drags/clicks a slot on the calendar
+  const { ticketActivities } = useTracker(() => {
+    const handler = Meteor.subscribe('ticketActivities');
+    return {
+      ticketActivities: TicketActivities.find().fetch(),
+      isLoading: !handler.ready(),
+    };
+  });
+
+  // === Handlers ===
   const handleSelect = (info) => {
     setPendingSlot({ start: info.start, end: info.end });
     setShowActivityTypeDialog(true);
   };
 
-  // From the "choose activity" dialog
   const handleActivityTypeSelect = (activity_type) => {
     setShowActivityTypeDialog(false);
     if (activity_type === 'Availability') {
       setShowAvailabilityTypeDialog(true);
     } else if (activity_type === 'Ticket') {
-      setShowTicketTypeDialog(true); // open the ticket picker (do NOT clear pendingSlot)
+      setShowTicketTypeDialog(true);
     }
   };
 
   const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note) => {
     setShowAvailabilityTypeDialog(false);
 
-    const {
-      address,
-      price,
-      bedrooms,
-      bathrooms,
-      parking,
-      image,
-      is_private,
-    } = propertyInfo;
-
-    console.log('[Calendar] propertyInfo:', propertyInfo);
+    const { address, price, bedrooms, bathrooms, parking, image, is_private } = propertyInfo;
 
     handleBookingSelect({
       type,
@@ -128,35 +131,8 @@ export const Calendar = () => {
     note,
     is_private,
   }) => {
-    // Private Open House → different initial status
     const status = type === 'Open House' && is_private ? 'Invitation sent' : 'confirmed';
-    const tempEvent = {
-      id: Date.now(),
-      start,
-      end,
-      type,
-      status,
-      title: `Pending: ${type} Availability`,
-      property: {
-        address,
-        price,
-        bedrooms,
-        bathrooms,
-        parking,
-        image,
-        is_private,
-      },
-      price,
-      bedrooms,
-      bathrooms,
-      parking,
-      image,
-      note,
-      allDay: false,
-      is_private,
-    };
 
-    // Immediately insert into DB
     try {
       await callAsync(
         'agentAvailabilities.insert',
@@ -164,7 +140,7 @@ export const Calendar = () => {
         end.toISOString(),
         'Availability',
         type,
-        tempEvent.property,
+        { address, price, bedrooms, bathrooms, parking, image, is_private },
         String(price ?? ''),
         String(bedrooms ?? ''),
         String(bathrooms ?? ''),
@@ -175,15 +151,9 @@ export const Calendar = () => {
         is_private ?? false
       );
 
-      // Creates an attendance list for any new PUBLIC open house availabilities
       if (type === 'Open House' && !is_private) {
-        const curr_booking = AgentAvailabilities.findOne({
-          start: start.toISOString()
-        });
-
+        const curr_booking = AgentAvailabilities.findOne({ start: start.toISOString() });
         const booking_id = curr_booking?._id;
-        const attendanceList = [];
-
         if (booking_id) {
           await callAsync(
             'openHouseAttendance.insert',
@@ -191,77 +161,38 @@ export const Calendar = () => {
             address,
             start.toISOString(),
             end.toISOString(),
-            attendanceList
+            []
           );
         }
       }
-
     } catch (error) {
       alert('Insert failed: ' + error.reason);
-      console.error('Failed to create availability:', error.reason);
+      console.error(error);
       return;
     }
 
     setPendingSlot(null);
     setShowOpenHouseDialog(false);
   };
-  
 
-  const handleClearButtonClick = () => {
-    setShowClearDialog(true);   
-  };
-
-  const handleConfirm = async () => {
-    try {
-      for (const event of newEvents) {
-        await callAsync(
-          'agentAvailabilities.insert',
-          event.start.toISOString(),
-          event.end.toISOString(),
-          'Availability',
-          event.type,
-          event.property, // ✅ now guaranteed to be an object
-          String(event.price ?? ''),
-          String(event.bedrooms ?? ''),
-          String(event.bathrooms ?? ''),
-          String(event.parking ?? ''),
-          String(event.image ?? ''),
-          'confirmed',
-          String(event.note ?? ''),
-          event.is_private ?? false // Pass the is_private flag if it exists
-        );
-      }
-
-      setNewEvents([]);
-      setShowDialog(false);
-    } catch (error) {
-      alert('Insert failed: ' + error.reason);
-      console.error('Failed to create availability:', error.reason);
-    }
-  };
+  const handleClearButtonClick = () => setShowClearDialog(true);
 
   const handleClearConfirm = () => {
     Meteor.call('agentAvailabilities.clear', (error) => {
       if (error) {
-        console.error('Failed to clear availabilities: ' + error.reason);
+        console.error(error);
       } else {
-        console.log('All availabilities cleared!');
-        setNewEvents([]); 
+        setNewEvents([]);
         setShowClearDialog(false);
-        Meteor.subscribe('agentAvailabilities'); 
       }
     });
   };
 
-  // Add this function to extract details for booked events
   const handleEventClick = (info) => {
-    // Only allow editing if the event has a Mongo _id
     if (!info.event.id || (info.event.id.length !== 17 && info.event.id.length !== 24)) {
       alert('You can only edit saved availabilities.');
       return;
     }
-
-    // If the event is booked, show detailed info
     if (info.event.extendedProps.status === 'booked') {
       setSelectedEvent({
         id: info.event.id,
@@ -272,8 +203,6 @@ export const Calendar = () => {
       });
       return;
     }
-
-    // Otherwise, open edit dialog as before
     setEditEvent({
       id: info.event.id,
       title: info.event.title,
@@ -284,46 +213,48 @@ export const Calendar = () => {
     setShowEditDialog(true);
   };
 
-  // 👇 Ticket flow handlers
+  // === Ticket flow ===
   const handleTicketChosen = (ticket) => {
-    // called by TicketTypeDialog.onSelect
     setSelectedTicketForActivity(ticket);
-    setShowTicketTypeDialog(false);      // close the picker
-    setShowTicketActivityDialog(true);   // open Ticket Activity, WITH the same pendingSlot
-    // NOTE: do NOT clear pendingSlot here
+    setShowTicketTypeDialog(false);
+    setShowTicketActivityDialog(true);
   };
 
-  const handleCreateTicketActivity = ({ start, end, notes, ticket }) => {
-    // Example: create a local pending event so it shows on the calendar immediately
-    setNewEvents((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        start,
-        end,
-        type: 'Ticket',
-        status: 'pending',
-        title: `Ticket: ${ticket?.title ?? 'Activity'}`,
-        ticket,
-        allDay: false,
-      },
-    ]);
+  const handleCreateTicketActivity = async ({ start, end, notes, ticket }) => {
+    try {
+      await callAsync(
+        'ticketActivities.insert',
+        start.toISOString(),
+        end.toISOString(),
+        String(ticket?._id || ticket?.ticket_id || ''),
+        Meteor.userId() || '',
+        ticket?.title || 'Activity',
+        String(notes || ''),
+        'pending'
+      );
+    } catch (err) {
+      alert('Failed to save ticket activity: ' + (err.reason || err.message));
+      console.error(err);
+      return;
+    }
+
     setShowTicketActivityDialog(false);
-    // Optionally clear slot after creation:
     setPendingSlot(null);
   };
 
+  // === Render ===
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
-        <p className="text-gray-500 mt-2">Click empty timeslot to schedule an activity - an availability (inspection or open house) or maintenance (to be added in Milestone 3).</p>
+        <p className="text-gray-500 mt-2">
+          Click empty timeslot to schedule an activity - an availability (inspection or open house) or maintenance (to be added in Milestone 3).
+        </p>
       </div>
 
       <div className="border-t border-gray-300 max-w-6xl mx-auto mb-6"></div>
 
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-6xl mx-auto">
-        {/* dashed look for private Open House invites */}
         <style>{`
           .fc .invite-pending {
             border-style: dashed !important;
@@ -341,8 +272,9 @@ export const Calendar = () => {
           selectable={true}
           select={handleSelect}
           events={[
+            // Availabilities
             ...availabilities.map(slot => {
-              const type = slot.availability_type || slot.type; // robustness
+              const type = slot.availability_type || slot.type;
               const statusLower = String(slot.status || '').toLowerCase();
 
               const isBooked = statusLower === 'booked';
@@ -351,177 +283,102 @@ export const Calendar = () => {
                 slot.is_private === true &&
                 /^(invitation sent|invite sent|invited)$/.test(statusLower);
 
-              let title;
-              let backgroundColor;
-              let textColor;
-              let borderColor;
-              let classNames = [];
+              let title, backgroundColor, textColor, borderColor, classNames = [];
 
               if (isBooked) {
                 title = 'Booked';
-                backgroundColor = '#e5e7eb';
-                textColor = '#6b7280';
-                borderColor = '#9ca3af';
+                backgroundColor = '#e5e7eb'; textColor = '#6b7280'; borderColor = '#9ca3af';
               } else if (isPrivateInvite) {
-                // NEW: private OH invite pending -> grey + dashed
                 title = 'Private Open House (Invite Sent)';
-                backgroundColor = '#e5e7eb'; // light grey base
-                textColor = '#374151';       // gray-700
-                borderColor = '#9ca3af';     // gray-400
-                classNames = ['invite-pending']; // dashed via CSS above
+                backgroundColor = '#e5e7eb'; textColor = '#374151'; borderColor = '#9ca3af';
+                classNames = ['invite-pending'];
               } else if (slot.status === 'pending') {
                 title = `Pending: ${type} Availability`;
-                backgroundColor = '#F2F2F2';
-                textColor = '#000000';
-                borderColor = '#000000';
+                backgroundColor = '#F2F2F2'; textColor = '#000000'; borderColor = '#000000';
               } else if (type === 'Open House') {
                 title = 'Open House Availability';
-                backgroundColor = '#DCFFCD';
-                textColor = '#68A44F';
-                borderColor = '#A98A22';
+                backgroundColor = '#DCFFCD'; textColor = '#68A44F'; borderColor = '#A98A22';
               } else {
                 title = 'Inspection Availability';
-                backgroundColor = '#CEF4F1';
-                textColor = '#24A89E';
-                borderColor = '#24A89E';
+                backgroundColor = '#CEF4F1'; textColor = '#24A89E'; borderColor = '#24A89E';
               }
 
-              return {
-                ...slot,
-                id: slot._id, // This is the real Mongo _id
-                title,
-                backgroundColor,
-                textColor,
-                borderColor,
-                classNames,
-              };
+              return { ...slot, id: slot._id, title, backgroundColor, textColor, borderColor, classNames };
             }),
+            // Ticket Activities
+            ...ticketActivities.map(act => ({
+              ...act,
+              id: act._id,
+              start: new Date(act.start),
+              end: new Date(act.end),
+              title: act.title || 'Ticket Activity',
+              backgroundColor: '#FFE6CC',
+              textColor: '#000000',
+              borderColor: '#FF9900',
+            })),
+            // Local temp events
             ...newEvents.map(event => ({
               ...event,
               backgroundColor: '#F2F2F2',
               textColor: '#000000',
               borderColor: '#000000',
             })),
-          ]}                   
-          eventClick={(info) => {
-            const clicked = info.event.extendedProps;
-            setSelectedEvent({
-              title: info.event.title,
-              start: info.event.start,
-              end: info.event.end,
-              ...clicked,
-            });
-          }}          
-          headerToolbar={{
-            left: 'prev today next',
-            center: '',
-            right: 'title'
-          }}
-          buttonText={{
-            today: 'Today'
-          }}
-          titleFormat={{ 
-            year: 'numeric', month: 'long' 
-          }}
+          ]}
+          eventClick={handleEventClick}
+          headerToolbar={{ left: 'prev today next', center: '', right: 'title' }}
+          buttonText={{ today: 'Today' }}
+          titleFormat={{ year: 'numeric', month: 'long' }}
           height="auto"
         />
 
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={closeDialogs} />
         <ActivityTypeDialog isOpen={showActivityTypeDialog} onSelect={handleActivityTypeSelect} onClose={closeDialogs} />
-        <AvailabilityTypeDialog 
-          isOpen={showAvailabilityTypeDialog} 
-          pendingSlot={pendingSlot}
-          onSelect={handleAvailabilityTypeSelect}
-          onClose={closeDialogs} 
-        />
-        <TicketTypeDialog
-          isOpen={showTicketTypeDialog}
-          onClose={closeTicketPicker}
-          onSelect={handleTicketChosen}
-        />
+        <AvailabilityTypeDialog isOpen={showAvailabilityTypeDialog} pendingSlot={pendingSlot} onSelect={handleAvailabilityTypeSelect} onClose={closeDialogs} />
+        <TicketTypeDialog isOpen={showTicketTypeDialog} onClose={closeTicketPicker} onSelect={handleTicketChosen} />
         <TicketActivityDialog
           isOpen={showTicketActivityDialog}
           ticket={selectedTicketForActivity}
           pendingSlot={pendingSlot}
           onCreate={handleCreateTicketActivity}
-          onChangeTicket={() => {
-            setShowTicketActivityDialog(false);
-            setShowTicketTypeDialog(true);
-          }}
+          onChangeTicket={() => { setShowTicketActivityDialog(false); setShowTicketTypeDialog(true); }}
           onClose={() => setShowTicketActivityDialog(false)}
         />
       </div>
 
-      {/* Show event detail modal for booked events */}
-      {selectedEvent && (
-        <EventDetailModal
-          event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-        />
-      )}
+      {selectedEvent && <EventDetailModal event={selectedEvent} onClose={() => setSelectedEvent(null)} />}
 
       {showEditDialog && editEvent && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
           <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
             <h2 className="text-xl font-bold mb-4">Edit Availability</h2>
             <label className="block mb-2">Start Time</label>
-            <input
-              type="datetime-local"
-              className="w-full mb-4 border rounded p-2"
+            <input type="datetime-local" className="w-full mb-4 border rounded p-2"
               value={toDatetimeLocal(editEvent.start)}
-              onChange={e => setEditEvent(ev => ({ ...ev, start: new Date(e.target.value) }))}
-            />
+              onChange={e => setEditEvent(ev => ({ ...ev, start: new Date(e.target.value) }))} />
             <label className="block mb-2">End Time</label>
-            <input
-              type="datetime-local"
-              className="w-full mb-4 border rounded p-2"
+            <input type="datetime-local" className="w-full mb-4 border rounded p-2"
               value={toDatetimeLocal(editEvent.end)}
-              onChange={e => setEditEvent(ev => ({ ...ev, end: new Date(e.target.value) }))}
-            />
-            {/* Add more fields as needed */}
+              onChange={e => setEditEvent(ev => ({ ...ev, end: new Date(e.target.value) }))} />
+
             <div className="flex justify-end gap-2">
-              <button
-                className="bg-gray-300 px-4 py-2 rounded"
-                onClick={() => setShowEditDialog(false)}
-              >
-                Cancel
-              </button>
-              <button
-                className="bg-red-500 text-white px-4 py-2 rounded"
+              <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => setShowEditDialog(false)}>Cancel</button>
+              <button className="bg-red-500 text-white px-4 py-2 rounded"
                 onClick={async () => {
                   try {
-                    const id = String(editEvent.id);
-                    await callAsync('agentAvailabilities.remove', id);
-                    setShowEditDialog(false);
-                    setEditEvent(null);
-                  } catch (error) {
-                    alert('Delete failed: ' + error.reason);
-                    console.error('Failed to delete availability:', error);
-                  }
-                }}
-              >
-                Delete
-              </button>
-              <button
-                className="bg-purple-500 text-white px-4 py-2 rounded"
+                    await callAsync('agentAvailabilities.remove', String(editEvent.id));
+                    setShowEditDialog(false); setEditEvent(null);
+                  } catch (error) { alert('Delete failed: ' + error.reason); }
+                }}>Delete</button>
+              <button className="bg-purple-500 text-white px-4 py-2 rounded"
                 onClick={async () => {
                   try {
-                    const id = String(editEvent.id);
-                    const updateData = {
-                      start: editEvent.start instanceof Date ? editEvent.start.toISOString() : editEvent.start,
-                      end: editEvent.end instanceof Date ? editEvent.end.toISOString() : editEvent.end,
-                    };
-                    await callAsync('agentAvailabilities.update', id, updateData);
-                    setShowEditDialog(false);
-                    setEditEvent(null);
-                  } catch (error) {
-                    alert('Update failed: ' + error.reason);
-                    console.error('Failed to update availability:', error);
-                  }
-                }}
-              >
-                Save
-              </button>
+                    await callAsync('agentAvailabilities.update', String(editEvent.id), {
+                      start: editEvent.start.toISOString(),
+                      end: editEvent.end.toISOString(),
+                    });
+                    setShowEditDialog(false); setEditEvent(null);
+                  } catch (error) { alert('Update failed: ' + error.reason); }
+                }}>Save</button>
             </div>
           </div>
         </div>
