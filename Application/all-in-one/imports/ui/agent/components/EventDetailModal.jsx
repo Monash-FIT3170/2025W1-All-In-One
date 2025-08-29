@@ -262,3 +262,4 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
     </div>
   );
 };
+

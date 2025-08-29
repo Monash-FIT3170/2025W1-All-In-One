@@ -42,3 +42,4 @@ const NavButton = ({ to, onClick, children, className = "" }) => {
 };
 
 export default NavButton;
+

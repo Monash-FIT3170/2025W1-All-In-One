@@ -168,3 +168,4 @@ function AddressHistory({ propId, tenId }) {
 }
 
 export default AddressHistory;
+

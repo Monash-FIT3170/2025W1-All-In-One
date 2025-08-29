@@ -346,3 +346,4 @@ Meteor.methods({
     return leaseId;
   },
 });
+

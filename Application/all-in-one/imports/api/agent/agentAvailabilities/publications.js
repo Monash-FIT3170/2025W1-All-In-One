@@ -6,3 +6,4 @@ if (Meteor.isServer) {
     return AgentAvailabilities.find();
   });
 }
+

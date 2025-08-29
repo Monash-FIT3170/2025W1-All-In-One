@@ -126,3 +126,4 @@ const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
     </div>
   );
 }
+

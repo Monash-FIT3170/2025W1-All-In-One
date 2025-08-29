@@ -78,3 +78,4 @@ const AboutMe = ({ propId, tenId}) => {
 };
 
 export default AboutMe;
+

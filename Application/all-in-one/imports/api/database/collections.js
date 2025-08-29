@@ -213,3 +213,4 @@ StarredProperties.schema = new SimpleSchema({
   prop_id: { type: String },
   starredAt: { type: Date, defaultValue: new Date() },
 }); 
+

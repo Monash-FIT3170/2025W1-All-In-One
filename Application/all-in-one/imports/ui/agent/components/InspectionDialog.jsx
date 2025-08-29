@@ -143,3 +143,4 @@ export const InspectionDialog = ({ isOpen, onSubmit, onClose }) => {
     </div>
   );
 };
+

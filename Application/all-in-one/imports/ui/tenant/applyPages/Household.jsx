@@ -93,3 +93,4 @@ function Household({ propId , tenId }) {
 }
 
 export default Household;
+

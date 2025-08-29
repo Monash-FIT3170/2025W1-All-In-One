@@ -191,4 +191,4 @@ export const SignUpPage = () => {
       </div>
     </div>
   );
-};
+}; 

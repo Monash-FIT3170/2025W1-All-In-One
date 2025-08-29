@@ -46,3 +46,4 @@ export const ClearDialog = ({ isOpen, onConfirm, onCancel }) => {
     </div>
   );
 };
+
