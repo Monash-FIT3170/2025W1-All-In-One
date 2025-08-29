@@ -1,16 +1,34 @@
+/**
+ * Calendar Component
+ * 
+ * A comprehensive calendar interface for agents to manage their schedule and activities.
+ * Features:
+ * - Interactive calendar view with time grid display
+ * - Create availability slots for inspections and open houses
+ * - Schedule and manage various activities (inspections, open houses, meetings)
+ * - View and manage open house attendance
+ * - Real-time data synchronization with MongoDB collections
+ * - Multiple dialog modals for different activity types
+ */
 import React, { useState , useEffect } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
-import { ConfirmDialog } from './ConfirmDialog.jsx'; 
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { AgentAvailabilities } from '../../../api/AgentAvailabilities.js';
+import { AgentAvailabilities, OpenHouseAttendance } from '../../../api/database/collections';
 import { ClearDialog } from './ClearDialog.jsx'; 
 import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
 import { EventDetailModal } from './EventDetailModal.jsx'; 
 
+/**
+ * Utility function to call Meteor methods asynchronously
+ * 
+ * @param {string} methodName - Name of the Meteor method to call
+ * @param {...any} args - Arguments to pass to the method
+ * @returns {Promise} Promise that resolves with the method result or rejects with error
+ */
 const callAsync = (methodName, ...args) => {
   return new Promise((resolve, reject) => {
     Meteor.call(methodName, ...args, (err, res) => {
@@ -20,18 +38,29 @@ const callAsync = (methodName, ...args) => {
   });
 };
 
+function toDatetimeLocal(date) {
+  if (!date) return '';
+  const d = new Date(date);
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0,16);
+}
+
 export const Calendar = () => {
+  // State management for various dialogs and events
   const [newEvents, setNewEvents] = useState([]);
-  const [showDialog, setShowDialog] = useState(false);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null); 
+  const [editEvent, setEditEvent] = useState(null);
+  const [showEditDialog, setShowEditDialog] = useState(false);
 
+  /**
+   * Closes all dialogs and resets related state
+   */
   const closeDialogs = () => {
-    setShowDialog(false);
     setShowClearDialog(false);
     setShowActivityTypeDialog(false);
     setShowAvailabilityTypeDialog(false);
@@ -40,20 +69,36 @@ export const Calendar = () => {
     setSelectedEvent(null);
   };
 
+  /**
+   * Fetches agent availabilities using Meteor subscription
+   * 
+   * @type {Object} Object containing availabilities data and loading state
+   */
   const { availabilities, isLoading } = useTracker(() => {
     const handler = Meteor.subscribe('agentAvailabilities');
+    const attendanceHandler = Meteor.subscribe('openHouseAttendance');
     const data = AgentAvailabilities.find().fetch();
     return {
       availabilities: data,
-      isLoading: !handler.ready(),
+      isLoading: !handler.ready() || !attendanceHandler.ready(),
     };
   });
 
+  /**
+   * Handles calendar slot selection to schedule new activities
+   * 
+   * @param {Object} info - Calendar selection information
+   */
   const handleSelect = (info) => {
     setPendingSlot({ start: info.start, end: info.end });
     setShowActivityTypeDialog(true);
   };
 
+  /**
+   * Handles activity type selection from dialog
+   * 
+   * @param {string} activity_type - Type of activity selected
+   */
   const handleActivityTypeSelect = (activity_type) => {
     if (activity_type === 'Availability') {
       setShowActivityTypeDialog(false);
@@ -61,10 +106,12 @@ export const Calendar = () => {
     }
   };
 
-  const handleAvailabilityTypeSelect = (type, start, end, propertyInfo) => {
+  const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note) => {
     setShowAvailabilityTypeDialog(false);
 
     const {
+      id,
+      agent_id,
       address,
       price,
       bedrooms,
@@ -79,16 +126,19 @@ export const Calendar = () => {
       type,
       start,
       end,
+      id,
+      agent_id,
       address, 
       price,
       bedrooms,
       bathrooms,
       parking,
       image,
+      note,
     });
   };
 
-  const handleBookingSelect = ({ type, start, end, address, price, bedrooms, bathrooms, parking, image }) => {
+  const handleBookingSelect = async ({ type, start, end, id, agent_id, address, price, bedrooms, bathrooms, parking, image, note }) => {
     const tempEvent = {
       id: Date.now(),
       start,
@@ -97,6 +147,8 @@ export const Calendar = () => {
       status: 'pending',
       title: `Pending: ${type} Availability`,
       property: {
+        id,
+        agent_id,
         address,
         price,
         bedrooms,
@@ -109,23 +161,64 @@ export const Calendar = () => {
       bathrooms,
       parking,
       image,
+      note,
       allDay: false,
     };
-  
-    setNewEvents((prev) => [...prev, tempEvent]);
+
+    // Immediately insert into DB
+    try {
+      await callAsync(
+        'agentAvailabilities.insert',
+        start.toISOString(),
+        end.toISOString(),
+        'Availability',
+        type,
+        tempEvent.property,
+        String(price ?? ''),
+        String(bedrooms ?? ''),
+        String(bathrooms ?? ''),
+        String(parking ?? ''),
+        String(image ?? ''),
+        'confirmed',
+        String(note ?? '')
+      );
+
+      // Creates an attendance list for any new open house availabilities
+      if (type === 'Open House'){
+        const curr_booking = AgentAvailabilities.findOne({ 
+          start: start.toISOString() });
+        
+        const booking_id = curr_booking._id;
+        const attendanceList = [];
+
+        await callAsync(
+          'openHouseAttendance.insert',
+          booking_id,
+          address,
+          start.toISOString(),
+          end.toISOString(),
+          attendanceList
+        );
+      }
+
+    } catch (error) {
+      alert('Insert failed: ' + error.reason);
+      console.error('Failed to create availability:', error.reason);
+      return;
+    }
+
     setPendingSlot(null);
     setShowOpenHouseDialog(false);
   };
   
 
-  const handleConfirmButtonClick = () => {
-    setShowDialog(true); 
-  };
-
   const handleClearButtonClick = () => {
     setShowClearDialog(true);   
   };
 
+  /**
+   * Handles confirmation of new events and saves them to database
+   */
   const handleConfirm = async () => {
     try {
       for (const event of newEvents) {
@@ -135,13 +228,14 @@ export const Calendar = () => {
           event.end.toISOString(),
           'Availability',
           event.type,
-          event.property, // ✅ now guaranteed to be an object
+          event.property,
           String(event.price ?? ''),
           String(event.bedrooms ?? ''),
           String(event.bathrooms ?? ''),
           String(event.parking ?? ''),
           String(event.image ?? ''),
-          'confirmed'
+          'confirmed',
+          String(event.note ?? ''),
         );
       }
 
@@ -153,6 +247,9 @@ export const Calendar = () => {
     }
   };
 
+  /**
+   * Handles clearing all availabilities from the database
+   */
   const handleClearConfirm = () => {
     Meteor.call('agentAvailabilities.clear', (error) => {
       if (error) {
@@ -166,15 +263,49 @@ export const Calendar = () => {
     });
   };
 
+  // Add this function to extract details for booked events
+  const handleEventClick = (info) => {
+    // Only allow editing if the event has a Mongo _id
+    if (!info.event.id || (info.event.id.length !== 17 && info.event.id.length !== 24)) {
+      alert('You can only edit saved availabilities.');
+      return;
+    }
+
+    // If the event is booked, show detailed info
+    if (info.event.extendedProps.status === 'booked') {
+      setSelectedEvent({
+        id: info.event.id,
+        title: info.event.title,
+        start: info.event.start,
+        end: info.event.end,
+        ...info.event.extendedProps,
+      });
+      return;
+    }
+
+    // Otherwise, open edit dialog as before
+    setEditEvent({
+      id: info.event.id,
+      title: info.event.title,
+      start: info.event.start,
+      end: info.event.end,
+      ...info.event.extendedProps,
+    });
+    setShowEditDialog(true);
+  };
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
+      {/* Calendar header and description */}
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
         <p className="text-gray-500 mt-2">Click empty timeslot to schedule an activity - an availability (inspection or open house) or maintenance (to be added in Milestone 3).</p>
       </div>
 
+      {/* Visual separator */}
       <div className="border-t border-gray-300 max-w-6xl mx-auto mb-6"></div>
 
+      {/* Main calendar container */}
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-6xl mx-auto">
         <FullCalendar
           plugins={[timeGridPlugin, interactionPlugin]}
@@ -186,9 +317,10 @@ export const Calendar = () => {
           selectable={true}          
           select={handleSelect}      
           events={[
+            // Map existing availabilities to calendar events
             ...availabilities.map(slot => ({
               ...slot,
-              id: slot._id,
+              id: slot._id, // This is the real Mongo _id
               title: slot.status === 'booked'
                 ? 'Booked'
                 : `${slot.type} Availability`,
@@ -217,6 +349,7 @@ export const Calendar = () => {
                   ? '#A98A22'
                   : '#24A89E',
             })),
+            // Map new events to calendar events
             ...newEvents.map(event => ({
               ...event,
               backgroundColor: '#F2F2F2',
@@ -226,14 +359,34 @@ export const Calendar = () => {
           ]}                   
           eventClick={(info) => {
             const clicked = info.event.extendedProps;
+            
+            // If this is an Open House event, fetch the attendance list
             if (clicked.type === 'Open House') {
+              // Subscribe to open house attendance data
+              Meteor.subscribe('openHouseAttendance');
+              
+              // Find the attendance record for this event
+              const attendanceRecord = OpenHouseAttendance.findOne({ 
+                bookingID: info.event.id 
+              });
+              
               setSelectedEvent({
+                id: info.event.id, // Include the MongoDB _id
+                title: info.event.title,
+                start: info.event.start,
+                end: info.event.end,
+                attendanceList: attendanceRecord?.attendanceList || [],
+                ...clicked,
+              });
+            } else {
+              setSelectedEvent({
+                id: info.event.id, // Include the MongoDB _id
                 title: info.event.title,
                 start: info.event.start,
                 end: info.event.end,
                 ...clicked,
               });
-            } 
+            }
           }}          
           headerToolbar={{
             left: 'prev today next',
@@ -249,7 +402,6 @@ export const Calendar = () => {
           height="auto"
         />
 
-        <ConfirmDialog isOpen={showDialog} onConfirm={handleConfirm} onCancel={closeDialogs} />
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={closeDialogs} />
         <ActivityTypeDialog isOpen={showActivityTypeDialog} onSelect={handleActivityTypeSelect} onClose={closeDialogs} />
         <AvailabilityTypeDialog 
@@ -260,17 +412,95 @@ export const Calendar = () => {
         />
       </div>
 
+      {/* Show event detail modal for booked events */}
       {selectedEvent && (
         <EventDetailModal
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
+          onAttendanceUpdate={() => {
+            // Refresh the attendance data when attendance is updated
+            if (selectedEvent.type === 'Open House') {
+              // Force a re-render by updating the selectedEvent with fresh data
+              const attendanceRecord = OpenHouseAttendance.findOne({ 
+                bookingID: selectedEvent.id 
+              });
+              setSelectedEvent(prev => ({
+                ...prev,
+                attendanceList: attendanceRecord?.attendanceList || []
+              }));
+            }
+          }}
         />
       )}
 
+        {showEditDialog && editEvent && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4">Edit Availability</h2>
+            <label className="block mb-2">Start Time</label>
+            <input
+              type="datetime-local"
+              className="w-full mb-4 border rounded p-2"
+              value={toDatetimeLocal(editEvent.start)}
+              onChange={e => setEditEvent(ev => ({ ...ev, start: new Date(e.target.value) }))}
+            />
+            <label className="block mb-2">End Time</label>
+            <input
+              type="datetime-local"
+              className="w-full mb-4 border rounded p-2"
+              value={toDatetimeLocal(editEvent.end)}
+              onChange={e => setEditEvent(ev => ({ ...ev, end: new Date(e.target.value) }))}
+            />
+            {/* Add more fields as needed */}
+            <div className="flex justify-end gap-2">
+              <button
+                className="bg-gray-300 px-4 py-2 rounded"
+                onClick={() => setShowEditDialog(false)}
+              >
+                Cancel
+              </button>
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded"
+                onClick={async () => {
+                  try {
+                    const id = String(editEvent.id);
+                    await callAsync('agentAvailabilities.remove', id);
+                    setShowEditDialog(false);
+                    setEditEvent(null);
+                  } catch (error) {
+                    alert('Delete failed: ' + error.reason);
+                    console.error('Failed to delete availability:', error);
+                  }
+                }}
+              >
+                Delete
+              </button>
+              <button
+                className="bg-purple-500 text-white px-4 py-2 rounded"
+                onClick={async () => {
+                  try {
+                    const id = String(editEvent.id);
+                    const updateData = {
+                      start: editEvent.start instanceof Date ? editEvent.start.toISOString() : editEvent.start,
+                      end: editEvent.end instanceof Date ? editEvent.end.toISOString() : editEvent.end,
+                    };
+                    await callAsync('agentAvailabilities.update', id, updateData);
+                    setShowEditDialog(false);
+                    setEditEvent(null);
+                  } catch (error) {
+                    alert('Update failed: ' + error.reason);
+                    console.error('Failed to update availability:', error);
+                  }
+                }}
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
-        <button onClick={handleConfirmButtonClick} disabled={newEvents.length === 0} className={`font-bold py-3 px-6 rounded-md ${newEvents.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-[#9747FF] hover:bg-purple-200 text-white'}`}>
-          Confirm 
-        </button>
         <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
           Clear
         </button>
@@ -278,3 +508,4 @@ export const Calendar = () => {
     </div>
   );
 };
+

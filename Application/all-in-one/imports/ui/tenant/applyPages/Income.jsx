@@ -244,3 +244,4 @@ function Income({ propId, tenId }) {
 }
 
 export default Income;
+
