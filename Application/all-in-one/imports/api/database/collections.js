@@ -156,6 +156,58 @@ Agents.schema = new SimpleSchema({
   agent_password: { type: String },
 });
 
+// USER SETTINGS - TENANT
+
+// Tenant employment settings
+export const Ten_SettingsEmployment = new Mongo.Collection('ten_SettingsEmployment');
+Ten_SettingsEmployment.schema = new SimpleSchema({
+  employment_id: { type: String },
+  ten_id: { type: String },
+  emp_type: { type: String },
+  emp_comp: { type: String },
+  emp_job_title: { type: String },
+  emp_start_date: { type: Date },
+  emp_verification: { type: String },
+});
+
+// Tenant addresses settings
+export const Ten_SettingsAddresses = new Mongo.Collection('ten_SettingsAddresses');
+Ten_SettingsAddresses.schema = new SimpleSchema({
+  address_id: { type: String },
+  ten_id: { type: String },
+  address_address: { type: String },
+  address_movein: { type: Date },
+  address_moveout: { type: Date },
+  address_ownership: { type: String },
+  address_reference_type: { type: String },
+  address_reference_name: { type: String },
+  address_reference_email: { type: String },
+  address_reference_number: { type: String },
+  address_status: { type: String },
+});
+
+// Tenant incomes settings
+export const Ten_SettingsIncomes = new Mongo.Collection('ten_SettingsIncomes');
+Incomes.schema = new SimpleSchema({
+  inc_id: { type: String },
+  ten_id: { type: String },
+  inc_type: { type: String },
+  inc_amt: { type: Number },
+  inc_supporting_doc: { type: String , optional: true },
+  inc_public_id: { type: String , optional: true },
+});
+
+// Tenant settings documents
+export const Ten_SettingsIdentities = new Mongo.Collection('ten_SettingsIdentities');
+Identities.schema = new SimpleSchema({
+  identity_id: { type: String },
+  ten_id: { type: String },
+  identity_type: { type: String },
+  identity_public_id: { type: String , optional: true },
+  identity_desc: { type: String, optional: true },
+  identity_scan: { type: String, optional: true },
+});
+
 export const AgentAvailabilities = new Mongo.Collection('agentAvailabilities');
 AgentAvailabilities.schema = new SimpleSchema({
   start: { type: String },

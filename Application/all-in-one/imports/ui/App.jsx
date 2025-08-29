@@ -23,7 +23,11 @@ import Apply from './tenant/TenantApply.jsx';
 import { PropertyListing } from './tenant/PropertyListing.jsx';
 import { InspectionBooking } from './tenant/InspectionBooking.jsx';
 import TenantApplications from './tenant/TenantApplications.jsx';
+
+import TenantSettings from './tenant/Settings.jsx';
+
 import { UpcomingInspections } from './tenant/UpcomingInspections.jsx';
+
 
 // importing agent pages
 import AddPropertyListing from "./agent/AddPropertyListing.jsx";
@@ -85,6 +89,7 @@ const App = () => (
           {/* Add any other protected tenant routes here */}
 
           {/* Inspection Booking Page */}
+
           <Route path="/InspectionListing" element={<PropertyListing />} />
           <Route
             path="/InspectionBooking/:id"
@@ -102,6 +107,9 @@ const App = () => (
           <Route path="/DetailedLease/:id" element={<DetailedLease />} />
 
           <Route path="/tenant/application/:appId" element={<ViewApplication />} />
+            
+            <Route path="/Settings" element={<TenantSettings />} />"
+
         </Route>
 
         {/* Protected Agent Routes - Require agent authentication */}

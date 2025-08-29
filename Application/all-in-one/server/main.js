@@ -33,6 +33,10 @@ import {
   Households,
   Agents,
   Landlord,
+  Ten_SettingsAddresses,
+  Ten_SettingsEmployment,
+  Ten_SettingsIdentities,
+  Ten_SettingsIncomes,
   OpenHouseAttendance,
   ExpressionOfInterest,
   StarredProperties,
@@ -51,6 +55,9 @@ import '/imports/api/agent/openHouseAttendance/methods';
 import '/imports/api/agent/openHouseAttendance/publication';
 import '/imports/api/agent/expressionOfInterest/methods';
 import '/imports/api/agent/expressionOfInterest/publication';
+import '/imports/api/methods/profileSettings.js';
+
+import 'dotenv/config';
 
   // Insert mock data only if collections are empty
   if ((await Properties.find().countAsync()) === 0) {
@@ -234,6 +241,24 @@ import '/imports/api/agent/expressionOfInterest/publication';
     return Landlord.find();
   });
 
+  Meteor.publish('tenSettingsAddresses', function () {
+    return Ten_SettingsAddresses.find();
+  });
+
+  Meteor.publish('tenSettingsEmployment', function () {
+    return Ten_SettingsEmployment.find();
+  });
+
+  Meteor.publish('tenSettingsIdentities', function () {
+    return Ten_SettingsIdentities.find();
+  });
+
+  Meteor.publish('tenSettingsIncomes', function () {
+  if (!this.userId) return this.ready();
+  return Ten_SettingsIncomes.find({ ten_id: this.userId });
+});
+
+
   Meteor.publish('starredProperties', async function () {
   if (!this.userId) return this.ready();
   const tenant = await Tenants.findOneAsync({ ten_id: this.userId });
@@ -242,3 +267,4 @@ import '/imports/api/agent/expressionOfInterest/publication';
   return StarredProperties.find({ ten_id: tenant.ten_id });
 });
  
+
