@@ -1,20 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { useTracker } from 'meteor/react-meteor-data';
-import { Meteor } from 'meteor/meteor';
-import { Properties } from '/imports/api/database/collections.js';
+import { mockData } from '/imports/api/database/mockData.js';
 
-/**
- * AvailabilityTypeDialog Component
- * 
- * A modal dialog that allows agents to create availability slots for inspections or open houses.
- * Features:
- * - Toggle between "Inspection" and "Open House" availability types
- * - Property search and selection for open houses (from MongoDB)
- * - Date and time selection for availability slots
- * - Optional notes field for additional information
- * - Real-time property data from MongoDB collections
- */
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
   const [startTime, setStartTime] = useState('');
@@ -22,19 +9,6 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const [date, setDate] = useState('');
   const [property, setProperty] = useState(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [note, setNote] = useState('');
-
-
-  const agent = Meteor.user();
-  const agentId = agent?._id;
-
-  // Subscribe to properties data from MongoDB
-  const { isReady, properties } = useTracker(() => {
-    const subProps = Meteor.subscribe("properties");
-    const isReady = subProps.ready();
-    const properties = isReady ? Properties.find({ agent_id: agentId }).fetch() : [];
-    return { isReady, properties };
-  });
 
   useEffect(() => {
     if (pendingSlot && isOpen) {
@@ -45,7 +19,6 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       setEndTime(end.format('HH:mm'));
       setProperty(null);
       setShowSuggestions(false);
-      setNote('');
     }
   }, [pendingSlot, isOpen]);
 
@@ -54,22 +27,20 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     const end = dayjs(`${date} ${endTime}`, 'YYYY-MM-DD HH:mm').toDate();
 
     const selected = property && property.prop_address
-      ? properties.find(p => p.prop_address === property.prop_address)
+      ? mockData.properties.find(p => p.prop_address === property.prop_address)
       : null;
 
     onSelect(type, start, end, {
-      id: selected?.prop_id || property?.id,
-      agent_id: selected?.agent_id,
       address: selected?.prop_address || property?.prop_address || '-',
       image: selected ? `/images/properties/${selected.prop_id}/main.jpg` : '/property.png',
       price: selected?.prop_pricepweek || '-',
       bedrooms: selected?.prop_numbeds || '-',
       bathrooms: selected?.prop_numbaths || '-',
       parking: selected?.prop_numcarspots || '-',
-    }, note);
+    });
   };
 
-  const filteredProperties = properties.filter(p =>
+  const filteredProperties = mockData.properties.filter(p =>
     p.prop_address.toLowerCase().includes((property?.prop_address || '').toLowerCase())
   );
 
@@ -90,15 +61,17 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
         <div className="flex justify-center gap-4">
           <button
             onClick={() => setType('Inspection')}
-            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${type === 'Inspection' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
-              }`}
+            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
+              type === 'Inspection' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
+            }`}
           >
             Inspection
           </button>
           <button
             onClick={() => setType('Open House')}
-            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${type === 'Open House' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
-              }`}
+            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
+              type === 'Open House' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
+            }`}
           >
             Open House
           </button>
@@ -174,17 +147,6 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
               />
             </div>
           </div>
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block text-black font-semibold mb-1">Notes (optional)</label>
-          <textarea
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="i.e., Bring pen & notepad"
-            className="w-full h-24 px-4 py-2 rounded-lg bg-[#FFF8E9] border border-purple-400 resize-none"
-          />
         </div>
 
         <div className="text-center pt-2">

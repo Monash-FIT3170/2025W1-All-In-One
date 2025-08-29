@@ -33,13 +33,13 @@ const StatusMenu = ({ show, onClose, onAccept, onReject, status, className = '',
         className="w-full text-xs text-left px-2 py-1 rounded hover:bg-green-100"
         onClick={onAccept}
       >
-        Shortlist
+        Accept
       </button>
       <button
         className="w-full text-xs text-left px-2 py-1 rounded hover:bg-red-100"
         onClick={onReject}
       >
-        Flag
+        Reject
       </button>
       <button
         className="absolute top-1 right-2 text-gray-400 hover:text-gray-700"
@@ -51,4 +51,3 @@ const StatusMenu = ({ show, onClose, onAccept, onReject, status, className = '',
 };
 
 export default StatusMenu;
-

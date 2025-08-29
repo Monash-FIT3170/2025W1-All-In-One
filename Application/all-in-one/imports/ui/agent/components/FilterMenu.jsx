@@ -134,4 +134,3 @@ const FilterMenu = ({
 };
 
 export default FilterMenu;
-

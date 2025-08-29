@@ -1,14 +1,3 @@
-/**
- * OpenHouseDialog Component
- * 
- * A modal dialog for scheduling open house events with property selection.
- * Features:
- * - Property search and selection from available properties
- * - Date and time selection for open house events
- * - Optional notes field for additional event information
- * - Property suggestions with autocomplete functionality
- * - Currently uses mock data (needs to be updated to use MongoDB)
- */
 import React, { useState, useEffect } from 'react';
 // import { mockData } from '../../../api/database/mockData.js';
 import { mockData } from '/imports/api/database/mockData.js';
@@ -103,4 +92,3 @@ export const OpenHouseDialog = ({ isOpen, onSubmit, onClose }) => {
     </div>
   );
 };
-

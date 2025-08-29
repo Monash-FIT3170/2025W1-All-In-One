@@ -7,4 +7,4 @@ import './main.css';
 Meteor.startup(() => {
   const root = createRoot(document.getElementById('react-target'));
   root.render(<App />);
-}); 
+});
