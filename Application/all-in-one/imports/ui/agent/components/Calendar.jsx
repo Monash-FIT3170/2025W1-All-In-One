@@ -14,6 +14,8 @@ import { TicketTypeDialog } from './TicketTypeDialog.jsx';
 import { TicketActivityDialog } from './TicketActivityDialog.jsx';
 
 
+
+
 const callAsync = (methodName, ...args) => {
   return new Promise((resolve, reject) => {
     Meteor.call(methodName, ...args, (err, res) => {
@@ -305,25 +307,24 @@ export const Calendar = () => {
     // NOTE: do NOT clear pendingSlot here
   };
 
-  const handleCreateTicketActivity = ({ start, end, notes, ticket }) => {
-    // Example: create a local pending event so it shows on the calendar immediately
-    setNewEvents((prev) => [
-      ...prev,
-      {
-        id: Date.now(),
-        start,
-        end,
-        type: 'Ticket',
-        status: 'pending',
-        title: `Ticket: ${ticket?.title ?? 'Activity'}`,
-        ticket,
-        allDay: false,
-      },
-    ]);
-    setShowTicketActivityDialog(false);
-    // Optionally clear slot after creation:
-    setPendingSlot(null);
-  };
+  const handleCreateTicketActivity = async ({ start, end, notes, ticket }) => {
+  try {
+    await callAsync(
+      'ticketActivities.insert',
+      start.toISOString(),
+      end.toISOString(),
+      ticket?.ticket_id || ticket?._id || '',
+      Meteor.userId(),
+      ticket?.title ?? 'Activity',
+      notes ?? ''
+    );
+  } catch (err) {
+    alert('Insert failed: ' + err.reason);
+    console.error('Failed to create ticket activity:', err);
+  }
+  setShowTicketActivityDialog(false);
+  setPendingSlot(null);
+};
 
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
@@ -408,7 +409,7 @@ export const Calendar = () => {
                 classNames,
               };
             }),
-            ...ticketActivities.map(ticket => ({
+            ...ticketActivities.map(act => ({
               id: act._id,
               title: `Ticket: ${act.title}`,
               start: new Date(act.start),
