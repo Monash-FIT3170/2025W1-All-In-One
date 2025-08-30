@@ -89,7 +89,7 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
         const property = Properties.findOne({ prop_id: eoi.propertyID, agent_id: userId });
         console.log("Checking EOI:", eoi);
         console.log("Associated property:", property);
-        return !!property;
+        return !!property && eoi.inviteSent === false;
       });
 
       console.log("Filtered EOIs for logged-in agent:", filteredEOIs);
