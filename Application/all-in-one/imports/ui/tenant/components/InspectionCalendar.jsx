@@ -7,7 +7,7 @@ import { AgentAvailabilities, Properties } from '../../../api/database/collectio
 import { BookingConfirmDialog } from './BookingConfirmDialog'; 
 import { Meteor } from 'meteor/meteor'; 
 
-export const InspectionCalendar = ({ propertyId }) => {
+export const InspectionCalendar = ({ propertyId, propertySnapshot }) => {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [showDialog, setShowDialog] = useState(false);
 
@@ -45,47 +45,23 @@ export const InspectionCalendar = ({ propertyId }) => {
 
   const handleEventClick = (info) => {
     const availability = info.event.extendedProps;
-
     if (availability.status === 'booked') {
       alert('This slot has already been booked.');
       return;
     }
 
-    // Ensure property is passed as full object
     setSelectedSlot({
       id: info.event.id,
       start: info.event.start,
       end: info.event.end,
-      property: typeof availability.property === 'object'
-        ? availability.property
-        : {
-            address: availability.property,
-            price: availability.price,
-            bedrooms: availability.bedrooms,
-            bathrooms: availability.bathrooms,
-            parking: availability.parking,
-            image: availability.image,
-          },
-
     });
-
     setShowDialog(true);
   };
 
   const handleConfirmBooking = () => {
     if (!selectedSlot) return;
+
     const tenantId = Meteor.userId();
-
-    // if (userId === null) {
-    //   alert("Checking login state... please wait a moment and try again.");
-    //   return;
-    // }
-    // if (!userId) {
-    //   alert("You must be logged in to book an inspection.");
-    //   return;
-    // }
-    
-
     const bookingData = {
       agentAvailabilityId: String(selectedSlot.id),
       tenantId,
@@ -96,20 +72,19 @@ export const InspectionCalendar = ({ propertyId }) => {
         'Anonymous',
       start: new Date(selectedSlot.start),
       end: new Date(selectedSlot.end),
-      property: {
-        ...selectedSlot.property,
-        id: propertyId 
-      },
+
+      property: propertySnapshot && propertySnapshot.id
+        ? propertySnapshot
+        : { id: propertyId, address: '-', image: '/images/default.jpg' },
+
       status: 'pending',
     };
-    
-    console.log("Booking Data:", bookingData);
 
     Meteor.call('tenantBookings.insert', bookingData, (err) => {
       if (err) {
         alert('Booking failed: ' + err.reason);
       } else {
-        alert('Booking confirmed!')
+        alert('Booking confirmed!');
         setShowDialog(false);
         setSelectedSlot(null);
       }

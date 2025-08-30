@@ -204,10 +204,21 @@ export const InspectionBooking = () => {
         </div>
       </div>
 
-      {/* Calendar Section - You can uncomment this when ready */}
+      {/* Calendar Section */}
       { 
       <div className="mt-12">
-        <InspectionCalendar propertyId={propertyData.id} />
+        <InspectionCalendar
+        propertyId={propertyData.id}
+        propertySnapshot={{
+          id: propertyData.id,
+          address: propertyData.address,
+          price: propertyData.price,
+          bedrooms: String(propertyData.details.beds ?? ''),
+          bathrooms: String(propertyData.details.baths ?? ''),
+          parking: String(propertyData.details.carSpots ?? ''),
+          image: propertyData.imageUrls?.[0] || '/images/default.jpg',
+        }}
+        />
       </div>
       }
       
