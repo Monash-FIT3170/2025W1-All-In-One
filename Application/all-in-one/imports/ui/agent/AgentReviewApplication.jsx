@@ -166,28 +166,7 @@ export default function ReviewApplication() {
     );
   });
 
-  const approveApplicantFinal = (appId, propId) => {
-    if (!propId) {
-      alert("Property ID is missing");
-      return;
-    }
 
-    if (
-      !confirm(
-        "Mark this applicant as final (this will reject other applications for the property)?"
-      )
-    ) {
-      return;
-    }
-
-    Meteor.call("setFinalDecision", propId, appId, (err) => {
-      if (err) {
-        alert("Error approving: " + (err.reason || err.message || err));
-      } else {
-        alert("Applicant approved successfully.");
-      }
-    });
-  };
   //Flag icons for application status
   const flags = [
     { src: "/images/flag (green).png", label: "Shortlisted" },
@@ -199,10 +178,10 @@ export default function ReviewApplication() {
   const handleClick = (appId, label) => {
     setLoadingIds((prev) => ({ ...prev, [appId]: true }));
 
-    Meteor.call("rentalApplications.setStatus", appId, label, (err) => {
+    Meteor.call("rentalApplications.setAgentFlag", appId, label, (err) => {
       setLoadingIds((prev) => ({ ...prev, [appId]: false }));
       if (err) {
-        alert("Error saving application status: " + err.reason);
+        alert("Error saving agent flag: " + err.reason);
       } else {
         setStatuses((prev) => ({ ...prev, [appId]: label }));
       }
@@ -282,7 +261,7 @@ export default function ReviewApplication() {
             if (app.landlordFeedback)
               extraInfoParts.push(`Landlord: ${app.landlordFeedback}`);
             const extraInfo = extraInfoParts.join(" • ");
-            const currentStatus = statuses[app._id] || app.status || "Pending";
+            const currentStatus = statuses[app._id] || app.agentFlag || null;
             const isLoading = loadingIds[app._id];
             return (
               <div key={app._id} className="flex overflow-hidden gap-8">
@@ -339,56 +318,18 @@ export default function ReviewApplication() {
                         )
                         : "N/A"
                     }
-                    finaliseButton={
-                      <div className="flex items-center gap-2">
-                        {app.finalDecision === "Approved" && (
-                          <span
-                            title="Final Decision: Approved"
-                            className="text-green-600 text-xl"
-                          >
-                            <img
-                              src="/icons/Frame31.png"
-                              alt="Green Flag"
-                              width={20}
-                              height={20}
-                            />
-                          </span>
-                        )}
-                        {app.finalDecision === "Rejected" && (
-                          <span
-                            title="Final Decision: Rejected"
-                            className="text-red-600 text-xl"
-                          >
-                            <img
-                              src="/icons/Frame32.png"
-                              alt="Red Flag"
-                              width={20}
-                              height={20}
-                            />
-                          </span>
-                        )}
-                        {!app.finalDecision && (
-                          <button
-                            onClick={() =>
-                              approveApplicantFinal(app._id, app.prop_id)
-                            }
-                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-                          >
-                            Select as Tenant (Final)
-                          </button>
-                        )}
-                      </div>
-                    }
+                    landlordFinal={app.landLordFinal}
+                    finaliseButton={null}
                     status={currentStatus}
                     statusIcon={
                       <div className="flex gap-2 items-center">
-                        {currentStatus === "Withdrawn" ? (
+                        {app.status === "Withdrawn" ? (
                           <div className="flex gap-2 items-center">
                             <span className="text-sm font-semibold text-gray-600">
                               Withdrawn
                             </span>
                           </div>
-                        ) : currentStatus === "Pending" ? (
+                        ) : currentStatus === null ? (
                           flags.map((flag) => (
                             <img
                               // src="/icons/Frame32.png"
@@ -439,12 +380,12 @@ export default function ReviewApplication() {
 
                                       // Reset DB
                                       Meteor.call(
-                                        "rentalApplications.clearStatus",
+                                        "rentalApplications.clearAgentFlag",
                                         app._id,
                                         (err) => {
                                           if (err) {
                                             alert(
-                                              "Error clearing status: " +
+                                              "Error clearing agent flag: " +
                                               err.reason
                                             );
                                           }

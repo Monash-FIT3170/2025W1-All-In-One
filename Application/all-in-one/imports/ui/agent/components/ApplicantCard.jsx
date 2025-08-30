@@ -1,7 +1,7 @@
 // ApplicantCard.jsx
 import React from 'react';
 
-export const ApplicantCard = ({ name, desc, age, status, statusIcon, finaliseButton, attendanceStatus, onAttendanceClick }) => {
+export const ApplicantCard = ({ name, desc, age, status, statusIcon, finaliseButton, attendanceStatus, onAttendanceClick, landlordFinal }) => {
     const getAttendanceTag = () => {
         if (!attendanceStatus) return null;
         
@@ -41,6 +41,11 @@ export const ApplicantCard = ({ name, desc, age, status, statusIcon, finaliseBut
                 <p className="font-semibold text-lg">{name}</p> 
                 <p className="text-sm text-gray-600">Age: {age}</p>
                 <p className="text-sm text-gray-600">Description: {desc}</p>
+                {landlordFinal && (
+                    <p className="text-sm text-gray-600 mt-2">
+                        Landlord Decision: <span className="font-semibold">{landlordFinal}</span>
+                    </p>
+                )}
                 <div className="text-sm text-gray-600 mt-4">{finaliseButton}</div>
             </div>
             <div className="text-center space-y-2">

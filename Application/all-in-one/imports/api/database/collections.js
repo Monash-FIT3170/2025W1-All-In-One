@@ -59,8 +59,8 @@ RentalApplications.schema = new SimpleSchema({
   pet_description: { type: String, optional: true },
   emergency_contact_id: { type: String },
 
-  landlordFlag: { type: String, optional: true }, // 'shortlisted', 'to_review', 'flagged'
-  agentFinalStatus: { type: String, optional: true }, // 'approved', 'rejected'
+  landLordFinal: { type: String, optional: true }, // 'shortlisted', 'to_review', 'flagged'
+  agentFlag: { type: String, optional: true }, // 'approved', 'rejected'
   finalDecision: { type: String, optional: true },
   // values: "Approved", "Rejected"
 

@@ -25,6 +25,8 @@ export default function ReviewApplication() {
   const [selectedStatuses, setSelectedStatuses] = useState([]);
   const [selectedApplicants, setSelectedApplicants] = useState([]);
   const [selectedProperties, setSelectedProperties] = useState([]);
+  const [landlordDecisions, setLandlordDecisions] = useState({});
+  const [loadingIds, setLoadingIds] = useState({});
 
   const landlord = Meteor.user();
   const landlordId = landlord?._id;
@@ -78,6 +80,26 @@ export default function ReviewApplication() {
     return flag;
   };
 
+  //Landlord decision icons for application status
+  const landlordFlags = [
+    { src: "/images/GreenTick.png", label: "Approved" },
+    { src: "/images/red.png", label: "Rejected" },
+  ];
+
+  // Handle landlord clicking a decision flag
+  const handleLandlordClick = (appId, label) => {
+    setLoadingIds((prev) => ({ ...prev, [appId]: true }));
+
+    Meteor.call("rentalApplications.setLandlordFinal", appId, label, (err) => {
+      setLoadingIds((prev) => ({ ...prev, [appId]: false }));
+      if (err) {
+        alert("Error saving landlord decision: " + err.reason);
+      } else {
+        setLandlordDecisions((prev) => ({ ...prev, [appId]: label }));
+      }
+    });
+  };
+
   const filteredApplications = applications.filter((app) => {
     const tenant = tenants.find((t) => t.ten_id === app.ten_id);
     const property = properties.find((p) => p.prop_id === app.prop_id);
@@ -105,28 +127,7 @@ export default function ReviewApplication() {
     );
   });
 
-  const approveApplicantFinal = (appId, propId) => {
-    if (!propId) {
-      alert("Property ID is missing");
-      return;
-    }
 
-    if (
-      !confirm(
-        "Mark this applicant as final (this will reject other applications for the property)?"
-      )
-    ) {
-      return;
-    }
-
-    Meteor.call("setFinalDecision", { propId, selectedAppId: appId }, (err) => {
-      if (err) {
-        alert("Error approving: " + (err.reason || err.message || err));
-      } else {
-        alert("Applicant approved successfully.");
-      }
-    });
-  };
 
   return (
     <div className="bg-[#FFF8EB] min-h-screen pb-20">
@@ -259,85 +260,85 @@ export default function ReviewApplication() {
                           )
                         : "N/A"
                     }
-                    finaliseButton={
-                      <div className="flex items-center gap-2">
-                        {app.finalDecision === "Approved" && (
-                          <span
-                            title="Final Decision: Approved"
-                            className="text-green-600 text-xl"
-                          >
-                            <img
-                              src="/icons/Frame31.png"
-                              alt="Green Flag"
-                              width={20}
-                              height={20}
-                            />
-                          </span>
-                        )}
-                        {app.finalDecision === "Rejected" && (
-                          <span
-                            title="Final Decision: Rejected"
-                            className="text-red-600 text-xl"
-                          >
-                            <img
-                              src="/icons/Frame32.png"
-                              alt="Red Flag"
-                              width={20}
-                              height={20}
-                            />
-                          </span>
-                        )}
-                        {!app.finalDecision && (
-                          <button
-                            onClick={() =>
-                              approveApplicantFinal(app._id, app.prop_id)
-                            }
-                            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600 text-sm"
-                          >
-                            Select as Tenant (Final)
-                          </button>
-                        )}
-                      </div>
-                    }
-                    status={app.status || "Pending"}
+                    agentFlag={app.agentFlag}
+                    finaliseButton={null}
+                    status={app.landLordFinal || app.status || "Pending"}
                     extraInfo={extraInfo}
                     statusIcon={
-                      <div className="relative flex items-center gap-3">
-                        <button
-                          className="px-2 py-1 rounded bg-white text-sm"
-                          onClick={() => setStatusMenuAppId(app._id)}
-                        >
-                          {app.status === "Shortlisted"
-                            ? "🟢"
-                            : app.status === "Flagged"
-                            ? "🔴"
-                            : app.status == "Approved"
-                            ? "✅"
-                            : app.status == "Rejected"
-                            ? "❌"
-                            : "⏳"}
-                        </button>
-                        <StatusMenu
-                          show={statusMenuAppId === app._id}
-                          onClose={() => setStatusMenuAppId(null)}
-                          onAccept={() => {
-                            Meteor.call(
-                              "rentalApplications.setStatus",
-                              app._id,
-                              "Approved"
+                      <div className="flex gap-2 items-center">
+                        {(() => {
+                          const currentDecision = landlordDecisions[app._id] || app.landLordFinal || null;
+                          const isLoading = loadingIds[app._id];
+                          
+                          if (currentDecision === null) {
+                            return (
+                              landlordFlags.map((flag) => (
+                                <img
+                                  width={20}
+                                  height={20}
+                                  key={flag.label}
+                                  src={flag.src}
+                                  alt={flag.label}
+                                  className={`w-10 h-10 cursor-pointer hover:scale-110 transition ${isLoading ? "opacity-50 cursor-wait" : ""
+                                    }`}
+                                  onClick={() =>
+                                    !isLoading && handleLandlordClick(app._id, flag.label)
+                                  }
+                                />
+                              ))
                             );
-                            setStatusMenuAppId(null);
-                          }}
-                          onReject={() => {
-                            Meteor.call(
-                              "rentalApplications.setStatus",
-                              app._id,
-                              "Rejected"
+                          } else {
+                            const matchedFlag = landlordFlags.find(
+                              (f) => f.label === currentDecision
                             );
-                            setStatusMenuAppId(null);
-                          }}
-                          status={app.status}
-                        />
+                            if (!matchedFlag) {
+                              return (
+                                <span className="text-sm text-red-500">
+                                  Unknown decision: {currentDecision}
+                                </span>
+                              );
+                            }
+                            return (
+                              <div className="flex gap-2 items-center">
+                                <img
+                                  src={matchedFlag.src}
+                                  alt={currentDecision}
+                                  className="w-10 h-10"
+                                />
+                                <span className="text-sm font-semibold">
+                                  {currentDecision}
+                                </span>
+                                <button
+                                  onClick={() => {
+                                    // Reset UI
+                                    setLandlordDecisions((prev) => ({
+                                      ...prev,
+                                      [app._id]: null,
+                                    }));
+
+                                    // Reset DB
+                                    Meteor.call(
+                                      "rentalApplications.clearLandlordFinal",
+                                      app._id,
+                                      (err) => {
+                                        if (err) {
+                                          alert(
+                                            "Error clearing landlord decision: " +
+                                            err.reason
+                                          );
+                                        }
+                                      }
+                                    );
+                                  }}
+                                  className="ml-2 text-sm font-semibold text-blue-500 underline"
+                                  disabled={isLoading}
+                                >
+                                  Change
+                                </button>
+                              </div>
+                            );
+                          }
+                        })()}
                       </div>
                     }
                   />

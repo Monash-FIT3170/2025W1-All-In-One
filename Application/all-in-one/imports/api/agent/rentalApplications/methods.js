@@ -331,25 +331,48 @@ Meteor.methods({
 
   
 
-//Update application status (replaces landlordFlag functionality)
- async "rentalApplications.setStatus"(id, status) {
+//Set agent flag (Shortlisted, Flagged, To be Reviewed)
+ async "rentalApplications.setAgentFlag"(id, flag) {
    check(id, String);
-   check(status, String);
+   check(flag, String);
    console.log(
-     `[METHOD] rentalApplications.setStatus called for id: ${id} status: ${status}`
+     `[METHOD] rentalApplications.setAgentFlag called for id: ${id} flag: ${flag}`
    );
    return await RentalApplications.updateAsync(id, {
-     $set: { status: status },
+     $set: { agentFlag: flag },
    });
  },
 
 
- //Clear application status
- async "rentalApplications.clearStatus"(appId) {
+ //Clear agent flag
+ async "rentalApplications.clearAgentFlag"(appId) {
    check(appId, String);
 
    return await RentalApplications.updateAsync(appId, {
-     $set: { status: "Pending" }, // reset to default status
+     $unset: { agentFlag: "" }, // remove the agent flag
+   });
+ },
+
+
+ //Set landlord final decision (Approved, Rejected)
+ async "rentalApplications.setLandlordFinal"(id, decision) {
+   check(id, String);
+   check(decision, String);
+   console.log(
+     `[METHOD] rentalApplications.setLandlordFinal called for id: ${id} decision: ${decision}`
+   );
+   return await RentalApplications.updateAsync(id, {
+     $set: { landLordFinal: decision },
+   });
+ },
+
+
+ //Clear landlord final decision
+ async "rentalApplications.clearLandlordFinal"(appId) {
+   check(appId, String);
+
+   return await RentalApplications.updateAsync(appId, {
+     $unset: { landLordFinal: "" }, // remove the landlord final decision
    });
  },
 
