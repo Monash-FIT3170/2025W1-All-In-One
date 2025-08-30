@@ -3,11 +3,26 @@ import React from 'react';
 import { Meteor } from "meteor/meteor";
 
 export const ApplicantCard = ({ appId, name, desc, status, statusIcon, editButton, submitted, viewButton }) => {
+    // Function to map agent-specific statuses to tenant-appropriate ones
+    const getTenantStatus = (status) => {
+        if (!status) return "Pending";
+        
+        // Agent-specific statuses that should be hidden from tenants
+        if (status === "Shortlisted" || status === "Flagged" || status === "To be Reviewed") {
+            return "Pending"; // Show as pending to tenants
+        }
+        
+        // Handle withdrawn status
+        if (status === "Withdrawn" && submitted) {
+            return "Pending";
+        }
+        
+        // Return the original status for approved/rejected/pending
+        return status;
+    };
+
     // ✅ Compute display status
-    const displayStatus =
-        status === "Withdrawn" && submitted
-            ? "Pending"
-            : status || "Pending";
+    const displayStatus = getTenantStatus(status);
 
     return (
         <div className="bg-white rounded-lg shadow w-full h-full flex flex-col justify-center px-10 py-4">

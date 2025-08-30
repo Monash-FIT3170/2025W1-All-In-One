@@ -382,7 +382,13 @@ export default function ReviewApplication() {
                     status={currentStatus}
                     statusIcon={
                       <div className="flex gap-2 items-center">
-                        {currentStatus === "Pending" ? (
+                        {currentStatus === "Withdrawn" ? (
+                          <div className="flex gap-2 items-center">
+                            <span className="text-sm font-semibold text-gray-600">
+                              Withdrawn
+                            </span>
+                          </div>
+                        ) : currentStatus === "Pending" ? (
                           flags.map((flag) => (
                             <img
                               // src="/icons/Frame32.png"
