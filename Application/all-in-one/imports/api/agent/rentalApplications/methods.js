@@ -354,27 +354,122 @@ Meteor.methods({
  },
 
 
- //Set landlord final decision (Approved, Rejected)
- async "rentalApplications.setLandlordFinal"(id, decision) {
-   check(id, String);
-   check(decision, String);
-   console.log(
-     `[METHOD] rentalApplications.setLandlordFinal called for id: ${id} decision: ${decision}`
-   );
-   return await RentalApplications.updateAsync(id, {
-     $set: { landLordFinal: decision },
-   });
- },
+// Set landlord final decision (Approved, Rejected)
+async "rentalApplications.setLandlordFinal"(id, decision) {
+  check(id, String);
+  check(decision, String);
+
+  console.log(
+    `[METHOD] rentalApplications.setLandlordFinal called for id: ${id} decision: ${decision}`
+  );
+
+  // 1. Find the application
+  const application = await RentalApplications.findOneAsync(id);
+  if (!application) {
+    throw new Meteor.Error("not-found", "Rental application not found");
+  }
+
+  const propId = application.prop_id;
+  if (!propId) {
+    throw new Meteor.Error("invalid-data", "Application does not have a property id");
+  }
+
+  const sharedLeaseId = application.shared_lease_id || null;
+
+  if (decision === "Approved") {
+    if (sharedLeaseId) {
+      // 2a. Approve all applications in the same shared lease group
+      await RentalApplications.updateAsync(
+        { prop_id: propId, shared_lease_id: sharedLeaseId },
+        { $set: { landLordFinal: decision, status: decision } },
+        { multi: true }
+      );
+
+      // 3a. Reject all *other* applications for this property (not in this shared lease group)
+      await RentalApplications.updateAsync(
+        { prop_id: propId, shared_lease_id: { $ne: sharedLeaseId } },
+        { $set: { landLordFinal: "Rejected", status: "Rejected" } },
+        { multi: true }
+      );
+    } else {
+      // 2b. Approve only the single application
+      await RentalApplications.updateAsync(id, {
+        $set: { landLordFinal: decision, status: decision },
+      });
+
+      // 3b. Reject all other applications
+      await RentalApplications.updateAsync(
+        { prop_id: propId, _id: { $ne: id } },
+        { $set: { landLordFinal: "Rejected", status: "Rejected" } },
+        { multi: true }
+      );
+    }
+  } else if (decision === "Rejected") {
+    if (sharedLeaseId) {
+      // Reject all apps in the shared lease group
+      await RentalApplications.updateAsync(
+        { prop_id: propId, shared_lease_id: sharedLeaseId },
+        { $set: { landLordFinal: "Rejected", status: "Rejected" } },
+        { multi: true }
+      );
+    } else {
+      // Reject just this one
+      await RentalApplications.updateAsync(id, {
+        $set: { landLordFinal: "Rejected", status: "Rejected" },
+      });
+    }
+  }
+
+  return true;
+},
 
 
- //Clear landlord final decision
- async "rentalApplications.clearLandlordFinal"(appId) {
-   check(appId, String);
+// Clear landlord final decision
+async "rentalApplications.clearLandlordFinal"(appId) {
+  check(appId, String);
 
-   return await RentalApplications.updateAsync(appId, {
-     $unset: { landLordFinal: "" }, // remove the landlord final decision
-   });
- },
+  const application = await RentalApplications.findOneAsync(appId);
+  if (!application) {
+    throw new Meteor.Error("not-found", "Rental application not found");
+  }
+
+  const propId = application.prop_id;
+  if (!propId) {
+    throw new Meteor.Error("invalid-data", "Application does not have a property id");
+  }
+
+  const sharedLeaseId = application.shared_lease_id || null;
+
+  if (sharedLeaseId) {
+    // 1a. Clear decision for all apps in the shared lease group
+    await RentalApplications.updateAsync(
+      { prop_id: propId, shared_lease_id: sharedLeaseId },
+      {
+        $unset: { landLordFinal: "" },
+        $set: { status: "Pending" },
+      },
+      { multi: true }
+    );
+  } else {
+    // 1b. Clear decision for this one
+    await RentalApplications.updateAsync(appId, {
+      $unset: { landLordFinal: "" },
+      $set: { status: "Pending" },
+    });
+  }
+
+  // 2. Reset all other applications for this property too
+  await RentalApplications.updateAsync(
+    { prop_id: propId, shared_lease_id: { $ne: sharedLeaseId } },
+    {
+      $unset: { landLordFinal: "" },
+      $set: { status: "Pending" },
+    },
+    { multi: true }
+  );
+
+  return true;
+},
 
 
 
