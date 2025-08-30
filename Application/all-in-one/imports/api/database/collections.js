@@ -217,7 +217,9 @@ export const ExpressionOfInterest = new Mongo.Collection('expressionOfInterest')
 ExpressionOfInterest.schema = new SimpleSchema({
   propertyID: { type: String },
   tenantID: { type: String },
-  EOI: { type: String }
+  EOI: { type: String },
+  inviteSent: { type: Boolean },
+  inviteAccepted: { type: Boolean },
 });
 
 export const OpenHouseAttendance = new Mongo.Collection('openHouseAttendance');
@@ -231,6 +233,13 @@ OpenHouseAttendance.schema = new SimpleSchema({
     'attendanceList.$.tenantID': { type: String },
     'attendanceList.$.tenantName': { type: String },
     'attendanceList.$.tenantAttendance': { type: Boolean }
+
+});
+export const StarredProperties = new Mongo.Collection('starredProperties');
+StarredProperties.schema = new SimpleSchema({
+  tent_id: { type: String }, // assuming only tenant gets to star properties
+  prop_id: { type: String },
+  starredAt: { type: Date, defaultValue: new Date() },
 });
 
 
