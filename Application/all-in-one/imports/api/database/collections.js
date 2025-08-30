@@ -251,8 +251,8 @@ TicketActivities.schema = new SimpleSchema({
   agent_id: { type: String },  // who created it
   title: { type: String },     // ticket title or short label
   notes: { type: String, optional: true },
-  status: { 
-    type: String, 
+  status: {
+    type: String,
     allowedValues: ['pending', 'in-progress', 'completed'],
     defaultValue: 'pending'
   },

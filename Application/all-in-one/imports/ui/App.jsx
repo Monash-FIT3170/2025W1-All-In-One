@@ -33,7 +33,6 @@ import AgentDetailedPropListing from "./agent/AgentDetailedPropListing.jsx"
 import AgentListings from "./agent/AgentListings.jsx"
 import ReviewApplication from "./agent/AgentReviewApplication.jsx"
 import AgentDashboard from './agent/AgentDashboard.jsx';
-import EditPropertyDetails from './agent/EditPropertyDetails.jsx';
 
 // importing landlord pages
 import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx";
@@ -113,8 +112,7 @@ const App = () => (
                   <Route path="/AgentDetailedPropListing/:id" element={<AgentDetailedPropListing/>}/>
                   <Route path="/AgentListings" element={<AgentListings/>}/>
                   <Route path="/AgentReviewApplication" element={<ReviewApplication/>}/>
-                  <Route path="/EditPropertyDetails" element={<EditPropertyDetails/>}/>
-
+          
           
         
 
@@ -124,14 +122,10 @@ const App = () => (
         {/* Protected Landlord Routes */}
         <Route element={<ProtectedLandlordRoutes />}>
           {/* Signed In Landlord Page*/}
-          <Route
-            path="/LandlordBasicPropListings"
-            element={<LandlordBasicPropListings />}
-          />
-          <Route
-            path="/LandlordDetailedPropListing/:id"
-            element={<LandlordDetailedPropListing />}
-          />
+          <Route path="/LandlordBasicPropListings" element={<LandlordBasicPropListings/>}/>
+          <Route path="/LandlordDetailedPropListing/:id" element={<LandlordDetailedPropListing />} />
+
+          
 
           {/* Add any other protected routes here */}
           {/*Landlord routes- team 2*/}

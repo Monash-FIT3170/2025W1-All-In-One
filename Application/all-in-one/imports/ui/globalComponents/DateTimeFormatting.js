@@ -31,3 +31,9 @@ export const getOrdinalSuffix = (day) => {
     default: return 'th';
   }
 };
+
+export const formatDate = (dateString) => {
+  const date = new Date(dateString);
+
+  return date.toISOString().split("T")[0];
+};

@@ -8,6 +8,7 @@ import { Properties, Agents, Photos, Tenants } from "../../api/database/collecti
 import Navbar from "./components/TenNavbar";
 import { Link } from "react-router-dom";
 import { UpcomingInspections } from './UpcomingInspections.jsx';
+import { formatDisplayDate, getOrdinalSuffix, formatTime } from '../globalComponents/DateTimeFormatting.js';
 
 // Group events by date
 const groupEventsByDate = (events) => {
@@ -19,38 +20,6 @@ const groupEventsByDate = (events) => {
   return grouped;
 };
 
-// Format date for display
-const formatDisplayDate = (dateString) => {
-  const date = new Date(dateString);
-  const options = { month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('en-US', options) + getOrdinalSuffix(date.getDate());
-};
-
-// Get ordinal suffix for date
-const getOrdinalSuffix = (day) => {
-  if (day > 3 && day < 21) return 'th';
-  switch (day % 10) {
-    case 1: return 'st';
-    case 2: return 'nd';
-    case 3: return 'rd';
-    default: return 'th';
-  }
-};
-
-// Format time for display
-const formatTime = (start, end) => {
-  const startTime = new Date(start).toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
-  const endTime = new Date(end).toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
-  return `${startTime} - ${endTime}`;
-};
 
 export const PropertyListing = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -199,6 +168,8 @@ export const PropertyListing = () => {
       image: propertyData.imageUrls[0],
       activityType: availability.activity_type || 'Inspection',
       availabilityType: availability.availability_type || 'Standard',
+      is_private: availability.is_private || false,
+      agentAvailabilityId: booking.agentAvailabilityId,
       status: booking.status,
       bookingDate: booking.createdAt,
       propertyDetails: {
@@ -259,6 +230,30 @@ export const PropertyListing = () => {
     );
   }
   
+  const handleAccept = (bookingID, agentAvailabilityID) => {
+    Meteor.call('tenantBookings.markAsBooked', bookingID, agentAvailabilityID, 
+      (err) => {
+        if (err) {
+          alert("Accepting Booking Failed: " + err.reason);
+        }
+        else {
+          alert("Booking has been successfully accepted!");
+        }
+      });
+  };
+
+  const handleReject = (bookingID, agentAvailabilityID) => {
+    Meteor.call('tenantBookings.markAsRejected', bookingID, agentAvailabilityID, 
+      (err) => {
+        if (err) {
+          alert("Rejecting Booking Failed: " + err.reason);
+        }
+        else {
+          alert("Booking has been rejected!");
+        }
+      });
+  ;}
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20"> 
       {/* Header */}
@@ -403,7 +398,9 @@ export const PropertyListing = () => {
                 </div>
                 
                 {eventsByDate[date].map(event => (
-                  <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
+                  <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" 
+                    style={{backgroundColor: event.status === "Invited" ? '#b8b8b8ff' :
+                    event.status === "Rejected" ? '#888888' : '#EADAFF'}}>
                     <div className="w-48 h-32 flex-shrink-0">
                       <img src={event.image} alt="Property" className="w-full h-full object-cover" />
                     </div>
@@ -412,15 +409,14 @@ export const PropertyListing = () => {
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="text-lg font-semibold text-gray-800">{event.property}</h4>
                         <div className="flex gap-2">
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            event.activityType === 'Inspection' ? 'bg-blue-100 text-blue-800' :
-                            event.activityType === 'Open House' ? 'bg-green-100 text-green-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {event.activityType}
+                          <span className={`px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800`}>
+                            {event.availabilityType}
                           </span>
-                          <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                            Booked
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            event.status === 'Invited' ? 'bg-[#CBADD8] text-green-800' :
+                            event.status === 'Rejected' ? 'bg-red-300 text-green-800' : 
+                            'bg-green-100 text-green-800'}`}>
+                            {event.status}
                           </span>
                         </div>
                       </div>
@@ -464,16 +460,44 @@ export const PropertyListing = () => {
                           )}
                         </div>
                       )}
-                    </div>
-                    
-                    <div className="bg-white rounded-lg m-4 p-6 w-64">
-                      <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
-                      <p className="text-sm text-gray-500 mb-2">
-                        Inspection Available
-                      </p>
-                      <div className="text-sm text-green-600 font-medium mb-2">
-                        ✓ Inspection Confirmed
+
+                      {event.status === 'Invited' ? 
+                      (<div className='mb-5 mt-10 justify-center'> 
+                        <div className='text-xl font-bold'>
+                          This is an unconfirmed Private Open House. Please Accept or Reject Private Open House invitation: 
+                        </div>
+                        <div className="w-full flex flex-row gap-4 mb-5 pt-5 justify-center">
+                          <button 
+                          onClick={() => handleAccept(event.id, event.agentAvailabilityId)}
+                          className="w-1/4 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200 justify-center">
+                            Accept
+                          </button>
+                          <button 
+                          onClick={() => handleReject(event.id, event.agentAvailabilityId)}
+                          className="w-1/4 bg-[#CDCDCD] hover:bg-[#BBBBBB] text-black font-base text-center py-2 rounded-md shadow-md transition duration-200 justify-center">
+                            Reject
+                          </button>
+                        </div>
                       </div>
+                      ) : <div> </div>}
+                    </div>
+
+
+                    
+                    <div className="bg-white rounded-lg m-4 p-6 w-64 h-40">
+                      <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
+                      {event.is_private ? 
+                        <p className="text-sm text-gray-500 mb-2"> Private Open House </p> :
+                        <p className="text-sm text-gray-500 mb-2"> Inspection Available </p>
+                      }
+                      {event.status === 'Invited' ? <div className="text-sm text-green-600 font-medium mb-2">
+                        Invitation to Private Open House </div> : 
+                        event.status === 'Booked' && event.is_private ?
+                        <div className="text-sm text-green-600 font-medium mb-2"> ✓ Private Open House Confirmed </div> : 
+                        event.status === 'Rejected' ?
+                        <div className="text-sm text-red-600 font-medium mb-2"> Private Open House Rejected </div> :
+                        <div className="text-sm text-green-600 font-medium mb-2"> ✓ Inspection Confirmed </div>
+                      }
                       
                       {event.bookingDate && (
                         <p className="text-xs text-gray-400 mt-2">

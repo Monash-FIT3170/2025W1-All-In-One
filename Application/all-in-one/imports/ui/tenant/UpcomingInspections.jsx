@@ -187,7 +187,7 @@ export const UpcomingInspections = () => {
       <Navbar />
 
       {/* Main Content */}
-      <main className="flex-1 container mx_auto p-8">
+      <main className="flex-1 container mx-auto p-8">
         <div className="mb-8">
           <h2 className="text-3xl font-bold text-gray-800 mb-2">All Upcoming Open Houses and Inspections</h2>
           <p className="text-gray-600">All upcoming property open houses and inspections in one place!</p>
@@ -324,7 +324,7 @@ export const UpcomingInspections = () => {
                 {eventsByType[availabilityType].map(event => (
                   <Link
                     key={event.property_id}
-                    to={`/TenDetailedPropListing/${event.property_id}`}
+                    to={event.availabilityType === "Open House" ? `/TenDetailedPropListing/${event.property_id}` : "/TenantBasicPropListings"}
                   >
                     <div className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
                       <div className="w-48 h-32 flex-shrink-0">
@@ -332,7 +332,8 @@ export const UpcomingInspections = () => {
                       </div>
                       
                       <div className="p-6 flex-grow">
-                        <h4 className="text-xl underline font-extrabold text-gray-800">{event.property}</h4>
+                        {event.availabilityType === "Open House" ? (<h4 className="text-xl underline font-extrabold text-gray-800">{event.property}</h4>)
+                        : (<h4 className="text-xl underline font-extrabold text-gray-800">Inspection Available</h4>)}
                         <div className="flex items-start justify-between mb-2">
                           <h4 className="text-lg font-semibold text-gray-800">{event.date}</h4>
                         </div>
@@ -340,7 +341,9 @@ export const UpcomingInspections = () => {
                       </div>
                       
                       <div className="bg-white rounded-lg m-4 p-6 w-64">
-                        <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
+                        {event.availabilityType === "Open House" ? (<h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>)
+                        : (<h5 className="font-semibold text-gray-600 mb-1 text-center">Click to Choose Property</h5>)}
+                        
                       </div>
                     </div>
                   </Link>

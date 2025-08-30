@@ -16,9 +16,11 @@ import {
   Tickets,
   OpenHouseAttendance,
   ExpressionOfInterest,
+  StarredProperties,
 } from "/imports/api/database/collections";
 import { mockData } from "/imports/api/database/mockData";
 import "/imports/api/methods/account.js";
+import '/imports/api/methods/starredProp.js';
 import "/imports/api/methods/rentalApplications.js";
 import "/imports/api/agent/rentalApplications/methods";
 import { LinksCollection } from "/imports/api/links";
@@ -217,6 +219,14 @@ Meteor.startup(async () => {
   Meteor.publish('landlords', function () {
     return Landlord.find();
   });
+
+  Meteor.publish('starredProperties', async function () {
+  if (!this.userId) return this.ready();
+  const tenant = await Tenants.findOneAsync({ ten_id: this.userId });
+  if (!tenant) return this.ready();
+  
+  return StarredProperties.find({ ten_id: tenant.ten_id });
+});
 
   Meteor.publish('tickets', function () {
     return Tickets.find();

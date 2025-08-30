@@ -72,7 +72,7 @@ export const InspectionCalendar = () => {
       start: new Date(selectedSlot.start),
       end: new Date(selectedSlot.end),
       property: selectedSlot.property,
-      status: 'pending',
+      status: 'Booked',
     };
 
     console.log("📦 Booking Data:", bookingData);
