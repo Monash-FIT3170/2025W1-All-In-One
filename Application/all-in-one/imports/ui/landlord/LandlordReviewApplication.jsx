@@ -51,6 +51,7 @@ export default function ReviewApplication() {
       const properties = Properties.find({ landlord_id: landlordId }).fetch();
       const applications = RentalApplications.find({
         prop_id: { $in: properties.map((p) => p.prop_id) },
+        submitted: true, // ✅ Only include submitted applications
       }).fetch();
       const tenants = Tenants.find().fetch();
       const employments = Employment.find().fetch();

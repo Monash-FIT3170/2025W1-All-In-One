@@ -45,7 +45,8 @@ Meteor.methods({
       'emergency_contact_id',
       'rental_app_id',
       'shared_lease_id',
-      'submitted'
+      'submitted',
+      'landLordFinal',
     ];
 
     const sanitizedUpdate = Object.fromEntries(
@@ -472,7 +473,18 @@ async "rentalApplications.clearLandlordFinal"(appId) {
 },
 
 
+  async "rentalApplications.unsetLandlordFinal"(appId) {
+    check(appId, String);
 
+    const app = await RentalApplications.findOneAsync(appId);
+    if (!app) throw new Meteor.Error("not-found", "Application not found");
+
+    await RentalApplications.updateAsync(appId, {
+      $unset: { landLordFinal: "" }
+    });
+
+    return true;
+  },
 
 
 
