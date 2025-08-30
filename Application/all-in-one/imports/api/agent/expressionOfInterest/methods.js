@@ -94,5 +94,11 @@ Meteor.methods({
     }
   },
 
+  async 'eoi.remove'(eoiID) {
+    check(id, String);
+    ExpressionOfInterest.remove({ _id: eoiID });
+  }
+
+});
+
   
-})
