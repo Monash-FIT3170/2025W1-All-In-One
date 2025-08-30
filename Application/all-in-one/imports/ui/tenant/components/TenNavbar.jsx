@@ -90,16 +90,9 @@ function Navbar() {
               className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm"
             />
           )}
+          </Link>
 
-        {/* User avatar/profile link */}
-        <Link to="/PLACEHOLDER">
-          <img
-            src="/images/user-avatar.png"
-            alt="User Avatar"
-            className="w-10 h-10 rounded-full"
-          />
-
-        </Link>
+        
       </div>
     </div>
   );
