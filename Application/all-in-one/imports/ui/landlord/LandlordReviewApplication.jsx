@@ -199,8 +199,8 @@ export default function ReviewApplication() {
             const extraInfoParts = [];
             if (app.landlordFeedback)
               extraInfoParts.push(`Landlord: ${app.landlordFeedback}`);
-            if (app.landlordFlag)
-              extraInfoParts.push(formatFlagLabel(app.landlordFlag));
+            if (app.status && app.status !== "Pending")
+              extraInfoParts.push(formatFlagLabel(app.status));
             const extraInfo = extraInfoParts.join(" • ");
 
             return (

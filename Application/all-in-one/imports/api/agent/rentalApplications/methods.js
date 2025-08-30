@@ -331,26 +331,25 @@ Meteor.methods({
 
   
 
-//Flag from agent to landlord
- async "rentalApplications.setLandlordFlag"(id, status) {
+//Update application status (replaces landlordFlag functionality)
+ async "rentalApplications.setStatus"(id, status) {
    check(id, String);
    check(status, String);
    console.log(
      `[METHOD] rentalApplications.setStatus called for id: ${id} status: ${status}`
    );
    return await RentalApplications.updateAsync(id, {
-     $set: { landlordFlag: status },
+     $set: { status: status },
    });
  },
 
 
- //Agent to change flag status
- async "rentalApplications.clearLandlordFlag"(appId) {
+ //Clear application status
+ async "rentalApplications.clearStatus"(appId) {
    check(appId, String);
 
-
    return await RentalApplications.updateAsync(appId, {
-     $unset: { landlordFlag: "" }, // remove the flag field
+     $set: { status: "Pending" }, // reset to default status
    });
  },
 

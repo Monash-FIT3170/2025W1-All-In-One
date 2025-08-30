@@ -44,8 +44,8 @@ export const ApplicantCard = ({ name, desc, age, status, statusIcon, finaliseBut
                 <div className="text-sm text-gray-600 mt-4">{finaliseButton}</div>
             </div>
             <div className="text-center space-y-2">
-                <div className="inline-block px-3 py-1 text-3xl font-semibold rounded-full">{statusIcon}</div>
-                <p className="inline-block px-3 py-1 text-sm font-semibold rounded-full">{status}</p>
+                <div className="inline-block px-3 py-1 text-sm font-semibold rounded-full">{statusIcon}</div>
+                {/* <p className="inline-block px-3 py-1 text-sm font-semibold rounded-full">{status}</p> */}
                 <div className="text-sm text-gray-600 mt-4">{getAttendanceTag()}</div>
             </div>
         </div>

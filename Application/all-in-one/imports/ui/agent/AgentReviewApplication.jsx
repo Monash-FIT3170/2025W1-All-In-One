@@ -190,19 +190,19 @@ export default function ReviewApplication() {
   };
   //Flag icons for application status
   const flags = [
-    { src: "/icons/flag-green.png", label: "Shortlisted" },
-    { src: "/icons/flag-red.png", label: "Flagged" },
-    { src: "/icons/flag-yellow.png", label: "To be Reviewed" },
+    { src: "/images/flag (green).png", label: "Shortlisted" },
+    { src: "/images/flag (red).png", label: "Flagged" },
+    { src: "/images/flag (yellow).png", label: "To be Reviewed" },
   ];
 
   // Handle agent clicking a flag
   const handleClick = (appId, label) => {
     setLoadingIds((prev) => ({ ...prev, [appId]: true }));
 
-    Meteor.call("rentalApplications.setLandlordFlag", appId, label, (err) => {
+    Meteor.call("rentalApplications.setStatus", appId, label, (err) => {
       setLoadingIds((prev) => ({ ...prev, [appId]: false }));
       if (err) {
-        alert("Error saving agent flag: " + err.reason);
+        alert("Error saving application status: " + err.reason);
       } else {
         setStatuses((prev) => ({ ...prev, [appId]: label }));
       }
@@ -281,10 +281,8 @@ export default function ReviewApplication() {
             const extraInfoParts = [];
             if (app.landlordFeedback)
               extraInfoParts.push(`Landlord: ${app.landlordFeedback}`);
-            if (app.landlordFlag)
-              extraInfoParts.push(formatFlagLabel(app.landlordFlag));
             const extraInfo = extraInfoParts.join(" • ");
-            const currentStatus = statuses[app._id] || app.landlordFlag || null;
+            const currentStatus = statuses[app._id] || app.status || "Pending";
             const isLoading = loadingIds[app._id];
             return (
               <div key={app._id} className="flex overflow-hidden gap-8">
@@ -381,10 +379,10 @@ export default function ReviewApplication() {
                         )}
                       </div>
                     }
-                    status={app.status || "Pending"}
+                    status={currentStatus}
                     statusIcon={
                       <div className="flex gap-2 items-center">
-                        {currentStatus === null ? (
+                        {currentStatus === "Pending" ? (
                           flags.map((flag) => (
                             <img
                               // src="/icons/Frame32.png"
@@ -421,7 +419,7 @@ export default function ReviewApplication() {
                                     alt={currentStatus}
                                     className="w-10 h-10"
                                   />
-                                  <span className="text-lg font-medium">
+                                  <span className="text-sm font-semibold">
                                     {currentStatus}
                                   </span>
                                   <button
@@ -435,19 +433,19 @@ export default function ReviewApplication() {
 
                                       // Reset DB
                                       Meteor.call(
-                                        "rentalApplications.clearLandlordFlag",
+                                        "rentalApplications.clearStatus",
                                         app._id,
                                         (err) => {
                                           if (err) {
                                             alert(
-                                              "Error clearing flag: " +
+                                              "Error clearing status: " +
                                               err.reason
                                             );
                                           }
                                         }
                                       );
                                     }}
-                                    className="ml-2 text-sm text-blue-500 underline"
+                                    className="ml-2 text-sm font-semibold text-blue-500 underline"
                                     disabled={isLoading}
                                   >
                                     Change
