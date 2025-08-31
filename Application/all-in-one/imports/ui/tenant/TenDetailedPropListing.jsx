@@ -141,15 +141,7 @@ export default function TenDetailedPropListing() {
                 Apply
               </Link>
             )
-          ) : (
-            <Link
-              key={id}
-              to={`/Apply/${id}?tenantId=${tenantID}`}
-              className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-            >
-              Apply
-            </Link>
-          )}
+          ): null}
         </div>
       </div>
 

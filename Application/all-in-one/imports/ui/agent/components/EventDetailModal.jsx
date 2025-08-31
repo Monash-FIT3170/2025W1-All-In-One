@@ -386,8 +386,8 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
           )}
           {/* Combined Tenant Information & Attendance List */}
           <div className="bg-white p-4 rounded-xl space-y-4 mt-4">
-            {/* Individual Tenant Info (if exists) */}
-            {event.tenant ? (
+            {/* Individual Tenant Info (only for non Open House) */}
+            {event.tenant && mergedEvent.type !== 'Open House' ? (
               <div className="space-y-2">
                 <p className="font-semibold text-lg">{typeof event.tenant === 'object' ? event.tenant.name : event.tenant}</p>
                 <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
@@ -395,12 +395,13 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
               </div>
             ) : null}
 
-            {/* Divider if both sections exist */}
-            {event.tenant && event.attendanceList && event.attendanceList.length > 0 && (
+            {/* Divider if both sections exist (non Open House tenant + Open House attendees) */}
+            {event.tenant && mergedEvent.type !== 'Open House' && event.attendanceList && event.attendanceList.length > 0 && (
               <div className="border-t border-gray-200 my-3"></div>
             )}
 
-            {/* Attendance List Section */}
+            {/* Attendance List Section (only for Open House) */}
+            {mergedEvent.type === 'Open House' && (
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <Users className="w-5 h-5 text-gray-600" />
@@ -463,6 +464,7 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
                 </button>
               </div>
             </div>
+            )}
           </div>
 
           {event.notes?.trim() && (
