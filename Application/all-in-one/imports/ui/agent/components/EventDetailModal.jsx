@@ -1,5 +1,8 @@
 import React from 'react';
 import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
+import { TenantBookings, Tenants, Employment } from '../../../api/database/collections';
 
 export const EventDetailModal = ({ event, onClose }) => {
   if (!event) return null;
@@ -22,6 +25,33 @@ export const EventDetailModal = ({ event, onClose }) => {
     const e = new Date(end);
     return `${s.toLocaleTimeString([], opts)} - ${e.toLocaleTimeString([], opts)}`;
   };
+
+  // Fetch tenant booking/details for this availability (private open house invite or booked)
+  const availabilityId = event.id;
+  const { booking, ready: dataReady } = useTracker(() => {
+    if (!availabilityId) return { booking: null, ready: true };
+    const h1 = Meteor.subscribe('tenantBookings.forAvailability', availabilityId);
+    const h2 = Meteor.subscribe('tenants');
+    const h3 = Meteor.subscribe('employment');
+    const ready = [h1.ready?.(), h2.ready?.(), h3.ready?.()].every((x) => x !== false);
+    const b = TenantBookings.findOne({ agentAvailabilityId: availabilityId });
+    return { booking: b, ready };
+  }, [availabilityId]);
+
+  let tenantName = null;
+  let tenantAge = null;
+  let occupation = null;
+  if (dataReady && booking) {
+    tenantName = booking.tenantName || null;
+    const tenant = Tenants.findOne({ ten_id: booking.tenantId });
+    if (tenant?.ten_dob) {
+      const dob = new Date(tenant.ten_dob);
+      const diff = Date.now() - dob.getTime();
+      tenantAge = Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
+    }
+    const emp = Employment.findOne({ ten_id: booking.tenantId });
+    occupation = emp?.emp_job_title || null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -91,14 +121,19 @@ export const EventDetailModal = ({ event, onClose }) => {
             {formatTime(event.start, event.end)}
           </p>
 
-          {event.tenant ? (
+          {tenantName ? (
             <div className="bg-white p-4 rounded-xl space-y-2 mt-4">
-              <p className="font-semibold text-lg">{event.tenant}</p>
-              <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
-              <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
+              <p className="font-semibold text-lg">{tenantName}</p>
+              <p className="text-sm text-gray-600">Age: {tenantAge ?? '—'}</p>
+              <p className="text-sm text-gray-600">Occupation: {occupation ?? '—'}</p>
+              {booking?.status && (
+                <p className="text-xs text-gray-500">Booking status: {booking.status}</p>
+              )}
             </div>
           ) : (
-            <div className="text-sm text-gray-600 mt-4 italic">No tenant information.</div>
+            <div className="text-sm text-gray-600 mt-4 italic">
+              {dataReady ? 'No tenant information.' : 'Loading tenant information...'}
+            </div>
           )}
 
           {event.notes?.trim() && (

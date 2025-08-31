@@ -28,6 +28,7 @@ import '/imports/api/agent/agentAvailabilities/methods';
 import '/imports/api/agent/agentAvailabilities/publications';
 import '/imports/api/tenant/tenantBookings/methods';
 import '/imports/api/tenant/tenantBookings/publications';
+import '/imports/api/agent/tenantBookings/publications';
 import '/imports/api/agent/openHouseAttendance/methods';
 import '/imports/api/agent/openHouseAttendance/publication';
 import '/imports/api/agent/expressionOfInterest/methods';
