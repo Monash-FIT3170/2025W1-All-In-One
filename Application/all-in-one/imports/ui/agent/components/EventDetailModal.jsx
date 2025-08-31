@@ -389,7 +389,7 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
             {/* Individual Tenant Info (if exists) */}
             {event.tenant ? (
               <div className="space-y-2">
-                <p className="font-semibold text-lg">{event.tenant}</p>
+                <p className="font-semibold text-lg">{typeof event.tenant === 'object' ? event.tenant.name : event.tenant}</p>
                 <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
                 <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
               </div>
