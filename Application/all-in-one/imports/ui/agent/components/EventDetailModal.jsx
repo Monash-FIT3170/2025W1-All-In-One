@@ -22,6 +22,9 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
     ) &&
     (!mergedEvent.tenant || !mergedEvent.tenant.name);
 
+  const isOpenHouse = mergedEvent.type === 'Open House' || 
+    (mergedEvent.title && mergedEvent.title.toLowerCase().includes('open house'));
+
   const startDate = useMemo(() => new Date(mergedEvent.start), [mergedEvent.start]);
   const endDate   = useMemo(() => new Date(mergedEvent.end),   [mergedEvent.end]);
 
@@ -357,7 +360,7 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
             {/* Individual Tenant Info (if exists) */}
             {event.tenant ? (
               <div className="space-y-2">
-                <p className="font-semibold text-lg">{event.tenant}</p>
+                <p className="font-semibold text-lg">{event.tenant.name || event.tenant}</p>
                 <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
                 <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
               </div>
@@ -368,69 +371,71 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
               <div className="border-t border-gray-200 my-3"></div>
             )}
 
-            {/* Attendance List Section */}
-            <div>
-              <div className="flex items-center gap-2 mb-3">
-                <Users className="w-5 h-5 text-gray-600" />
-                <h3 className="font-semibold text-lg">Tenants Subscribed to Open House</h3>
-              </div>
-              
-              {event.attendanceList && event.attendanceList.length > 0 ? (
-                <div className="space-y-2">
-                  {event.attendanceList.map((attendee, index) => (
-                    <div key={index} className="p-3 bg-gray-50 rounded-lg">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <button
-                            onClick={() => handleAttendanceToggle(attendee.tenantID)}
-                            className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                              attendee.tenantAttendance
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : 'border-gray-300 hover:border-green-400'
-                            }`}
-                            title={attendee.tenantAttendance ? 'Mark as not attended' : 'Mark as attended'}
-                          >
-                            {attendee.tenantAttendance && <Check className="w-3 h-3" />}
-                          </button>
-                          <button className="font-medium text-gray-800 underline" onClick={() => {
-                            const current = attendee.notes || '';
-                            const updated = prompt(`Notes for ${attendee.tenantName}:`, current) ?? current;
-                            if (updated !== current) handleNotesSave(attendee.tenantID, updated);
-                          }}>{attendee.tenantName}</button>
+            {/* Attendance List Section - Only show for Open Houses */}
+            {isOpenHouse && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-5 h-5 text-gray-600" />
+                  <h3 className="font-semibold text-lg">Tenants Subscribed to Open House</h3>
+                </div>
+                
+                {event.attendanceList && event.attendanceList.length > 0 ? (
+                  <div className="space-y-2">
+                    {event.attendanceList.map((attendee, index) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleAttendanceToggle(attendee.tenantID)}
+                              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                attendee.tenantAttendance
+                                  ? 'bg-green-500 border-green-500 text-white'
+                                  : 'border-gray-300 hover:border-green-400'
+                              }`}
+                              title={attendee.tenantAttendance ? 'Mark as not attended' : 'Mark as attended'}
+                            >
+                              {attendee.tenantAttendance && <Check className="w-3 h-3" />}
+                            </button>
+                            <button className="font-medium text-gray-800 underline" onClick={() => {
+                              const current = attendee.notes || '';
+                              const updated = prompt(`Notes for ${attendee.tenantName}:`, current) ?? current;
+                              if (updated !== current) handleNotesSave(attendee.tenantID, updated);
+                            }}>{attendee.tenantName}</button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              attendee.tenantAttendance 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {attendee.tenantAttendance ? 'Attended' : 'Registered'}
+                            </span>
+                          </div>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            attendee.tenantAttendance 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'
-                          }`}>
-                            {attendee.tenantAttendance ? 'Attended' : 'Registered'}
-                          </span>
-                        </div>
+                        {attendee.notes?.trim() ? (
+                          <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">
+                            {attendee.notes}
+                          </div>
+                        ) : null}
                       </div>
-                      {attendee.notes?.trim() ? (
-                        <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">
-                          {attendee.notes}
-                        </div>
-                      ) : null}
-                    </div>
-                  ))}
-                  <p className="text-sm text-gray-600 text-center mt-2">
-                    Total: {event.attendanceList.length} tenant(s)
-                  </p>
+                    ))}
+                    <p className="text-sm text-gray-600 text-center mt-2">
+                      Total: {event.attendanceList.length} tenant(s)
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <Users className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">No tenants have subscribed yet</p>
+                  </div>
+                )}
+                <div className="mt-3 text-center">
+                  <button onClick={handleAddAnonymous} className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700">
+                    Add Name
+                  </button>
                 </div>
-              ) : (
-                <div className="text-center py-4">
-                  <Users className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">No tenants have subscribed yet</p>
-                </div>
-              )}
-              <div className="mt-3 text-center">
-                <button onClick={handleAddAnonymous} className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700">
-                  Add Name
-                </button>
               </div>
-            </div>
+            )}
           </div>
 
           {event.notes?.trim() && (
