@@ -54,7 +54,17 @@ export default function DetailedPropListing() {
           type:property.prop_type,
           AvailableDate: property.prop_available_date,
           Pets: property.prop_pets ? "True":"False",
-          imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
+          
+          // FIXED: Use Cloudinary URLs from Properties.photo field instead of Photos collection
+          imageUrls: property.photo && property.photo.length > 0 
+            ? property.photo.filter(p => !p.isPDF).map(p => p.url)
+            : photos.length 
+              ? photos.map((photo)=>photo.photo_url)
+              : ["/images/default.jpg"],
+          
+          // Also pass the original photo array for the new structure
+          photo: property.photo || [],
+          
           videoUrls: videos.length ? videos.map((video) => video.video_url) : [],
           details:{
           beds: property.prop_numbeds ?? "N/A",
@@ -63,9 +73,8 @@ export default function DetailedPropListing() {
           furnished: property.prop_furnish? "Yes":"No",
           },
           description: property.prop_desc,
-          
+          photo: property.photo,
         };
-
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
@@ -73,7 +82,7 @@ export default function DetailedPropListing() {
 
       {/*Main content and butons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={propertyData} />
+        <PropertyDetailsCard property={property} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
           <Link
           to={`/login`}

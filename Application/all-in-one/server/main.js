@@ -1,4 +1,25 @@
-import { Meteor } from "meteor/meteor";
+import { Meteor } from 'meteor/meteor';
+import { Accounts } from 'meteor/accounts-base';
+function maskMongoUrl(uri) {
+  if (!uri) return '(not set)';
+  try {
+    // Only mask the password part in mongodb:// or mongodb+srv:// URIs
+    const match = uri.match(/^(mongodb(?:\+srv)?:\/\/)([^:@]+):([^@]+)@(.+)$/);
+    if (!match) return uri; // unexpected format, return as-is
+    const [, prefix, user, _pw, rest] = match;
+    return `${prefix}${user}:***@${rest}`;
+  } catch (e) {
+    return '(unable to parse MONGO_URL)';
+  }
+}
+
+function logDbTarget() {
+  const uri = process.env.MONGO_URL;
+  console.log('🗄️  MONGO_URL =>', maskMongoUrl(uri));
+  if (!uri) {
+    console.warn('⚠️  MONGO_URL is not set. The app will use the default local Meteor Mongo.');
+  }
+}
 import {
   Properties,
   Photos,
@@ -12,9 +33,13 @@ import {
   Households,
   Agents,
   Landlord,
+  OpenHouseAttendance,
+  ExpressionOfInterest,
+  StarredProperties,
 } from "/imports/api/database/collections";
 import { mockData } from "/imports/api/database/mockData";
 import "/imports/api/methods/account.js";
+import '/imports/api/methods/starredProp.js';
 import "/imports/api/methods/rentalApplications.js";
 import "/imports/api/agent/rentalApplications/methods";
 import { LinksCollection } from "/imports/api/links";
@@ -22,8 +47,11 @@ import '/imports/api/agent/agentAvailabilities/methods';
 import '/imports/api/agent/agentAvailabilities/publications';
 import '/imports/api/tenant/tenantBookings/methods';
 import '/imports/api/tenant/tenantBookings/publications';
+import '/imports/api/agent/openHouseAttendance/methods';
+import '/imports/api/agent/openHouseAttendance/publication';
+import '/imports/api/agent/expressionOfInterest/methods';
+import '/imports/api/agent/expressionOfInterest/publication';
 
-Meteor.startup(async () => {
   // Insert mock data only if collections are empty
   if ((await Properties.find().countAsync()) === 0) {
     for (const property of mockData.properties) {
@@ -205,4 +233,12 @@ Meteor.startup(async () => {
   Meteor.publish("landlords", function () {
     return Landlord.find();
   });
+
+  Meteor.publish('starredProperties', async function () {
+  if (!this.userId) return this.ready();
+  const tenant = await Tenants.findOneAsync({ ten_id: this.userId });
+  if (!tenant) return this.ready();
+  
+  return StarredProperties.find({ ten_id: tenant.ten_id });
 });
+ 

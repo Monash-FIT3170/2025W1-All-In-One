@@ -1,7 +1,7 @@
-aldeed:collection2@4.1.1
-aldeed:simple-schema@1.13.1
 accounts-base@3.0.4
 accounts-password@3.0.3
+aldeed:collection2@4.1.1
+aldeed:simple-schema@1.13.1
 allow-deny@2.1.0
 autoupdate@2.0.0
 babel-compiler@7.11.3
@@ -54,6 +54,8 @@ mongo-dev-server@1.1.1
 mongo-id@1.0.9
 npm-mongo@6.10.2
 ordered-dict@1.2.0
+ostrio:cookies@2.9.0
+ostrio:files@3.0.0-rc.3
 promise@1.0.0
 raix:eventemitter@1.0.0
 random@1.2.2

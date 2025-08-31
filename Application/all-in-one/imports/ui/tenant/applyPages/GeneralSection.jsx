@@ -140,3 +140,4 @@ const GeneralSection = ({ propId, tenId }) => {
 };
 
 export default GeneralSection;
+

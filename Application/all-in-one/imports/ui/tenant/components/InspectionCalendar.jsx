@@ -175,3 +175,4 @@ export const InspectionCalendar = ({ propertyId, propertySnapshot }) => {
     </div>
   );
 };
+

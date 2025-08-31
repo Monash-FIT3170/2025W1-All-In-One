@@ -35,7 +35,7 @@ Meteor.methods({
     }
   },
 
-  async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, isFurnished, petsAllowed, bond, landlordEmail, status, agentId}) {
+  async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordEmail, status, agentId,photo, }) {
     try {
       //The following 3 lines can be used to make IDs for any collection, given you replace the following aspects:
         // Properties --> {name of collection}
@@ -73,7 +73,8 @@ Meteor.methods({
         prop_bond: bond,
         prop_status: status,
         agent_id: agentId,   // to be changed
-        landlord_id: landlord._id
+        landlord_id: landlord._id,
+        photo: photo || [],
       });
       
       await Photos.insertAsync({
@@ -88,6 +89,36 @@ Meteor.methods({
       console.error("addProperty error:", error);
       throw new Meteor.Error("add-property-failed", error.message || "Something went wrong.");
     }
+  },
+
+  async "EditPropertyListing" ({propId, propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordEmail, status, agentId}) {
+      
+    const landlord = await Meteor.users.findOneAsync({ "emails.address": landlordEmail });
+      
+    if (!landlord) {
+      throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
+    };
+    
+    const date = new Date(dateAvailable);
+
+    await Properties.updateAsync({
+      prop_id: propId,
+      prop_address: propAddress,
+      prop_pricepweek: pricePerWeek,
+      prop_numbeds: numBeds,
+      prop_numbaths: numBaths,
+      prop_numcarspots: numParkSpots,
+      prop_type: propType,
+      prop_desc: description,
+      prop_available_date: date,
+      prop_furnish: isFurnished,
+      prop_pets: petsAllowed,
+      prop_bond: bond,
+      prop_status: status,
+      agent_id: agentId,   // to be changed
+      landlord_id: landlord._id
+    });
+
   },
 
 });

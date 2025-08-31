@@ -1,6 +1,15 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
-import { RentalApplications, Incomes, Identities, Addresses, Tenants,Employment } from '/imports/api/database/collections';
+import {
+  RentalApplications,
+  Incomes,
+  Identities,
+  Addresses,
+  Tenants,
+  Employment,
+  SharedLeaseGroups // <-- add this collection import, define below if needed
+} from '/imports/api/database/collections';
+import cloudinary from 'cloudinary'; // FIX: Added cloudinary import
 
 Meteor.methods({
   // Rental Applications
@@ -35,6 +44,8 @@ Meteor.methods({
       'pet_description',
       'emergency_contact_id',
       'rental_app_id',
+      'shared_lease_id',
+      'submitted'
     ];
 
     const sanitizedUpdate = Object.fromEntries(
@@ -52,7 +63,8 @@ Meteor.methods({
       rental_app_id: String,
       inc_type: String,
       inc_amt: Number,
-      inc_supporting_doc: String,
+      inc_supporting_doc: Match.Optional(String),
+      inc_public_id: Match.Optional(String),
     });
 
     console.log('[METHOD] incomes.insert called with:', incomeData);
@@ -63,7 +75,7 @@ Meteor.methods({
     check(incId, String);
     check(updateData, Object);
 
-    const allowedFields = ['inc_type', 'inc_amt', 'inc_supporting_doc'];
+    const allowedFields = ['inc_type', 'inc_amt', 'inc_supporting_doc', 'inc_public_id'];
 
     const sanitizedUpdate = Object.fromEntries(
       Object.entries(updateData).filter(([key]) => allowedFields.includes(key))
@@ -85,7 +97,9 @@ Meteor.methods({
       identity_id: String,
       rental_app_id: String,
       identity_type: String,
-      identity_scan: String,
+      identity_public_id: Match.Optional(String),
+      identity_scan: Match.Optional(String),
+      identity_desc: Match.Optional(String),
     });
 
     console.log('[METHOD] identities.insert called with:', identityDoc);
@@ -95,7 +109,28 @@ Meteor.methods({
   async 'identities.remove'(identityId) {
     check(identityId, String);
     console.log(`[METHOD] identities.remove called for identity_id: ${identityId}`);
-    return await Identities.removeAsync({ identity_id: identityId });
+
+    const identity = await Identities.findOneAsync({ identity_id: identityId });
+    console.log('Fetched identity:', identity);
+
+    if (!identity) {
+      throw new Meteor.Error('not-found', 'Identity not found');
+    }
+
+    // Remove from Cloudinary
+    if (identity.identity_public_id) {
+      try {
+        const result = await cloudinary.uploader.destroy(identity.identity_public_id);
+        console.log(`Cloudinary asset delete result:`, result);
+      } catch (err) {
+        console.error('Error deleting Cloudinary asset:', err);
+      }
+    } else {
+      console.warn('No identity_public_id found on identity document.');
+    }
+
+    // Remove from Mongo (based on internal _id)
+    return await Identities.removeAsync({ _id: identity._id });
   },
 
   // Tenants
@@ -171,19 +206,20 @@ Meteor.methods({
     return await Addresses.removeAsync({ address_id: addressId });
   },
 
+  // Employment
   async 'employment.insert'(employmentData) {
-  check(employmentData, {
-    employment_id: String,
-    ten_id: String,
-    emp_type: String,
-    emp_comp: String,
-    emp_job_title: String,
-    emp_start_date: Date,
-    emp_verification: String,
-  });
+    check(employmentData, {
+      employment_id: String,
+      ten_id: String,
+      emp_type: String,
+      emp_comp: String,
+      emp_job_title: String,
+      emp_start_date: Date,
+      emp_verification: String,
+    });
 
-  return await Employment.insertAsync(employmentData);
-},
+    return await Employment.insertAsync(employmentData);
+  },
 
   async 'employment.update'(employmentId, updates) {
     check(employmentId, String);
@@ -195,11 +231,149 @@ Meteor.methods({
       emp_verification: Match.Maybe(String),
     });
 
-    const existing = Employment.findOneAsync({ employment_id: employmentId });
+    const existing = await Employment.findOneAsync({ employment_id: employmentId }); // FIX: Added await
     if (!existing) {
       throw new Meteor.Error('not-found', 'Employment record not found');
     }
 
     return await Employment.updateAsync({ employment_id: employmentId }, { $set: updates });
-  }
+  },
+
+  async 'rentalApplications.addTenant'(rentalAppId, tenId) {
+    check(rentalAppId, String);
+    check(tenId, String);
+
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized');
+    }
+
+    const tenant = await Tenants.findOneAsync({ ten_id: tenId }); // FIX: Added await
+    if (!tenant) throw new Meteor.Error('Tenant not found');
+
+    return await RentalApplications.updateAsync(
+      { _id: rentalAppId },
+      { $addToSet: { tenants: { ten_id: tenant.ten_id, ten_fn: tenant.ten_fn, ten_ln: tenant.ten_ln } } }
+    );
+  },
+
+  async 'rentalApplications.removeTenant'(rentalAppId, tenId) {
+    check(rentalAppId, String);
+    check(tenId, String);
+
+    if (!this.userId) {
+      throw new Meteor.Error('Not authorized');
+    }
+
+    return await RentalApplications.updateAsync(
+      { _id: rentalAppId },
+      { $pull: { tenants: { ten_id: tenId } } }
+    );
+  },
+
+  // Shared Lease Group Methods
+  async 'sharedLease.createGroup'(tenantId, propId) {
+    check(tenantId, String);
+    check(propId, String);
+
+    const groupId = await SharedLeaseGroups.insertAsync({
+      createdAt: new Date(),
+      propId,
+      members: [tenantId],
+    });
+
+    console.log(`[METHOD] sharedLease.createGroup created group ${groupId} for tenant ${tenantId}`);
+    return await groupId;
+  },
+
+  async 'sharedLease.joinGroup'(groupId, tenantId) {
+    check(groupId, String);
+    check(tenantId, String);
+
+    const group = await SharedLeaseGroups.findOneAsync(groupId);
+    if (!group) {
+      throw new Meteor.Error('Group not found');
+    }
+
+    if (!group.members.includes(tenantId)) {
+      await SharedLeaseGroups.updateAsync(groupId, { $push: { members: tenantId } });
+      console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} joined group ${groupId}`);
+    } else {
+      console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} already in group ${groupId}`);
+    }
+  },
+
+  async 'rentalApplications.updateSharedLease'(rentalAppId, leaseId) {
+    check(rentalAppId, String);
+    check(leaseId, String);
+
+    return RentalApplications.update(
+      { rental_app_id: rentalAppId },
+      { $set: { shared_lease_id: leaseId } }
+    );
+  },
+
+    async 'sharedLease.create'(rentalAppId) {
+    check(rentalAppId, String);
+
+    // create a shared lease
+    const leaseId = await SharedLease.insertAsync({
+      createdAt: new Date(),
+      applications: [rentalAppId],
+    });
+
+    // update the rental application with this shared lease id
+    await RentalApplications.updateAsync(rentalAppId, {
+      $set: { shared_lease_id: leaseId },
+    });
+
+    return leaseId;
+  },
+
+  
+
+//Flag from agent to landlord
+ async "rentalApplications.setLandlordFlag"(id, status) {
+   check(id, String);
+   check(status, String);
+   console.log(
+     `[METHOD] rentalApplications.setStatus called for id: ${id} status: ${status}`
+   );
+   return await RentalApplications.updateAsync(id, {
+     $set: { landlordFlag: status },
+   });
+ },
+
+
+ //Agent to change flag status
+ async "rentalApplications.clearLandlordFlag"(appId) {
+   check(appId, String);
+
+
+   return await RentalApplications.updateAsync(appId, {
+     $unset: { landlordFlag: "" }, // remove the flag field
+   });
+ },
+
+
+
+
+
+
+  async 'sharedLease.join'(leaseId, rentalAppId) {
+    check(leaseId, String);
+    check(rentalAppId, String);
+
+    // add this rental application to the shared lease
+    await SharedLease.updateAsync(leaseId, {
+      $addToSet: { applications: rentalAppId },
+    });
+
+    // update the rental application with this shared lease id
+    await RentalApplications.updateAsync(rentalAppId, {
+      $set: { shared_lease_id: leaseId },
+    });
+
+    return leaseId;
+  },
 });
+

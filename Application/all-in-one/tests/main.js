@@ -17,4 +17,4 @@ describe("meteor-app", function () {
       assert.strictEqual(Meteor.isClient, false);
     });
   }
-});
+}); 

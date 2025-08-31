@@ -2,8 +2,19 @@ import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
-import { Properties, Photos } from '/imports/api/database/collections';
+import { Properties } from '/imports/api/database/collections.js';
 
+/**
+ * AvailabilityTypeDialog Component
+ * 
+ * A modal dialog that allows agents to create availability slots for inspections or open houses.
+ * Features:
+ * - Toggle between "Inspection" and "Open House" availability types
+ * - Property search and selection for open houses (from MongoDB)
+ * - Date and time selection for availability slots
+ * - Optional notes field for additional information
+ * - Real-time property data from MongoDB collections
+ */
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
   const [type, setType] = useState('Inspection');
   const [startTime, setStartTime] = useState('');
@@ -85,17 +96,15 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
         <div className="flex justify-center gap-4">
           <button
             onClick={() => setType('Inspection')}
-            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
-              type === 'Inspection' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
-            }`}
+            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${type === 'Inspection' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
+              }`}
           >
             Inspection
           </button>
           <button
             onClick={() => setType('Open House')}
-            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
-              type === 'Open House' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
-            }`}
+            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${type === 'Open House' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
+              }`}
           >
             Open House
           </button>

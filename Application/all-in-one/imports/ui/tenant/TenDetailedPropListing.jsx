@@ -1,50 +1,62 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos } from "../../api/database/collections"; // importing mock for now
-import { Link } from "react-router-dom";
+import { Properties, Photos, Videos, AgentAvailabilities, StarredProperties } from "../../api/database/collections"; // importing mock for now
+import UpcomingOpenHouseModal from "./components/UpcomingOpenHouseModal";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a listed property (accessed through TenantBasicPropListing) //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function TenDetailedPropListing() {
+    
+    const[openModal, setOpenModal] = useState(false);
+
     const { id } = useParams();
     console.log("propId received:", id);
-     const { isReady, property, photos, videos }=  useTracker(()=>{
-        const subProps= Meteor.subscribe("properties");
-        const subPhotos= Meteor.subscribe("photos");
-        const subVideos= Meteor.subscribe("videos");
-    
-        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready();
-  
-        let property= null;
-        let photos= [];
-        let videos=[];
-  
-        // find property, photos and videos corresponding to the property ID passed.
-        if (isReady){
-          property= Properties.findOne({prop_id: id});
-          photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
-          videos= Videos.find({prop_id: id}).fetch();
-        }
-  
-        return {isReady, property, photos, videos};
-    
-      }, [id]);
-    
+    const { isReady, property, photos, videos, openHouses, starredProperties}=  useTracker(()=>{
+      const tenantID = Meteor.userId();
+      const subProps = Meteor.subscribe("properties");
+      const subPhotos = Meteor.subscribe("photos");
+      const subVideos = Meteor.subscribe("videos");
+      const subAvailabilities = Meteor.subscribe("agentAvailabilities")
+      const subStarred = Meteor.subscribe("starredProperties"); 
+
+      const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subAvailabilities.ready() && subStarred.ready();
+
+      let property= null;
+      let photos= [];
+      let videos=[];
+      let openHouses = [];
+      let starredProperties = [];
+
+      // find property, photos and videos corresponding to the property ID passed.
+      if (isReady){
+        property= Properties.findOne({prop_id: id});
+        photos= Photos.find({prop_id: id}, {sort:{photo_order:1}}).fetch();
+        videos= Videos.find({prop_id: id}).fetch();
+        starredProperties = StarredProperties.find({tent_id: tenantID, prop_id: id}).fetch();
+        openHouses = AgentAvailabilities.find({type: "Open House"}).fetch()
+        openHouses = openHouses.filter((p) => p.property.address === property.prop_address)
+      }
+        
+      return {isReady, property, photos, videos, openHouses, starredProperties};
+    }, [id]);
+
       if (!isReady){
         return (<div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Loading Properties...</div>);
       }
-  
+
       if (!property){
         return (<div className="min-h-screen flex items-center justify-center text-xl text-red-600">Property Not Found!</div>);
       }
+
+      const isStarred = starredProperties.length>0;
     
       // data passed on to propertyDetailsCard
       const propertyData= {
@@ -63,25 +75,34 @@ export default function TenDetailedPropListing() {
           furnished: property.prop_furnish? "Yes":"No",
           },
           description: property.prop_desc,
-          
+          starred: isStarred,
         };
         
       const tenantID = Meteor.userId()
       console.log(tenantID)
+
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
       <Navbar />
 
-      {/*Main content and butons*/}
+      {/*Main content and buttons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={propertyData} />
+        <PropertyDetailsCard property={propertyData} showSaveButton={true} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
+
+          <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+          onClick={() => setOpenModal(true)}
+          key={propertyData}>
+            Open House Availabilities
+          </button>
+
           <Link
           to={`/InspectionBooking/${id}`} // TBD: replace with actual link to inspection booking page
           className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
           >Book Inspection 
           </Link>
+
           <Link
           key={id}
           to={`/Apply/${id}?tenantId=${tenantID}`} // TBD: replace with actual link to application page
@@ -89,21 +110,65 @@ export default function TenDetailedPropListing() {
           >Apply 
           </Link>
 
+          {typeof rentalApp !== 'undefined' && rentalApp ? (
+            rentalApp.status === "Approved" ? (
+              <button
+                disabled
+                className="w-1/2 bg-gray-300 text-gray-500 font-base text-center py-2 rounded-md shadow-md cursor-not-allowed"
+              >
+                Application Approved
+              </button>
+            ) : rentalApp.status === "Rejected" ? (
+              <button
+                disabled
+                className="w-1/2 bg-gray-300 text-gray-500 font-base text-center py-2 rounded-md shadow-md cursor-not-allowed"
+              >
+                Application Rejected
+              </button>
+            ) : rentalApp.submitted === true ? (
+              <button
+                disabled
+                className="w-1/2 bg-gray-300 text-gray-500 font-base text-center py-2 rounded-md shadow-md cursor-not-allowed"
+              >
+                Application Submitted
+              </button>
+            ): (
+              <Link
+                key={id}
+                to={`/Apply/${id}?tenantId=${tenantID}`}
+                className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+              >
+                Apply
+              </Link>
+            )
+          ) : (
+            <Link
+              key={id}
+              to={`/Apply/${id}?tenantId=${tenantID}`}
+              className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+            >
+              Apply
+            </Link>
+          )}
         </div>
-
       </div>
 
-      
       {/*Description*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
-
         <p className="font-semibold text-lg text-[#434343]">
-          {propertyData.description}
+          {property.prop_desc}
         </p>
       </div>
 
       {/*Footer*/}
       <Footer />
+
+      {openModal && <UpcomingOpenHouseModal 
+      isOpen={() => setOpenModal(true)}
+      onClose={() => setOpenModal(false)}
+      propertyData={propertyData}
+      openHouses={openHouses}/> }
     </div>
   );
 }
+
