@@ -11,11 +11,13 @@ import { UpcomingInspections } from './UpcomingInspections.jsx';
 import { formatDisplayDate, getOrdinalSuffix, formatTime } from '../globalComponents/DateTimeFormatting.js';
 
 // Group events by date
-const groupEventsByDate = (events) => {
+const groupEventsByType = (events) => {
   const grouped = {};
   events.forEach(event => {
-    if (!grouped[event.date]) grouped[event.date] = [];
-    grouped[event.date].push(event);
+    if (!grouped[event.availabilityType]) {
+      grouped[event.availabilityType] = [];
+    }
+    grouped[event.availabilityType].push(event);
   });
   return grouped;
 };
@@ -198,7 +200,7 @@ export const PropertyListing = () => {
   });
   
   // Group filtered events by date
-  const eventsByDate = groupEventsByDate(filteredEvents);
+  const eventsByType = groupEventsByType(filteredEvents);
   
   // Generate filter options from actual data
   const agentOptions = ['All Agents', ...new Set(transformedEvents.map(e => e.agent))];
@@ -374,7 +376,7 @@ export const PropertyListing = () => {
         </div>
         
         {/* Events List */}
-        {Object.keys(eventsByDate).length === 0 ? (
+        {Object.keys(eventsByType).length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <Search size={48} className="mx-auto" />
@@ -389,7 +391,7 @@ export const PropertyListing = () => {
           </div>
           ) : (
           <div className="space-y-8">
-            {Object.keys(eventsByDate).map(date => (
+            {Object.keys(eventsByType).map(date => (
               <div key={date}>
                 <div className="flex items-center mb-6">
                   <div className="border-t border-gray-400 flex-grow"></div>
@@ -397,7 +399,7 @@ export const PropertyListing = () => {
                   <div className="border-t border-gray-400 flex-grow"></div>
                 </div>
                 
-                {eventsByDate[date].map(event => (
+                {eventsByType[date].map(event => (
                   <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" 
                     style={{backgroundColor: event.status === "Invited" ? '#b8b8b8ff' :
                     event.status === "Rejected" ? '#888888' : '#EADAFF'}}>
@@ -409,9 +411,13 @@ export const PropertyListing = () => {
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="text-lg font-semibold text-gray-800">{event.property}</h4>
                         <div className="flex gap-2">
-                          <span className={`px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800`}>
-                            {event.availabilityType}
-                          </span>
+                          { event.is_private ?
+                          <span className={`px-2 py-1 text-xs rounded-full bg-yellow-100 text-blue-800`}> Private Open House </span> :
+                          !event.is_private && event.availabilityType === 'Open House' ?
+                          <span className={`px-2 py-1 text-xs rounded-full bg-red-100 text-blue-800`}> {event.availabilityType} </span> :
+                          <span className={`px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800`}> {event.availabilityType} </span>
+                          }
+
                           <span className={`px-2 py-1 text-xs rounded-full ${
                             event.status === 'Invited' ? 'bg-[#CBADD8] text-green-800' :
                             event.status === 'Rejected' ? 'bg-red-300 text-green-800' : 
@@ -486,9 +492,11 @@ export const PropertyListing = () => {
                     
                     <div className="bg-white rounded-lg m-4 p-6 w-64 h-40">
                       <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
-                      {event.is_private ? 
-                        <p className="text-sm text-gray-500 mb-2"> Private Open House </p> :
-                        <p className="text-sm text-gray-500 mb-2"> Inspection Available </p>
+                      {event.is_private && event.availabilityType === "Open House" ? 
+                        <p className="text-sm text-gray-500 mb-2"> Private Open House Booking </p> :
+                        !event.is_private && event.availabilityType === "Open House" ?
+                        <p className="text-sm text-gray-500 mb-2"> Open House Booking </p>:
+                        <p className="text-sm text-gray-500 mb-2"> Inspection Booking </p>
                       }
                       {event.status === 'Invited' ? <div className="text-sm text-green-600 font-medium mb-2">
                         Invitation to Private Open House </div> : 
@@ -496,6 +504,8 @@ export const PropertyListing = () => {
                         <div className="text-sm text-green-600 font-medium mb-2"> ✓ Private Open House Confirmed </div> : 
                         event.status === 'Rejected' ?
                         <div className="text-sm text-red-600 font-medium mb-2"> Private Open House Rejected </div> :
+                        event.status === 'Booked' && !event.is_private ?
+                        <div className="text-sm text-green-600 font-medium mb-2"> ✓ Open House Confirmed </div> :
                         <div className="text-sm text-green-600 font-medium mb-2"> ✓ Inspection Confirmed </div>
                       }
                       
