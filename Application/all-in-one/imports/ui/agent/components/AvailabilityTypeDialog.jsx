@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
-import { Properties } from '/imports/api/database/collections.js';
+import { Properties, Photos, Agents } from '/imports/api/database/collections.js';
 
 /**
  * AvailabilityTypeDialog Component
@@ -28,14 +28,27 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const { agentProperties, photos, isReady } = useTracker(() => {
     const propertiesHandle = Meteor.subscribe('properties');
     const photosHandle = Meteor.subscribe('photos');
-    const currentUserId = Meteor.userId();
-    
-    const ready = propertiesHandle.ready() && photosHandle.ready();
-    
+    const agentsHandle = Meteor.subscribe('agents');
+
+    const ready = propertiesHandle.ready() && photosHandle.ready() && agentsHandle.ready();
+    if (!ready) {
+      return { agentProperties: [], photos: [], isReady: false };
+    }
+
+    const user = Meteor.user();
+    const userId = Meteor.userId();
+    const email = user?.emails?.[0]?.address;
+
+    // Resolve the agent's domain id: prefer exact id match, else email match
+    const agentDoc = Agents.findOne({ agent_id: userId }) || (email ? Agents.findOne({ agent_email: email }) : null);
+    const agentDomainId = agentDoc?.agent_id;
+
+    const scopedProps = agentDomainId ? Properties.find({ agent_id: agentDomainId }).fetch() : [];
+
     return {
-      agentProperties: ready && currentUserId ? Properties.find({ agent_id: currentUserId }).fetch() : [],
-      photos: ready ? Photos.find({}).fetch() : [],
-      isReady: ready
+      agentProperties: scopedProps,
+      photos: Photos.find({}).fetch(),
+      isReady: true,
     };
   }, []);
 
