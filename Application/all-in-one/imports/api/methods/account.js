@@ -57,7 +57,6 @@ Meteor.methods({
       const propID = "P" + idNum;   // Concatenates the number with a leading P for Properties. 
       
 
-      const date = new Date(dateAvailable);
    
       {/* Adding Property to 'Properties' Database */}
       await Properties.insertAsync({
@@ -69,7 +68,6 @@ Meteor.methods({
         prop_numcarspots: numParkSpots,
         prop_type: propType,
         prop_desc: description,
-        prop_available_date: date,
         prop_furnish: isFurnished,
         prop_pets: petsAllowed,
         prop_bond: bond,

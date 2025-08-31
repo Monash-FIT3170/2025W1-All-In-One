@@ -16,6 +16,7 @@ Meteor.methods({
     image,
     status,
     notes,
+    agent_id,
   ) {
     try {
       console.log('[DEBUG] insert args:', {
@@ -45,7 +46,8 @@ Meteor.methods({
       check(image, Match.Optional(String));
       check(status, Match.Optional(String));
       check(notes, Match.Optional(String));
-  
+      check(agent_id, String);
+
       const result = await AgentAvailabilities.insertAsync({
         start,
         end,
@@ -61,6 +63,7 @@ Meteor.methods({
         image,
         status,
         notes,
+        agent_id,
         createdAt: new Date(),
       });
   
@@ -74,24 +77,71 @@ Meteor.methods({
   },
   
 
-  async 'agentAvailabilities.markAsBooked'(availabilityId) {
+  async 'agentAvailabilities.markAsBooked'(availabilityId, { tenant, property }) {
     check(availabilityId, String);
+    check(tenant, { id: String, name: String });
+    check(property, {
+      id: String,
+      address: String,
+      price: Match.Optional(Match.OneOf(String, Number)),
+      bedrooms: Match.Optional(Match.OneOf(String, Number)),
+      bathrooms: Match.Optional(Match.OneOf(String, Number)),
+      parking: Match.Optional(Match.OneOf(String, Number)),
+      image: Match.Optional(String),
+    });
 
-    const result = await AgentAvailabilities.updateAsync(
+    const n = await AgentAvailabilities.updateAsync(
       { _id: availabilityId },
-      { $set: { status: 'booked' } }
+      {
+        $set: {
+          status: 'booked',
+          tenant,
+          property,     
+          title: 'Booked',
+        },
+      }
     );
-
-    if (result === 0) {
-      throw new Meteor.Error('not-found', 'No matching availability found.');
-    }
-
-    return result;
+    if (!n) throw new Meteor.Error('not-found', 'Availability not found');
+    return true;
   },
 
   async 'agentAvailabilities.clear'() {
-    console.log('Clearing all availabilities...');
-    return await AgentAvailabilities.removeAsync({});
+    console.log('Clearing all unbooked availabilities...');
+    const selector = { $or: [ { status: { $exists: false } }, { status: { $ne: 'booked' } } ] };
+
+    const removed = await AgentAvailabilities.removeAsync(selector);
+    return { removed };
+  },
+
+  async 'agentAvailabilities.update'(id, update) {
+    check(id, String);
+    check(update, Object);
+  
+    const doc = await AgentAvailabilities.findOneAsync({ _id: id });
+    if (!doc) throw new Meteor.Error('not-found', 'Availability not found');
+  
+    const $set = {};
+  
+    // Notes can always be updated
+    if (update.notes !== undefined) {
+      $set.notes = String(update.notes);
+    }
+  
+    // Start/end only allowed if not booked
+    if (doc.status !== 'booked') {
+      if (update.start) $set.start = String(update.start);
+      if (update.end) $set.end = String(update.end);
+    }
+  
+    return AgentAvailabilities.updateAsync({ _id: id }, { $set });
+  },
+
+  async 'agentAvailabilities.remove'(id) {
+    check(id, String);
+    const doc = await AgentAvailabilities.findOneAsync({ _id: id });
+    if (!doc) throw new Meteor.Error('not-found', 'Availability not found');
+    if (doc.status === 'booked') throw new Meteor.Error('forbidden', 'Booked slots cannot be deleted.');
+    return AgentAvailabilities.removeAsync({ _id: id });
   }
 
 });

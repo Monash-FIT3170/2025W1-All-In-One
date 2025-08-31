@@ -11,7 +11,6 @@ Properties.schema = new SimpleSchema({
   prop_numcarspots: { type: Number },
   prop_type: { type: String },
   prop_desc: { type: String },
-  prop_available_date: { type: Date },
   prop_furnish: { type: Boolean },
   prop_pets: { type: Boolean },
   prop_bond: { type: Number },
@@ -221,8 +220,12 @@ AgentAvailabilities.schema = new SimpleSchema({
   parking: { type: String, optional: true },
   image: { type: String, optional: true },
   status: { type: String, optional: true },
-  createdAt: { type: Date, optional: true }
+  agent_id: { type: String },
+  createdAt: { type: Date, optional: true },
+  tenant: { type: Object, optional: true, blackbox: true }, 
+  bookedAt: { type: Date, optional: true },
 });
+
 
 export const TenantBookings = new Mongo.Collection('tenantBookings');
 TenantBookings.schema = new SimpleSchema({

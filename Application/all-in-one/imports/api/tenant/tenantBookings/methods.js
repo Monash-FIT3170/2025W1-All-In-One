@@ -10,10 +10,19 @@ Meteor.methods({
       tenantId: String,
       start: Date,
       end: Date,
-      property: Object,
+      property: {
+        id: String,
+        address: String,
+        price: Match.Optional(Match.OneOf(String, Number)),
+        bedrooms: Match.Optional(Match.OneOf(String, Number)),
+        bathrooms: Match.Optional(Match.OneOf(String, Number)),
+        parking: Match.Optional(Match.OneOf(String, Number)),
+        image: Match.Optional(String),
+      },
       status: String,
     });
 
+    // prevent double-booking
     const existing = await TenantBookings.findOneAsync({
       agentAvailabilityId: bookingData.agentAvailabilityId
     });
@@ -21,10 +30,25 @@ Meteor.methods({
       throw new Meteor.Error('already-booked', 'This slot is already booked.');
     }
 
-    await Meteor.callAsync('agentAvailabilities.markAsBooked', bookingData.agentAvailabilityId);
+    // mark availability as booked and attach tenant + property snapshot
+    await Meteor.callAsync(
+      'agentAvailabilities.markAsBooked',
+      bookingData.agentAvailabilityId,
+      {
+        tenant: { id: bookingData.tenantId, name: bookingData.tenantName },
+        property: bookingData.property
+      }
+    );
 
+    // insert tenant booking record with property snapshot
     return TenantBookings.insertAsync({
-      ...bookingData,
+      agentAvailabilityId: bookingData.agentAvailabilityId,
+      tenantId: bookingData.tenantId,
+      tenantName: bookingData.tenantName,
+      start: bookingData.start,
+      end: bookingData.end,
+      property: bookingData.property,
+      status: bookingData.status,
       createdAt: new Date(),
     });
   }

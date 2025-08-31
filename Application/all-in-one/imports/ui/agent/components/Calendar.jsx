@@ -167,6 +167,7 @@ export const Calendar = () => {
 
     // Immediately insert into DB
     try {
+      const currentUserId = Meteor.userId();
       await callAsync(
         'agentAvailabilities.insert',
         start.toISOString(),
@@ -180,7 +181,8 @@ export const Calendar = () => {
         String(parking ?? ''),
         String(image ?? ''),
         'confirmed',
-        String(note ?? '')
+        String(note ?? ''),
+        currentUserId
       );
 
       // Creates an attendance list for any new open house availabilities
@@ -221,6 +223,7 @@ export const Calendar = () => {
    */
   const handleConfirm = async () => {
     try {
+      const currentUserId = Meteor.userId();
       for (const event of newEvents) {
         await callAsync(
           'agentAvailabilities.insert',
@@ -236,6 +239,7 @@ export const Calendar = () => {
           String(event.image ?? ''),
           'confirmed',
           String(event.note ?? ''),
+          currentUserId
         );
       }
 
@@ -502,9 +506,14 @@ export const Calendar = () => {
 
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
         <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
-          Clear
+          Clear All
         </button>
+        <p className="text-sm text-gray-800 mb-4">
+            Booked slots cannot be cleared. You can only clear unbooked availabilities.
+        </p>
       </div>
+      
+
     </div>
   );
 };
