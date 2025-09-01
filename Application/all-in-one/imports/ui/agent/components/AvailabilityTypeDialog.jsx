@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
+import { Meteor } from 'meteor/meteor';            
 import { Properties, ExpressionOfInterest, Agents, Tenants } from "/imports/api/database/collections";
 import { useTracker } from 'meteor/react-meteor-data';
 import { EOI } from './EOI'; // Import the EOI component
