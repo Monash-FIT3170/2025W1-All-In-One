@@ -172,7 +172,6 @@ export const Calendar = () => {
         String(bathrooms ?? ''),
         String(parking ?? ''),
         String(image ?? ''),
-        'confirmed',
         status,
         String(note ?? ''),
         is_private ?? false,
@@ -215,38 +214,6 @@ export const Calendar = () => {
 
   const handleClearButtonClick = () => setShowClearDialog(true);
 
-  /**
-   * Handles confirmation of new events and saves them to database
-   */
-  const handleConfirm = async () => {
-    try {
-      const currentUserId = Meteor.userId();
-      for (const event of newEvents) {
-        await callAsync(
-          'agentAvailabilities.insert',
-          event.start.toISOString(),
-          event.end.toISOString(),
-          'Availability',
-          event.type,
-          event.property,
-          String(event.price ?? ''),
-          String(event.bedrooms ?? ''),
-          String(event.bathrooms ?? ''),
-          String(event.parking ?? ''),
-          String(event.image ?? ''),
-          'confirmed',
-          String(event.note ?? ''),
-          currentUserId
-        );
-      }
-
-      setNewEvents([]);
-      setShowDialog(false);
-    } catch (error) {
-      alert('Insert failed: ' + error.reason);
-      console.error('Failed to create availability:', error.reason);
-    }
-  };
 
   /**
    * Handles clearing all availabilities from the database
@@ -304,7 +271,6 @@ export const Calendar = () => {
   };
 
   return (
-    <div className="bg-[#FFF8E9] min-h-screen p-8 font-sans">{/* 👈 replaced font-geist with font-sans */}
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       {/* Calendar header and description */}
       <div className="text-center mb-6">
