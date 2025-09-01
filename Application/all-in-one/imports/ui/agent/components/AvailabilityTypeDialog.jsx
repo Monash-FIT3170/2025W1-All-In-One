@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import dayjs from 'dayjs';
-import { Meteor } from 'meteor/meteor';                       // ✅ add
-import { Properties, ExpressionOfInterest, Agents, Tenants, Photos } from "/imports/api/database/collections"; // ✅ include Photos
+import { Meteor } from 'meteor/meteor';
+import { Properties, ExpressionOfInterest, Agents, Tenants, Photos } from "/imports/api/database/collections";
 import { useTracker } from 'meteor/react-meteor-data';
 import { EOI } from './EOI';
 
+/**
+ * AvailabilityTypeDialog Component
+ *
+ * A modal dialog that allows agents to create availability slots for inspections or open houses.
+ * Features:
+ * - Toggle between "Inspection" and "Open House" availability types
+ * - Property search and selection for open houses (from MongoDB)
+ * - Date and time selection for availability slots
+ * - Optional notes field for additional information
+ * - Real-time property data from MongoDB collections
+ */
 export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose }) => {
+  if (!isOpen) return null;
+  
   const [type, setType] = useState('Inspection');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
@@ -16,8 +29,8 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
   const [selectedEOI, setSelectedEOI] = useState(null);
   const [isPrivate, setIsPrivate] = useState(false);
 
-  // --- Tracker 1: agent's properties & photos
-  const { agentProperties, photos, propsReady } = useTracker(() => {     // ✅ renamed
+  // Get agent's properties from database
+  const { agentProperties, photos, propsReady } = useTracker(() => {
     const propertiesHandle = Meteor.subscribe('properties');
     const photosHandle = Meteor.subscribe('photos');
     const currentUserId = Meteor.userId();
@@ -26,10 +39,10 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
 
     return {
       agentProperties: ready && currentUserId
-        ? Properties.find({ agent_id: currentUserId }).fetch()           // ✅ keep collection intact
+        ? Properties.find({ agent_id: currentUserId }).fetch()
         : [],
       photos: ready ? Photos.find({}).fetch() : [],
-      propsReady: ready,                                                 // ✅ renamed
+      propsReady: ready,
     };
   }, []);
 
@@ -53,15 +66,18 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     const end = dayjs(`${date} ${endTime}`, 'YYYY-MM-DD HH:mm').toDate();
 
     const selected = property && property.prop_address
-      ? Properties.findOne({ prop_id: property.prop_id }) : null;
+      ? agentProperties.find(p => p.prop_id === property.prop_id)
+      : null;
 
+    // ✅ send acceptance email if this is a private open house with an EOI selected
     if (type === 'Open House' && isPrivate && selectedEOI) {
       Meteor.call('eoi.accept', selectedEOI, (err) => {
         if (err) console.error('EOI accept email failed:', err);
       });
     }
 
-    const propertyPhotos = selected ? photos.filter(ph => ph.prop_id === selected.prop_id) : [];
+    // Find property photos
+    const propertyPhotos = selected ? photos.filter(photo => photo.prop_id === selected.prop_id) : [];
     const propertyImage = propertyPhotos.length > 0 ? propertyPhotos[0].photo_url : '/images/default.jpg';
 
     onSelect(type, start, end, {
@@ -84,8 +100,8 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
       }).fetch()
     : [];
 
-  // --- Tracker 2: EOIs for the logged-in agent
-  const { filteredEOIs, agent, eoisReady } = useTracker(() => {          // ✅ renamed
+  // Filter EOIs to only those related to the logged-in agent's properties
+  const { filteredEOIs, agent, eoisReady } = useTracker(() => {
     const agentsSub = Meteor.subscribe('agents');
     const eoIsSub = Meteor.subscribe('expressionOfInterest');
     const ready = agentsSub.ready() && eoIsSub.ready();
@@ -97,11 +113,11 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     if (agent) {
       const allEOIs = ExpressionOfInterest.find().fetch();
       filteredEOIs = allEOIs.filter((eoi) => {
-        const propMatch = Properties.findOne({ prop_id: eoi.propertyID, agent_id: userId }); // ✅ renamed
+        const propMatch = Properties.findOne({ prop_id: eoi.propertyID, agent_id: userId });
         return !!propMatch && eoi.inviteSent === false;
       });
     }
-    return { filteredEOIs, agent, eoisReady: ready };                    // ✅ renamed
+    return { filteredEOIs, agent, eoisReady: ready };
   }, []);
 
   function getPropertyAddress(eoi) {
@@ -114,12 +130,37 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
     return tenant ? `${tenant.ten_fn} ${tenant.ten_ln}` : '';
   }
 
-  if (!isOpen) return null;
-
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
       <div className="bg-[#CBADD8] p-6 rounded-3xl shadow-lg w-[440px] text-left space-y-6 relative overflow-y-auto overscroll-contain max-h-[700px]">
-        {/* ... */}
+        <button
+          onClick={onClose}
+          className="absolute top-4 right-4 text-2xl font-bold text-black hover:text-gray-700"
+        >
+          ×
+        </button>
+
+        <h2 className="text-2xl font-bold text-center text-black">Availability Type</h2>
+
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={() => setType('Inspection')}
+            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
+              type === 'Inspection' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
+            }`}
+          >
+            Inspection
+          </button>
+          <button
+            onClick={() => setType('Open House')}
+            className={`py-2 px-6 rounded-full font-semibold transition-all duration-150 ${
+              type === 'Open House' ? 'bg-[#9747FF] text-white' : 'bg-[#CDCDCD] text-black'
+            }`}
+          >
+            Open House
+          </button>
+        </div>
+
         {type === 'Open House' && (
           <div>
             <label className="block text-black font-semibold mb-1">
@@ -160,11 +201,120 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
                 )}
               </div>
             )}
-            {/* EOIs list uses filteredEOIs and eoisReady if you want a loader */}
-            {/* ... unchanged UI below ... */}
+
+            {/* EOIs */}
+            <h3 className="text-lg font-bold mt-4 mb-2 text-black">Expressions of Interest</h3>
+            <p className="text-sm text-gray-800 mb-4">
+              Expressions of interest (EOI) for properties, with dates requested by prospective tenants. Choose to "remove" EOI or "select", to send an invite to the prospective tenant for this open house.
+            </p>
+            {/* list of EOI */}
+            <div
+              className="rounded-2xl bg-[#FAEEDA] p-6 overflow-y-auto overscroll-contain mb-4 max-h-[300px]"
+              role="region"
+            >
+              <div className="text-center text-sm text-black/70">
+                {filteredEOIs.length > 0 ? (
+                  filteredEOIs.map((eoi) => (
+                    <EOI
+                      key={eoi._id}
+                      eoiDoc={eoi}
+                      address={getPropertyAddress(eoi)}
+                      prospectiveTenName={getProspectiveTenantName(eoi)}
+                      isSelected={String(selectedEOI) === String(eoi._id)}
+                      onSelect={() => {
+                        setSelectedEOI(eoi._id);
+                        const prop = Properties.findOne({ prop_id: eoi.propertyID });
+                        if (prop) setProperty(prop);   // ✅ keep property in sync with EOI
+                      }}
+                      onRemoved={(id) => {
+                        // optional: if you removed the selected one, clear selection
+                        if (String(selectedEOI) === String(id)) setSelectedEOI(null);
+                        setProperty(null);
+                      }}
+                    />
+                  ))
+                ) : (
+                  <p>You currently have no EOIs.</p>
+                )}
+              </div>
+            </div>
+
+            {/* Private Open House checkbox */}
+            <div>
+              <label className="block text-lg text-black font-semibold mb-1">Private Open House</label>
+              <p className="text-sm text-gray-800 mb-4">
+                Select the checkbox if this is a private open house for the selected EOI prospective tenant.
+              </p>
+              <div className="flex items-center gap-2">
+                <input
+                  id="privateOpenHouse"
+                  type="checkbox"
+                  onChange={(e) => setIsPrivate(e.target.checked)}
+                  className="rounded-lg border-gray-300"
+                />
+                <label htmlFor="privateOpenHouse" className="text-left">
+                  Private Open House
+                </label>
+              </div>
+            </div>
           </div>
         )}
-        {/* ... rest of component unchanged ... */}
+
+        <div>
+          <h3 className="text-lg font-bold mb-2 text-black">Date and Time</h3>
+          <p className="text-sm text-gray-800 mb-4">
+            The start and end time entered will appear as a timeslot for possible tenants to book inspections for this property.
+          </p>
+          <div className="flex justify-between gap-3">
+            <div className="flex flex-col w-1/3">
+              <label className="text-sm font-semibold mb-1">Start time</label>
+              <input
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                className="rounded-lg px-2 py-1 bg-yellow-50 border"
+              />
+            </div>
+            <div className="flex flex-col w-1/3">
+              <label className="text-sm font-semibold mb-1">End time</label>
+              <input
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                className="rounded-lg px-2 py-1 bg-yellow-50 border"
+              />
+            </div>
+            <div className="flex flex-col w-1/3">
+              <label className="text-sm font-semibold mb-1">Date</label>
+              <input
+                type="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
+                className="rounded-lg px-2 py-1 bg-yellow-50 border"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Notes */}
+        <div>
+          <label className="block text-black font-semibold mb-1">Notes (optional)</label>
+          <textarea
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+            placeholder="i.e., Bring pen & notepad"
+            className="w-full h-24 px-4 py-2 rounded-lg bg-[#FFF8E9] border border-purple-400 resize-none"
+          />
+        </div>
+
+        <div className="text-center pt-2">
+          <button
+            onClick={handleSubmit}
+            className="w-full bg-[#9747FF] hover:bg-purple-700 text-white font-bold py-3 rounded-full"
+          >
+            Create Availability
+          </button>
+        </div>
       </div>
     </div>
   );
