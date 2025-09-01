@@ -1,18 +1,18 @@
 // App.js
-import React from "react";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
-import { LoginPage } from "./globalComponents/LoginPage.jsx";
-import { HomePage } from "./globalComponents/HomePage.jsx";
-import { SignUpPage } from "./globalComponents/SignUpPage.jsx";
-import { Dashboard } from "./agent/Dashboard.jsx";
+import React from 'react';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
+import { LoginPage } from './globalComponents/LoginPage.jsx';
+import { HomePage } from './globalComponents/HomePage.jsx';
+import { SignUpPage } from './globalComponents/SignUpPage.jsx';
 
-import ProtectedAgentRoutes from "./utils/ProtectedAgentRoutes.jsx";
-import ProtectedLandlordRoutes from "./utils/ProtectedLandlordRoutes.jsx";
-import ProtectedTenantRoutes from "./utils/ProtectedTenantRoutes.jsx";
+
+import ProtectedAgentRoutes from './utils/ProtectedAgentRoutes.jsx';
+import ProtectedLandlordRoutes from './utils/ProtectedLandlordRoutes.jsx';
+import ProtectedTenantRoutes from './utils/ProtectedTenantRoutes.jsx';
 
 // Guest pagess
-import DetailedPropListing from "./globalComponents/DetailedPropListing.jsx";
-import GuestBasicPropListings from "./globalComponents/GuestBasicPropListings.jsx";
+import DetailedPropListing from './globalComponents/DetailedPropListing.jsx';
+import GuestBasicPropListings from './globalComponents/GuestBasicPropListings.jsx';
 
 // importing tenant pages
 import BasicLeases from "./tenant/BasicLeases.jsx";
@@ -27,7 +27,6 @@ import TenantApplications from './tenant/TenantApplications.jsx';
 import TenantSettings from './tenant/Settings.jsx';
 
 import { UpcomingInspections } from './tenant/UpcomingInspections.jsx';
-
 
 // importing agent pages
 import AddPropertyListing from "./agent/AddPropertyListing.jsx";
@@ -62,6 +61,8 @@ const App = () => (
 
         {/* Authentication Pages */}
         <Route path="/login" element={<LoginPage />} />
+
+        {/* Sign Up Page */}
         <Route path="/signup" element={<SignUpPage />} />
 
         {/*Guest basic leases and detailed listing page*/}
@@ -79,6 +80,7 @@ const App = () => (
 
         {/* Protected Tenant Routes - Require tenant authentication */}
         <Route element={<ProtectedTenantRoutes />}>
+
           {/* Signed In Tenant Page */}
           <Route
             path="/TenantBasicPropListings"
@@ -107,38 +109,31 @@ const App = () => (
           <Route path="/DetailedLease/:id" element={<DetailedLease />} />
 
           <Route path="/tenant/application/:appId" element={<ViewApplication />} />
-            
+
             <Route path="/Settings" element={<TenantSettings />} />"
 
         </Route>
 
         {/* Protected Agent Routes - Require agent authentication */}
         <Route element={<ProtectedAgentRoutes />}>
+
           {/* Dashboard Page*/}
           <Route path="/dashboard" element={<AgentDashboard />} />{" "}
           {/* Dashboard after log in */}
           <Route path="/AgentDashboard" element={<AgentDashboard />} />{" "}
           {/* Proper dashboard */}
           {/* Add any other protected agent routes here */}
-          {/* Agent Routes team-2 */}
-          <Route path="/AddPropertyListing" element={<AddPropertyListing />} />
-          <Route
-            path="/AgentBasicPropListing"
-            element={<AgentBasicPorpListing />}
-          />
-          <Route
-            path="/AgentDetailedListing/:id"
-            element={<AgentDetailedListing />}
-          />
-          <Route
-            path="/AgentDetailedPropListing/:id"
-            element={<AgentDetailedPropListing />}
-          />
-          <Route path="/AgentListings" element={<AgentListings />} />
-          <Route
-            path="/AgentReviewApplication"
-            element={<ReviewApplication />}
-          />
+          {/* Agent Routes team-2 */ }
+                  <Route path="/AddPropertyListing" element={<AddPropertyListing />} />
+                  <Route path="/AgentBasicPropListing" element={<AgentBasicPorpListing/>}/>
+                  <Route path="/AgentDetailedListing/:id" element={<AgentDetailedListing/>}/>
+                  <Route path="/AgentDetailedPropListing/:id" element={<AgentDetailedPropListing/>}/>
+                  <Route path="/AgentListings" element={<AgentListings/>}/>
+                  <Route path="/AgentReviewApplication" element={<ReviewApplication/>}/>
+                  <Route path="/EditPropertyDetails" element={<EditPropertyDetails/>}/>
+
+          
+        
 
           <Route path="/agent/application/:appId" element={<ViewApplication />} />
         </Route>
@@ -173,4 +168,3 @@ const App = () => (
   </BrowserRouter>
 );
 export default App;
- 

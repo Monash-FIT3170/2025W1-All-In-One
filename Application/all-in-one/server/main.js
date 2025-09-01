@@ -1,3 +1,5 @@
+process.env.MAIL_URL = "smtps://allinone3170%40gmail.com:llqwcpiqphurfowj@smtp.gmail.com:465";
+
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 function maskMongoUrl(uri) {
@@ -37,6 +39,7 @@ import {
   Ten_SettingsEmployment,
   Ten_SettingsIdentities,
   Ten_SettingsIncomes,
+  Tickets,
   OpenHouseAttendance,
   ExpressionOfInterest,
   StarredProperties,
@@ -51,14 +54,23 @@ import '/imports/api/agent/agentAvailabilities/methods';
 import '/imports/api/agent/agentAvailabilities/publications';
 import '/imports/api/tenant/tenantBookings/methods';
 import '/imports/api/tenant/tenantBookings/publications';
+import '/imports/api/agent/tenantBookings/publications';
 import '/imports/api/agent/openHouseAttendance/methods';
 import '/imports/api/agent/openHouseAttendance/publication';
 import '/imports/api/agent/expressionOfInterest/methods';
 import '/imports/api/agent/expressionOfInterest/publication';
+import '/imports/api/tenant/tickets/ticketsMethods';
+import '/imports/api/tenant/tickets/ticketsPublications'
+import '/imports/api/methods/eoi.js';
+import '/imports/api/agent/ticketActivities/methods.js';
+import '/imports/api/agent/ticketActivities/publications.js';
+
+
 import '/imports/api/methods/profileSettings.js';
 
 import 'dotenv/config';
 
+Meteor.startup(async () => {
   // Insert mock data only if collections are empty
   if ((await Properties.find().countAsync()) === 0) {
     for (const property of mockData.properties) {
@@ -266,5 +278,8 @@ import 'dotenv/config';
   
   return StarredProperties.find({ ten_id: tenant.ten_id });
 });
- 
 
+  Meteor.publish('tickets', function () {
+    return Tickets.find();
+  })
+});

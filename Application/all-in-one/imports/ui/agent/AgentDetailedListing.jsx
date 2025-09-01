@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
 import { useParams, Link, UseNavigate } from "react-router-dom";
 import Navbar from "./components/AgentNavbar";
@@ -7,7 +7,7 @@ import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, RentalApplications, Landlord } from "../../api/database/collections"; // importing mock for now
-
+import EditPropertyModal from "./components/EditPropertyModal";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a the agent's own assigned property listing to the agent (accessed through AgentListings) //
@@ -15,7 +15,8 @@ import { Properties, Photos, Videos, RentalApplications, Landlord } from "../../
 
 export default function AgentDetailedListing() {
   const { id } = useParams();
-  
+  const[openModal, setOpenModal] = useState(false);
+
 const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
@@ -85,18 +86,19 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
           status: property.prop_status,
           leaseStartDate: approvedLeaseStart,
           AvailableDate: property.prop_available_date,
-          Pets: property.prop_pets ? "True":"False",
+          Pets: property.prop_pets,
           imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
           videoUrls: videos.length ? videos.map((video) => video.video_url) : null,
           details:{
           beds: property.prop_numbeds ?? "N/A",
           baths: property.prop_numbaths ?? "N/A",
           carSpots: property.prop_numcarspots ?? "N/A",
-          furnished: property.prop_furnish? "Yes":"No",
+          furnished: property.prop_furnish,
           },
           description: property.prop_desc,
           photo: property.photo,
-          
+          bond: property.prop_bond,
+          landlord: property.landlord_id,
         };
 
 
@@ -107,7 +109,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
 
       {/*Main content using propertyDetailsCard*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={property} />
+        <PropertyDetailsCard property={propertyData} />
       </div>
 
       {/*Description and buttons (no buttons for now (milestone 2)*/}
@@ -118,24 +120,11 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
         </p>
 
         <div className="mt-4 w-full flex justify-center">
-          <div className="w-[1220px] px-4 py-3 flex justify-start rounded-lg">
-            <Link
-              to={`/EditPropertyDetails/${property.id}`}
-              key = {property.id}
-              className="px-6 py-2 text-white rounded-lg focus:outline-none"
-              style={{
-                backgroundColor: "#9747FF",
-                color: "#bg-violet-900"
-              }}
-              onMouseOver={(e) =>
-                (e.currentTarget.style.backgroundColor = "bg-violet-900")
-              }
-              onMouseOut={(e) =>
-                (e.currentTarget.style.backgroundColor = "#9747FF")
-              }
-            >
+          <div className="w-[1220px] px-4 py-3 flex justify-center rounded-lg">
+            <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+            onClick={() => setOpenModal(true)}>
               Edit Property Details
-            </Link>
+            </button>
           </div>
         </div>
 
@@ -159,7 +148,11 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
 
       {/*Footer*/}
       <Footer />
+
+      {openModal && <EditPropertyModal
+      isOpen={() => setOpenModal(true)}
+      onClose={() => setOpenModal(false)}
+      propertyData={propertyData}/>}
     </div>
   );
 }
-

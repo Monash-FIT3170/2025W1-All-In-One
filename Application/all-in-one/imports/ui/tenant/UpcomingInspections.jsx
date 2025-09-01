@@ -5,7 +5,7 @@ import { Search, Filter, ChevronDown, X } from 'lucide-react';
 import { Properties, Agents, Photos, AgentAvailabilities } from "../../api/database/collections";
 import Navbar from "./components/TenNavbar";
 import { Link } from "react-router-dom";
-import {formatDisplayDate, formatTime} from '../globalComponents/DateTimeFormatting'
+import { formatDisplayDate, formatTime } from '../globalComponents/DateTimeFormatting';
 
 // Group events by Availability Type
 const groupEventsByType = (events) => {
@@ -19,84 +19,76 @@ const groupEventsByType = (events) => {
   return grouped;
 };
 
-
 export const UpcomingInspections = () => {
   const [searchTerm, setSearchTerm] = useState('');
-    const [showFilters, setShowFilters] = useState(false);
-    const [selectedAgents, setSelectedAgents] = useState(['All Agents']);
-    const [selectedAvailabilities, setSelectedAvailabilities] = useState(['All Availabilities']);
-    const [selectedDates, setSelectedDates] = useState(['All Dates']);
-    const [loading, setLoading] = useState(true);
-  
-    // Subscribe to data - only get current user's bookings
-    const { availabilities, properties, agents, photos, isReady } = useTracker(() => {
-      const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
-      const propertiesHandle = Meteor.subscribe('properties');
-      const agentsHandle = Meteor.subscribe('agents');
-      const photosHandle = Meteor.subscribe('photos');
-      
-      const ready = availabilitiesHandle.ready() && 
-                    propertiesHandle.ready() && 
-                    agentsHandle.ready() &&
-                    photosHandle.ready();
-  
-      return {
-        availabilities: AgentAvailabilities.find({}).fetch(),
-        properties: Properties.find({}).fetch(),
-        agents: Agents.find({}).fetch(),
-        photos: Photos.find({}).fetch(),
-        isReady: ready
-      };
-    }, []);
-  
-    useEffect(() => {
-      setLoading(!isReady);
-    }, [isReady]);
-  
-    // Transform booked data for display 
-    const transformedEvents = availabilities.map(booking => {
-      
-      let property = {};
-      
-      // Try to find property by booking.property first
-      if (booking.property && booking.property !== "") {
-        property = properties.find(p => p.prop_address === booking.property.address) || {};
+  const [showFilters, setShowFilters] = useState(false);
+  const [selectedAgents, setSelectedAgents] = useState(['All Agents']);
+  const [selectedAvailabilities, setSelectedAvailabilities] = useState(['All Availabilities']);
+  const [selectedDates, setSelectedDates] = useState(['All Dates']);
+  const [loading, setLoading] = useState(true);
+
+  // Subscribe to data
+  const { availabilities, properties, agents, photos, isReady } = useTracker(() => {
+    const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
+    const propertiesHandle = Meteor.subscribe('properties');
+    const agentsHandle = Meteor.subscribe('agents');
+    const photosHandle = Meteor.subscribe('photos');
+    
+    const ready = availabilitiesHandle.ready() && 
+                  propertiesHandle.ready() && 
+                  agentsHandle.ready() &&
+                  photosHandle.ready();
+
+    return {
+      availabilities: AgentAvailabilities.find({}).fetch(),
+      properties: Properties.find({}).fetch(),
+      agents: Agents.find({}).fetch(),
+      photos: Photos.find({}).fetch(),
+      isReady: ready
+    };
+  }, []);
+
+  useEffect(() => {
+    setLoading(!isReady);
+  }, [isReady]);
+
+  // Transform data for display
+  const transformedEvents = availabilities
+    .map((slot) => {
+      // 🚫 Hide PRIVATE Open Houses here
+      if ((slot.availability_type === 'Open House' || slot.availabilityType === 'Open House') && slot.is_private === true) {
+        return null;
       }
-      
-      // If no property found, try to get from booking.property if it exists
-      if (!property.prop_id && booking.property.id) {
-        // Check if booking.property has property info directly
-        if (typeof booking.property === 'object' && booking.property.address) {
-          // Use property data directly from booking
-          property = {
-            prop_id: booking.property.id || 'unknown',
-            prop_address: booking.property.address,
-            prop_pricepweek: booking.property.price,
-            prop_numbeds: booking.property.bedrooms,
-            prop_numbaths: booking.property.bathrooms,
-            prop_numcarspots: booking.property.parking,
-            prop_type: booking.property.type || 'Property',
+
+      let property = {};
+
+      // Resolve property from the availability's property field (object or id)
+      if (slot.property && slot.property !== "") {
+        if (typeof slot.property === 'object' && slot.property.address) {
+          // Try to match by address if it's an embedded object
+          property = properties.find(p => p.prop_address === slot.property.address) || {
+            // fallback to snapshot-like object
+            prop_id: slot.property.id || 'unknown',
+            prop_address: slot.property.address,
+            prop_pricepweek: slot.property.price,
+            prop_numbeds: slot.property.bedrooms,
+            prop_numbaths: slot.property.bathrooms,
+            prop_numcarspots: slot.property.parking,
+            prop_type: slot.property.type || 'Property',
             prop_available_date: new Date(),
             prop_pets: false,
             prop_furnish: false,
-            prop_desc: 'Booked property'
+            prop_desc: 'Property'
           };
+        } else if (typeof slot.property === 'string') {
+          // If it's a prop_id string
+          property = properties.find(p => p.prop_id === slot.property) || {};
         }
       }
-      
-      // // If still no property, use first available property as fallback (this is the case for inspections since no property is specified)
-      // if (!property.prop_id && properties.length > 0) {
-      //   property = properties[0]; // Use first property as fallback
-      // }
-      
-      // Resolve agent by agent_id from property or from booking.property
-      const resolvedAgentId = property.agent_id || (booking.property && booking.property.agent_id);
-      const agent = agents.find(a => a.agent_id === resolvedAgentId) || {};
-      
-      // Find property photos
+
+      const agent = agents.find(a => a.agent_id === property.agent_id) || {};
       const propertyPhotos = photos.filter(photo => photo.prop_id === property.prop_id);
-  
-      // Create propertyData object
+
       const propertyData = {
         id: property.prop_id,
         address: property.prop_address || 'Select to Choose Property',
@@ -104,7 +96,11 @@ export const UpcomingInspections = () => {
         type: property.prop_type || 'Property',
         AvailableDate: property.prop_available_date || new Date(),
         Pets: property.prop_pets ? "True" : "False",
-        imageUrls: propertyPhotos.length ? propertyPhotos.map((photo) => `/images/properties/${property.prop_id}/main.jpg`) : ["/images/default.jpg"],
+        // if you store photos physically by /images/properties/<id>/main.jpg, keep it;
+        // otherwise use photo_url from Photos
+        imageUrls: propertyPhotos.length
+          ? propertyPhotos.map((photo) => photo.photo_url || `/images/properties/${property.prop_id}/main.jpg`)
+          : ["/images/default.jpg"],
         details: {
           beds: property.prop_numbeds ?? "N/A",
           baths: property.prop_numbaths ?? "N/A",
@@ -113,18 +109,21 @@ export const UpcomingInspections = () => {
         },
         description: property.prop_desc || 'Property description',
       };
-  
+
+      const availabilityType = slot.availability_type || slot.availabilityType || 'Inspection';
+      const activityType = slot.activity_type || 'Standard';
+
       return {
-        id: booking._id,
-        date: formatDisplayDate(booking.start),
+        id: slot._id,
+        date: formatDisplayDate(slot.start),
         property: propertyData.address,
-        time: formatTime(booking.start, booking.end),
+        time: formatTime(slot.start, slot.end),
         agent: `${agent.agent_fname || 'Unknown'} ${agent.agent_lname || 'Agent'}`,
         image: propertyData.imageUrls[0],
-        activityType: booking.activity_type || 'Standard',
-        availabilityType: booking.availability_type || 'Inspection',
-        status: booking.status,
-        bookingDate: booking.createdAt,
+        activityType,
+        availabilityType,
+        status: slot.status,
+        bookingDate: slot.createdAt,
         propertyDetails: {
           price: propertyData.price,
           bedrooms: propertyData.details.beds,
@@ -134,61 +133,53 @@ export const UpcomingInspections = () => {
         fullPropertyData: propertyData,
         property_id: propertyData.id
       };
-    });
-  
-    // Filter events based on selected filters
-    const filteredEvents = transformedEvents.filter(event => {
-      const agentMatch = selectedAgents.includes('All Agents') || selectedAgents.includes(event.agent);
-      const propertyMatch = selectedAvailabilities.includes('All Availabilities') || 
-        selectedAvailabilities.some(availabilityType => event.availabilityType.toLowerCase().includes(availabilityType.toLowerCase()));
-      const dateMatch = selectedDates.includes('All Dates') || 
-        selectedDates.some(date => event.date.includes(date));
-      const searchMatch = searchTerm === '' || 
-        event.agent.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.property.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        event.activityType.toLowerCase().includes(searchTerm.toLowerCase())||
-        event.availabilityType.toLowerCase().includes(searchTerm.toLowerCase());
-      
-      return agentMatch && propertyMatch && dateMatch && searchMatch;
-    });
-    
-    // Group filtered events by date
-    const eventsByType = groupEventsByType(filteredEvents);
-    
-    // Generate filter options from actual data
-    const agentOptions = ['All Agents', ...new Set(transformedEvents.map(e => e.agent))];
-    const availabilityOptions = ['All Availabilities', ...new Set(transformedEvents.map(e => e.availabilityType))];
-    const dateOptions = ['All Dates', ...new Set(transformedEvents.map(e => e.date))];
-  
-    const handleCheckboxChange = (value, type, setterFunction, currentValues) => {
-      if (value === `All ${type}`) {
-        setterFunction([`All ${type}`]);
-      } else {
-        const newValues = currentValues.includes(`All ${type}`) 
-          ? [value]
-          : currentValues.includes(value) 
-            ? currentValues.filter(item => item !== value)
-            : [...currentValues.filter(item => item !== `All ${type}`), value];
-        
-        if (newValues.length === 0) {
-          setterFunction([`All ${type}`]);
-        } else {
-          setterFunction(newValues);
-        }
-      }
-    };
-  
-    if (loading) {
-      return (
-        <div className="bg-[#FFF8E9] min-h-screen flex items-center justify-center">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading all upcoming inspections...</p>
-          </div>
-        </div>
-      );
-    }
+    })
+    .filter(Boolean);
 
+  // Filters
+  const filteredEvents = transformedEvents.filter(event => {
+    const agentMatch = selectedAgents.includes('All Agents') || selectedAgents.includes(event.agent);
+    const availabilityMatch = selectedAvailabilities.includes('All Availabilities') || 
+      selectedAvailabilities.some(availabilityType => event.availabilityType.toLowerCase().includes(availabilityType.toLowerCase()));
+    const dateMatch = selectedDates.includes('All Dates') || 
+      selectedDates.some(date => event.date.includes(date));
+    const searchMatch = searchTerm === '' || 
+      event.agent.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.property.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.activityType.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      event.availabilityType.toLowerCase().includes(searchTerm.toLowerCase());
+    
+    return agentMatch && availabilityMatch && dateMatch && searchMatch;
+  });
+  
+  const eventsByType = groupEventsByType(filteredEvents);
+  const agentOptions = ['All Agents', ...new Set(transformedEvents.map(e => e.agent))];
+  const availabilityOptions = ['All Availabilities', ...new Set(transformedEvents.map(e => e.availabilityType))];
+  const dateOptions = ['All Dates', ...new Set(transformedEvents.map(e => e.date))];
+
+  const handleCheckboxChange = (value, type, setterFunction, currentValues) => {
+    if (value === `All ${type}`) {
+      setterFunction([`All ${type}`]);
+    } else {
+      const newValues = currentValues.includes(`All ${type}`) 
+        ? [value]
+        : currentValues.includes(value) 
+          ? currentValues.filter(item => item !== value)
+          : [...currentValues.filter(item => item !== `All ${type}`), value];
+      setterFunction(newValues.length === 0 ? [`All ${type}`] : newValues);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="bg-[#FFF8E9] min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-purple-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading all upcoming inspections...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20"> 
@@ -222,7 +213,7 @@ export const UpcomingInspections = () => {
             <Filter size={18} />
             Filters
             {(selectedAgents.length > 1 || selectedAvailabilities.length > 1 || selectedDates.length > 1 || 
-              !selectedAgents.includes('All Agents') || !selectedAvailabilities.includes('All Properties') || 
+              !selectedAgents.includes('All Agents') || !selectedAvailabilities.includes('All Availabilities') ||  /* fixed */
               !selectedDates.includes('All Dates')) && (
               <span className="bg-purple-500 text-white text-xs rounded-full px-2 py-1 ml-1">
                 Active
@@ -273,7 +264,7 @@ export const UpcomingInspections = () => {
                       <input
                         type="checkbox"
                         checked={selectedAvailabilities.includes(availabilityType)}
-                        onChange={() => handleCheckboxChange(availabilityType, 'Properties', setSelectedAvailabilities, selectedAvailabilities)}
+                        onChange={() => handleCheckboxChange(availabilityType, 'Availabilities', setSelectedAvailabilities, selectedAvailabilities)}
                         className="w-4 h-4 text-purple-600 rounded"
                       />
                       <span className="text-sm truncate">{availabilityType}</span>
@@ -320,43 +311,45 @@ export const UpcomingInspections = () => {
               }
             </p>
           </div>
-          ) : (
+        ) : (
           <div className="space-y-8">
-
-              {Object.keys(eventsByType).map(availabilityType => (
-                <div key={availabilityType}>
-                  <div className="flex items-center mb-6">
-                    <div className="border-t border-gray-400 flex-grow"></div>
-                    <h3 className="text-xl text-gray-600 font-medium px-4">{availabilityType}</h3>
-                    <div className="border-t border-gray-400 flex-grow"></div>
-                  </div>
-                  
-                  {eventsByType[availabilityType].map(event => (
-                    <Link
-                      key={event.id}
-                      to={`/TenDetailedPropListing/${event.property_id}`}>
-                      <div className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
-                        <div className="w-48 h-32 flex-shrink-0">
-                          <img src={event.image} alt="Property" className="w-full h-full object-cover" />
-                        </div>
-                        
-                        <div className="p-6 flex-grow">
-                          <h4 className="text-xl underline font-extrabold text-gray-800">{event.property}</h4>
-                          <div className="flex items-start justify-between mb-2">
-                            <h4 className="text-lg font-semibold text-gray-800">{event.date}</h4>
-                          </div>
-                          <p className="text-gray-700 font-medium mb-3">{event.time}</p>
-
-                        </div>
-                        
-                        <div className="bg-white rounded-lg m-4 p-6 w-64">
-                          <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
+            {Object.keys(eventsByType).map(availabilityType => (
+              <div key={availabilityType}>
+                <div className="flex items-center mb-6">
+                  <div className="border-t border-gray-400 flex-grow"></div>
+                  <h3 className="text-xl text-gray-600 font-medium px-4">{availabilityType}</h3>
+                  <div className="border-t border-gray-400 flex-grow"></div>
                 </div>
-              ))}
+                
+                {eventsByType[availabilityType].map(event => (
+                  <Link
+                    key={event.property_id}
+                    to={event.availabilityType === "Open House" ? `/TenDetailedPropListing/${event.property_id}` : "/TenantBasicPropListings"}
+                  >
+                    <div className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
+                      <div className="w-48 h-32 flex-shrink-0">
+                        <img src={event.image} alt="Property" className="w-full h-full object-cover" />
+                      </div>
+                      
+                      <div className="p-6 flex-grow">
+                        {event.availabilityType === "Open House" ? (<h4 className="text-xl underline font-extrabold text-gray-800">{event.property}</h4>)
+                        : (<h4 className="text-xl underline font-extrabold text-gray-800">Inspection Available</h4>)}
+                        <div className="flex items-start justify-between mb-2">
+                          <h4 className="text-lg font-semibold text-gray-800">{event.date}</h4>
+                        </div>
+                        <p className="text-gray-700 font-medium mb-3">{event.time}</p>
+                      </div>
+                      
+                      <div className="bg-white rounded-lg m-4 p-6 w-64">
+                        {event.availabilityType === "Open House" ? (<h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>)
+                        : (<h5 className="font-semibold text-gray-600 mb-1 text-center">Click to Choose Property</h5>)}
+                        
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ))}
           </div>
         )}
       </main> 

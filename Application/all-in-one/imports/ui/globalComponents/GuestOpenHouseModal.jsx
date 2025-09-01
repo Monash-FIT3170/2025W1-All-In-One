@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Meteor } from 'meteor/meteor';
-import {formatDisplayDate, formatTime} from '../../globalComponents/DateTimeFormatting'
-import { OpenHouseAttendance, Tenants } from '../../../api/database/collections';
+import {formatDisplayDate, formatTime} from './DateTimeFormatting'
+import { OpenHouseAttendance, Tenants } from '../../api/database/collections';
+import { useNavigate } from 'react-router-dom';
 
 
-function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
+function GuestOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
 
   {/* Used to close modal when outside is clicked */}
   const modalRef = useRef();
@@ -14,92 +15,18 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
     }
   };
 
-  const [EOI, setEOI] = useState('');
-
-  {/* Submitting an Expression of Interest */}
+  const navigate = useNavigate();
+  
+  {/* Clicking on Text Input or Submit EOI Button */}
   const handleSubmit = () => {
-    const propertyID = propertyData.id;
-    const tenantID = Meteor.userId();
-    
-    Meteor.call(
-      'expressionOfInterest.insert', 
-        propertyID,
-        tenantID,
-        EOI,
-      (err) => {
-        if (err) {
-          alert("Adding Tenant to List Failed: " + err.reason);
-        }
-        else {
-          alert("Expression of interest sent! \n\nAgent will be in touch via email. \n\nPlease note, expressions of interest cannot guarantee a private open house inspection.");
-          onClose();
-        }
-      }
-    );
+    alert("You need to log in submit an Expression of Interest. Close to go to log in page.")
+    navigate("/login")
   };
 
   {/* Selecting a provided timeslot for Open House */}
-  const handleSelect = (openHouse_id) => {
-    const tenant_id = Meteor.userId();
-    Meteor.subscribe('openHouseAttendance');
-    Meteor.subscribe('tenants');
-
-    const tenant = Tenants.findOne({
-      ten_id: tenant_id });
-    const tenantFullName = tenant.ten_fn + " " + tenant.ten_ln;
-
-    const attendanceList = OpenHouseAttendance.findOne({ 
-      bookingID: openHouse_id});
-    
-    if (attendanceList.attendanceList.find( ten => ten.tenantID === tenant_id)){
-      alert(`You have already joined the following Open House:\n\n*** ${formatDisplayDate(attendanceList.start)} at ${formatTime(attendanceList.start, attendanceList.end)} ***`);
-      return;
-    }
-    
-    Meteor.call(
-      'openHouseAttendance.addTenant', 
-        openHouse_id,
-        tenant_id,
-        tenantFullName,
-      (err) => {
-        if (err) {
-          alert("Adding Tenant to List Failed: " + err.reason);
-        }
-      }
-    );
-
-    /* Adding to Tenant Bookings */
-    const property = {
-      address: propertyData.address,
-      price:  propertyData.price,
-      bedrooms: propertyData.details.beds,
-      bathrooms: propertyData.details.baths,
-      parking: propertyData.details.carSpots,
-      image: propertyData.imageUrls,
-    }
-    const bookingData = {
-      agentAvailabilityId: openHouse_id,
-      tenantName: tenantFullName,
-      tenantId: tenant_id,
-      start: new Date(attendanceList.start),
-      end: new Date(attendanceList.end),
-      property: property,
-      status: "Booked"
-    }
-    Meteor.call(
-      'tenantBookings.insert', 
-        bookingData
-      ,
-      (err) => {
-        if (err) {
-          alert("Adding Tenant Booking Failed: " + err.reason);
-        }
-        else {
-alert(`You have successfully joined the following Open House:\n\n*** ${formatDisplayDate(attendanceList.start)} at ${formatTime(attendanceList.start, attendanceList.end)} ***`);
-          onClose();
-        }
-      }
-    );
+  const handleSelect = () => {
+    alert("You need to log in select an open house timeslot. Close to go to log in page.")
+    navigate("/login")
   };
 
   return (
@@ -130,7 +57,7 @@ alert(`You have successfully joined the following Open House:\n\n*** ${formatDis
               <h5 className="text-lg font-semibold text-gray-600 mb-1 justify-center items-center">{formatDisplayDate(openHouse.start)}</h5>
               <p className="text-sm text-gray-600 mb-1 justify-center items-center"> {formatTime(openHouse.start, openHouse.end)} </p>
               <button 
-              onClick={() => handleSelect(openHouse._id)}
+              onClick={handleSelect}
               className="w-1/1 bg-[#9747FF] mt-3 justify-center hover:bg-violet-900 text-white font-base text-center py-2 px-2 rounded-md shadow-md transition duration-200">
                 Select
               </button>
@@ -148,8 +75,8 @@ alert(`You have successfully joined the following Open House:\n\n*** ${formatDis
 
         <div className='flex justify-center mb-3'>
           <textarea 
-          value = {EOI}
-          onChange={(e) => setEOI(e.target.value)}
+          onClick={handleSelect}
+          onChange={handleSubmit}
           placeholder='Enter expression of interest here with date and time'
           className="w-full p-2 h-24 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
           />
@@ -168,4 +95,4 @@ alert(`You have successfully joined the following Open House:\n\n*** ${formatDis
   )
 }
 
-export default UpcomingOpenHouseModal;
+export default GuestOpenHouseModal;

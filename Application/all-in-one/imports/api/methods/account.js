@@ -5,6 +5,12 @@ import { Tenants, Properties, Photos } from '../database/collections.js'; // adj
 Meteor.methods({
   async registerUser({ email, password, firstName, lastName, role }) {
     try {
+      //  Check if email already exists
+      const existingUser = await Accounts.findUserByEmail(email);
+      if (existingUser) {
+        throw new Meteor.Error("An account with this email already exists.");
+      }
+
       //  Create the Meteor account and await the user ID
       const userId = await Accounts.createUserAsync({
         email,
@@ -57,7 +63,8 @@ Meteor.methods({
       const propID = "P" + idNum;   // Concatenates the number with a leading P for Properties. 
       
 
-   
+      const date = new Date(dateAvailable);
+
       {/* Adding Property to 'Properties' Database */}
       await Properties.insertAsync({
         prop_id: propID,
@@ -68,6 +75,7 @@ Meteor.methods({
         prop_numcarspots: numParkSpots,
         prop_type: propType,
         prop_desc: description,
+        prop_available_date: date,
         prop_furnish: isFurnished,
         prop_pets: petsAllowed,
         prop_bond: bond,
@@ -101,23 +109,26 @@ Meteor.methods({
     
     const date = new Date(dateAvailable);
 
-    await Properties.updateAsync({
-      prop_id: propId,
-      prop_address: propAddress,
-      prop_pricepweek: pricePerWeek,
-      prop_numbeds: numBeds,
-      prop_numbaths: numBaths,
-      prop_numcarspots: numParkSpots,
-      prop_type: propType,
-      prop_desc: description,
-      prop_available_date: date,
-      prop_furnish: isFurnished,
-      prop_pets: petsAllowed,
-      prop_bond: bond,
-      prop_status: status,
-      agent_id: agentId,   // to be changed
-      landlord_id: landlord._id
-    });
+    await Properties.updateAsync(
+      {prop_id: propId,},
+      {$set:
+        {
+          prop_address: propAddress,
+          prop_pricepweek: pricePerWeek,
+          prop_numbeds: numBeds,
+          prop_numbaths: numBaths,
+          prop_numcarspots: numParkSpots,
+          prop_type: propType,
+          prop_desc: description,
+          prop_available_date: date,
+          prop_furnish: isFurnished,
+          prop_pets: petsAllowed,
+          prop_bond: bond,
+          prop_status: status,
+          agent_id: agentId,   // to be changed
+          landlord_id: landlord._id
+        }
+      });
 
   },
 

@@ -6,6 +6,11 @@ import { FaBath, FaBed, FaCar, FaCouch, FaStar, FaRegStar, FaChevronRight, FaChe
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
+//////////////////////////////////////////////////////////////////////////////////
+// Component used to display the Property details in the detailed property view //
+//////////////////////////////////////////////////////////////////////////////////
+
+// Next arrow used for modal
 function SampleNextArrow(props) {
   const { onClick } = props;
   return (
@@ -18,6 +23,7 @@ function SampleNextArrow(props) {
   );
 }
 
+// previous arrow used for modal
 function SamplePrevArrow(props) {
   const { onClick } = props;
   return (
@@ -33,6 +39,9 @@ function SamplePrevArrow(props) {
 export default function PropertyDetailsCard({ property, showSaveButton= false }) {
   // image disaplayed if there are no images
   const defaultImage = "/images/default.jpg";
+
+  const [activeMediaType, setActiveMediaType] = useState("images");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Local saved state, init from property.starred or false
@@ -98,7 +107,6 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
                 ✕
               </button>
             </div>
-
             {allMedia.length === 1 ? (
               <div className="flex justify-center items-center">
                 {allMedia[0].type === "video" ? (
@@ -151,6 +159,7 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
 
       {/* Main content */}
       <div className="flex flex-col lg:flex-row p-4 gap-10 pt-16">
+        {/*Images*/}
         <div className="w-full lg:w-1/2">
           <div className="flex flex-col sm:flex-row gap-2">
             {/* Main media */}
@@ -298,6 +307,7 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
             <span className="text-gray-700">{property.prop_pets ? "Yes" : "No"}</span>
           </div>
 
+          {/*Icons and data associated*/}
           <div className="grid grid-cols-2 gap-4 pt-4 text-gray-700">
             <div className="flex items-center gap-2">
               <FaBath className="text-gray-600 text-lg" />
@@ -322,4 +332,3 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
     </>
   );
 }
-
