@@ -354,6 +354,36 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
         <div className="flex-1">
           {/* Date */}
           <h2 className="text-2xl font-bold mb-2">{formatDate(startDate)}</h2>
+          {/* Time */}
+          {!isEditing ? (
+            <p className="text-lg font-medium text-gray-700">
+              {formatTime(startDate, endDate)}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>Start</label>
+              <input
+                type="datetime-local"
+                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
+                value={draftStart}
+                onChange={(e) => setDraftStart(e.target.value)}
+                disabled={isBooked}
+              />
+              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>End</label>
+              <input
+                type="datetime-local"
+                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
+                value={draftEnd}
+                onChange={(e) => setDraftEnd(e.target.value)}
+                disabled={isBooked}
+              />
+              {isBooked && (
+                <p className="text-xs text-gray-600 -mt-1">
+                  Time is locked for booked slots. You can still update the note below.
+                </p>
+              )}
+            </div>
+          )}
 
           {/* Combined Tenant Information & Attendance List */}
           <div className="bg-white p-4 rounded-xl space-y-4 mt-4">
@@ -444,45 +474,7 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
               <p className="whitespace-pre-line">{event.notes}</p>
             </div>
           )}
-          {/* Time */}
-          {!isEditing ? (
-            <p className="text-lg font-medium text-gray-700">
-              {formatTime(startDate, endDate)}
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>Start</label>
-              <input
-                type="datetime-local"
-                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
-                value={draftStart}
-                onChange={(e) => setDraftStart(e.target.value)}
-                disabled={isBooked}
-              />
-              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>End</label>
-              <input
-                type="datetime-local"
-                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
-                value={draftEnd}
-                onChange={(e) => setDraftEnd(e.target.value)}
-                disabled={isBooked}
-              />
-              {isBooked && (
-                <p className="text-xs text-gray-600 -mt-1">
-                  Time is locked for booked slots. You can still update the note below.
-                </p>
-              )}
-            </div>
-          )}
-
-          {isBooked && mergedEvent.tenant && (
-            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
-              <p className="font-semibold mb-1">Booked For</p>
-              <p>{mergedEvent.tenant.name}</p>
-              {/* Add more tenant fields later if you store them */}
-            </div>
-          )}
-
+          
           {/* Notes */}
           {!isEditing ? (
             (mergedEvent.notes?.trim() || mergedEvent.note?.trim()) ? (
