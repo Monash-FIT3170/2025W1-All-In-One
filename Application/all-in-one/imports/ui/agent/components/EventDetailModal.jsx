@@ -389,9 +389,10 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
             {/* Individual Tenant Info (only for non Open House) */}
             {event.tenant && mergedEvent.type !== 'Open House' ? (
               <div className="space-y-2">
+                <p className="font-semibold mb-1">Tenant</p>
                 <p className="font-semibold text-lg">{typeof event.tenant === 'object' ? event.tenant.name : event.tenant}</p>
-                <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
-                <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
+                {/* <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
+                <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p> */}
               </div>
             ) : null}
 
@@ -471,14 +472,6 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
             <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
               <p className="font-semibold mb-1">Note</p>
               <p className="whitespace-pre-line">{event.notes}</p>
-            </div>
-          )}
-
-          {isBooked && mergedEvent.tenant && (
-            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
-              <p className="font-semibold mb-1">Booked For</p>
-              <p>{mergedEvent.tenant.name}</p>
-              {/* Add more tenant fields later if you store them */}
             </div>
           )}
 
