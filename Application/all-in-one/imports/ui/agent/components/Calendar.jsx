@@ -463,6 +463,5 @@ export const Calendar = () => {
         </p>
       </div>
     </div>
-  </div>
   );
 };
