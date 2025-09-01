@@ -30,7 +30,7 @@ Meteor.methods({
       throw new Meteor.Error('already-booked', 'This slot is already booked.');
     }
 
-    if (bookingData.status === "Booked" ){
+    if (bookingData.status === "Booked" ) {
       await Meteor.callAsync('agentAvailabilities.markAsBooked', bookingData.agentAvailabilityId);
     }
 
