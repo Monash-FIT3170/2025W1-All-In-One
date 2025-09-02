@@ -516,13 +516,6 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
           {/*  </div>*/}
           {/*)}*/}
 
-          {event.notes?.trim() && (
-            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
-              <p className="font-semibold mb-1">Note</p>
-              <p className="whitespace-pre-line">{event.notes}</p>
-            </div>
-          )}
-
           {/* Notes */}
           {!isEditing ? (
             (mergedEvent.notes?.trim() || mergedEvent.note?.trim()) ? (
