@@ -54,6 +54,7 @@ export const InspectionCalendar = ({ propertyId, propertySnapshot }) => {
       id: info.event.id,
       start: info.event.start,
       end: info.event.end,
+      property: info.event.extendedProps.property,  // always an object
     });
     setShowDialog(true);
   };
@@ -72,13 +73,14 @@ export const InspectionCalendar = ({ propertyId, propertySnapshot }) => {
         'Anonymous',
       start: new Date(selectedSlot.start),
       end: new Date(selectedSlot.end),
-
-      property: propertySnapshot && propertySnapshot.id
-        ? propertySnapshot
-        : { id: propertyId, address: '-', image: '/images/default.jpg' },
-
-      status: 'pending',
+      property: {
+        ...selectedSlot.property,
+        id: propertyId,
+      },
+      status: 'booked', 
     };
+
+    console.log("bookingData.property keys:", Object.keys(bookingData.property));
 
     Meteor.call('tenantBookings.insert', bookingData, (err) => {
       if (err) {
