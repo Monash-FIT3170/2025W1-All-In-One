@@ -85,13 +85,13 @@ Meteor.methods({
     check(availabilityId, String);
     check(tenant, { id: String, name: String });
     check(property, {
-      id: String,
-      address: String,
-      price: Match.Optional(Match.OneOf(String, Number)),
-      bedrooms: Match.Optional(Match.OneOf(String, Number)),
-      bathrooms: Match.Optional(Match.OneOf(String, Number)),
-      parking: Match.Optional(Match.OneOf(String, Number)),
-      image: Match.Optional(String),
+      id: Match.Optional(Match.OneOf(String, null)),
+      address: Match.Optional(Match.OneOf(String, null)),
+      price: Match.Optional(Match.OneOf(String, Number, null)),
+      bedrooms: Match.Optional(Match.OneOf(String, Number, null)),
+      bathrooms: Match.Optional(Match.OneOf(String, Number, null)),
+      parking: Match.Optional(Match.OneOf(String, Number, null)),
+      image: Match.Optional(Match.OneOf(String, null)),
     });
 
     const n = await AgentAvailabilities.updateAsync(

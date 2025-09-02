@@ -11,13 +11,13 @@ Meteor.methods({
       start: Date,
       end: Date,
       property: Match.ObjectIncluding({
-        id: String,
-        address: String,
-        price: Match.Optional(Match.OneOf(String, Number)),
-        bedrooms: Match.Optional(Match.OneOf(String, Number)),
-        bathrooms: Match.Optional(Match.OneOf(String, Number)),
-        parking: Match.Optional(Match.OneOf(String, Number)),
-        image: Match.Optional(String),
+        id: Match.Optional(Match.OneOf(String, null)),
+        address: Match.Optional(Match.OneOf(String, null)),
+        price: Match.Optional(Match.OneOf(String, Number, null)),
+        bedrooms: Match.Optional(Match.OneOf(String, Number, null)),
+        bathrooms: Match.Optional(Match.OneOf(String, Number, null)),
+        parking: Match.Optional(Match.OneOf(String, Number, null)),
+        image: Match.Optional(Match.OneOf(String, null)),
       }),
       status: String,
     });
@@ -35,6 +35,14 @@ Meteor.methods({
           bookedBy: this.userId,
           bookedAt: new Date(),
           tenant: { id: bookingData.tenantId, name: bookingData.tenantName }, // optional, shows in agent modal
+          property: bookingData.property, // Update with actual property information from the booking
+          // Also update individual fields for compatibility
+          address: bookingData.property.address,
+          price: bookingData.property.price,
+          bedrooms: bookingData.property.bedrooms,
+          bathrooms: bookingData.property.bathrooms,
+          parking: bookingData.property.parking,
+          image: bookingData.property.image,
         },
       }
     );

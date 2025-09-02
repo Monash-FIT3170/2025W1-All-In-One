@@ -351,36 +351,48 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
           />
 
           <div className="bg-[#FFF8E9] p-4 rounded-xl">
-            {mergedEvent.property ? (
-              <>
-                <p className="text-center text-gray-700">
-                  {mergedEvent.property.address || 'No address available'}
-                </p>
-
-                {mergedEvent.property.price && (
-                  <p className="text-center text-sm text-gray-700">
-                    ${mergedEvent.property.price} per week
+            {/* Helper function to check if a value is valid (not empty, not dash, not null) */}
+            {(() => {
+              const address = mergedEvent.property?.address || mergedEvent.address;
+              const price = mergedEvent.property?.price || mergedEvent.price;
+              const bedrooms = mergedEvent.property?.bedrooms || mergedEvent.bedrooms;
+              const bathrooms = mergedEvent.property?.bathrooms || mergedEvent.bathrooms;
+              const parking = mergedEvent.property?.parking || mergedEvent.parking;
+              
+              const isValidValue = (val) => val && val !== '-' && val !== '' && val !== null && val !== undefined;
+              const hasPropertyInfo = isValidValue(address) || isValidValue(price) || isValidValue(bedrooms) || isValidValue(bathrooms) || isValidValue(parking);
+              
+              return hasPropertyInfo ? (
+                <>
+                  <p className="text-center text-gray-700">
+                    {address || 'No address available'}
                   </p>
-                )}
 
-                <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
-                  <div className="flex items-center gap-1">
-                    <BedDouble className="w-4 h-4" />
-                    {mergedEvent.property.bedrooms ?? '—'}
+                  {isValidValue(price) && (
+                    <p className="text-center text-sm text-gray-700">
+                      ${price} per week
+                    </p>
+                  )}
+
+                  <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
+                    <div className="flex items-center gap-1">
+                      <BedDouble className="w-4 h-4" />
+                      {isValidValue(bedrooms) ? bedrooms : '—'}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ShowerHead className="w-4 h-4" />
+                      {isValidValue(bathrooms) ? bathrooms : '—'}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CarFront className="w-4 h-4" />
+                      {isValidValue(parking) ? parking : '—'}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <ShowerHead className="w-4 h-4" />
-                    {mergedEvent.property.bathrooms ?? '—'}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <CarFront className="w-4 h-4" />
-                    {mergedEvent.property.parking ?? '—'}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <p className="text-center text-gray-700">No property information</p>
-            )}
+                </>
+              ) : (
+                <p className="text-center text-gray-700">No property information</p>
+              );
+            })()}
           </div>
         </div>
 
