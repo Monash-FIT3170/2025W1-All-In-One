@@ -106,7 +106,29 @@ export const ReviewApplication = () => {
                             return (
                                 <div key={app._id} className="flex overflow-hidden gap-8">
                                     <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden">
-                                        <img src="/images/property.png" alt="Property" className="absolute inset-0 w-full h-full object-cover" />
+                                        {(() => {
+                                            let firstPhotoUrl;
+                                            if (property && Array.isArray(property.photo)) {
+                                                const firstNonVideoPhoto = property.photo.find((item) => {
+                                                    if (typeof item === 'string') return item.trim().length > 0;
+                                                    if (item && typeof item === 'object') {
+                                                        const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+                                                        const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+                                                        return Boolean(item.url) && isNotVideo && isNotPdf;
+                                                    }
+                                                    return false;
+                                                });
+                                                if (typeof firstNonVideoPhoto === 'string') {
+                                                    firstPhotoUrl = firstNonVideoPhoto;
+                                                } else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') {
+                                                    firstPhotoUrl = firstNonVideoPhoto.url;
+                                                }
+                                            }
+                                            const imgSrc = firstPhotoUrl || '/images/default.jpg';
+                                            return (
+                                                <img src={imgSrc} alt="Property" className="absolute inset-0 w-full h-full object-cover" />
+                                            );
+                                        })()}
                                         <div className="absolute bottom-0 left-0 w-full h-1/3">
                                             <div className="bg-white bg-opacity-95 h-full flex flex-col justify-center px-6 py-2 shadow-lg">
                                                 <div className="flex items-center gap-2">

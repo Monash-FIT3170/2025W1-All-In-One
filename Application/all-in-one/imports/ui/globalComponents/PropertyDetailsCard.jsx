@@ -43,6 +43,8 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
   const [activeMediaType, setActiveMediaType] = useState("images");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const openModal = () => setIsModalOpen(true);
+  const closeModal = () => setIsModalOpen(false);
 
   // Local saved state, init from property.starred or false
   const [saved, setSaved] = useState(property.starred ?? false);

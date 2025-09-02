@@ -51,6 +51,25 @@ export default function DetailedPropListing() {
     return (<div className="min-h-screen flex items-center justify-center text-xl text-red-600">Property Not Found!</div>);
   }
     
+      // Build image URLs from property.photo (Cloudinary) with fallback to Photos
+      const imageUrlsFromProperty = Array.isArray(property.photo)
+        ? property.photo
+            .filter((item) => {
+              if (typeof item === 'string') return item.trim().length > 0;
+              if (item && typeof item === 'object') {
+                const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+                const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+                return Boolean(item.url) && isNotVideo && isNotPdf;
+              }
+              return false;
+            })
+            .map((item) => (typeof item === 'string' ? item : item.url))
+        : [];
+
+      const imageUrlsFinal = (imageUrlsFromProperty.length
+        ? imageUrlsFromProperty
+        : (photos.length ? photos.map((photo) => photo.photo_url) : [])) || [];
+
       // data passed on to propertyDetailsCard
       const propertyData= {
           id: property.prop_id,
@@ -60,14 +79,8 @@ export default function DetailedPropListing() {
           AvailableDate: property.prop_available_date,
           Pets: property.prop_pets ? "True":"False",
 
-          // FIXED: Use Cloudinary URLs from Properties.photo field instead of Photos collection
-          imageUrls: property.photo && property.photo.length > 0
-            ? property.photo.filter(p => !p.isPDF).map(p => p.url)
-            : photos.length
-              ? photos.map((photo)=>photo.photo_url)
-              : ["/images/default.jpg"],
+          imageUrls: imageUrlsFinal.length ? imageUrlsFinal : ["/images/default.jpg"],
 
-          // Also pass the original photo array for the new structure
           photo: property.photo || [],
 
           videoUrls: videos.length ? videos.map((video) => video.video_url) : [],
@@ -87,7 +100,7 @@ export default function DetailedPropListing() {
 
       {/*Main content and butons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
-        <PropertyDetailsCard property={property} />
+        <PropertyDetailsCard property={propertyData} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
 
           <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"

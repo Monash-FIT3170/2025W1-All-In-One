@@ -58,6 +58,25 @@ export default function TenDetailedPropListing() {
 
   const isStarred = starredProperties.length>0;
     
+  // Build image URLs from property.photo (Cloudinary) with fallback to Photos
+  const imageUrlsFromProperty = Array.isArray(property.photo)
+    ? property.photo
+        .filter((item) => {
+          if (typeof item === 'string') return item.trim().length > 0;
+          if (item && typeof item === 'object') {
+            const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+            const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+            return Boolean(item.url) && isNotVideo && isNotPdf;
+          }
+          return false;
+        })
+        .map((item) => (typeof item === 'string' ? item : item.url))
+    : [];
+
+  const imageUrlsFinal = (imageUrlsFromProperty.length
+    ? imageUrlsFromProperty
+    : (photos.length ? photos.map((photo) => photo.photo_url) : [])) || [];
+
   // data passed on to propertyDetailsCard
   const propertyData= {
     id: property.prop_id,
@@ -66,7 +85,7 @@ export default function TenDetailedPropListing() {
     type:property.prop_type,
     AvailableDate: property.prop_available_date,
     Pets: property.prop_pets ? "True":"False",
-    imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
+    imageUrls: imageUrlsFinal.length ? imageUrlsFinal : ["/images/default.jpg"],
     videoUrls: videos.length ? videos.map((video) => video.video_url) : [],
     details:{
       beds: property.prop_numbeds ?? "N/A",

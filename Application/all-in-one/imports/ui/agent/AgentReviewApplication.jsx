@@ -267,15 +267,33 @@ export default function ReviewApplication() {
               <div key={app._id} className="flex overflow-hidden gap-8">
                 {/* Property image */}
                 <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden ">
-                  <img
-                    src={
-                      property?.prop_id
-                        ? `/images/properties/${property.prop_id}/main.jpg`
-                        : "/images/default.jpg"
+                  {(() => {
+                    let firstPhotoUrl;
+                    if (property && Array.isArray(property.photo)) {
+                      const firstNonVideoPhoto = property.photo.find((item) => {
+                        if (typeof item === 'string') return item.trim().length > 0;
+                        if (item && typeof item === 'object') {
+                          const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+                          const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+                          return Boolean(item.url) && isNotVideo && isNotPdf;
+                        }
+                        return false;
+                      });
+                      if (typeof firstNonVideoPhoto === 'string') {
+                        firstPhotoUrl = firstNonVideoPhoto;
+                      } else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') {
+                        firstPhotoUrl = firstNonVideoPhoto.url;
+                      }
                     }
-                    alt="Property"
-                    className="absolute inset-0 w-full h-full object-cover"
-                  />
+                    const imgSrc = firstPhotoUrl || '/images/default.jpg';
+                    return (
+                      <img
+                        src={imgSrc}
+                        alt="Property"
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    );
+                  })()}
                   <div
                     className="absolute bottom-0 left-0 w-full"
                     style={{ height: "35%" }}

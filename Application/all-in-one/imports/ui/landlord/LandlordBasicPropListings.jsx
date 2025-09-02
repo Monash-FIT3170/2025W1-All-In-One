@@ -40,12 +40,29 @@ const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
   const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
 
   const propertyCards= availableProperties.map((p)=>{
-    const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
+    // Prefer Cloudinary URLs stored in Properties.photo (objects or strings)
+    let firstPhotoUrl;
+    if (Array.isArray(p.photo)) {
+      const firstNonVideoPhoto = p.photo.find((item) => {
+        if (typeof item === 'string') return item.trim().length > 0;
+        if (item && typeof item === 'object') {
+          const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+          const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+          return Boolean(item.url) && isNotVideo && isNotPdf;
+        }
+        return false;
+      });
+      if (typeof firstNonVideoPhoto === 'string') {
+        firstPhotoUrl = firstNonVideoPhoto;
+      } else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') {
+        firstPhotoUrl = firstNonVideoPhoto.url;
+      }
+    }
     return{
       id: p.prop_id,
       location: p.prop_address,
       price:`$${p.prop_pricepweek}`,
-      image:`/images/properties/${p.prop_id}/main.jpg`,
+      image: firstPhotoUrl || `/images/default.jpg`,
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
       cars:p.prop_numcarspots,
