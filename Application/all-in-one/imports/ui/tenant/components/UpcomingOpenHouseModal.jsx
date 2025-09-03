@@ -70,12 +70,13 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
 
     /* Adding to Tenant Bookings */
     const property = {
+      id: propertyData.id,
       address: propertyData.address,
       price:  propertyData.price,
       bedrooms: propertyData.details.beds,
       bathrooms: propertyData.details.baths,
       parking: propertyData.details.carSpots,
-      image: propertyData.imageUrls,
+      image: propertyData.imageUrls[0],
     }
     const bookingData = {
       agentAvailabilityId: openHouse_id,
