@@ -17,5 +17,11 @@ if (Meteor.isServer) {
       status: { $ne: 'booked' } // Only show unbooked slots
     });
   });
+
+  Meteor.publish('allAvailabilities', function() {
+    return AgentAvailabilities.find({
+      activity_type: 'Availability',
+    });
+  })
 }
 
