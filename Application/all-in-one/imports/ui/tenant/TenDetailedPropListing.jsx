@@ -24,7 +24,7 @@ export default function TenDetailedPropListing() {
     const subProps = Meteor.subscribe("properties");
     const subPhotos = Meteor.subscribe("photos");
     const subVideos = Meteor.subscribe("videos");
-    const subAvailabilities = Meteor.subscribe("agentAvailabilities");
+    const subAvailabilities = Meteor.subscribe("allAvailableInspections")
     const subStarred = Meteor.subscribe("starredProperties"); 
     const subAgents= Meteor.subscribe("agents");
 
