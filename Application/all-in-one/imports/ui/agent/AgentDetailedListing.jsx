@@ -8,6 +8,7 @@ import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, RentalApplications, Landlord } from "../../api/database/collections"; // importing mock for now
 import EditPropertyModal from "./components/EditPropertyModal";
+import EditMediaModal from "./components/EditMediaModal";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a the agent's own assigned property listing to the agent (accessed through AgentListings) //
@@ -15,7 +16,8 @@ import EditPropertyModal from "./components/EditPropertyModal";
 
 export default function AgentDetailedListing() {
   const { id } = useParams();
-  const[openModal, setOpenModal] = useState(false);
+  const[openEditDetails, setOpenEditDetails] = useState(false);
+  const[openEditMedia, setOpenEditMedia] = useState(false);
 
 const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
@@ -140,10 +142,14 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
         </p>
 
         <div className="mt-4 w-full flex justify-center">
-          <div className="w-[1220px] px-4 py-3 flex justify-center rounded-lg">
+          <div className="w-[1220px] px-4 py-3 flex justify-center rounded-lg gap-4">
             <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-            onClick={() => setOpenModal(true)}>
+            onClick={() => setOpenEditDetails(true)}>
               Edit Property Details
+            </button>
+            <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+            onClick={() => setOpenEditMedia(true)}>
+              Edit Photos/Videos
             </button>
           </div>
         </div>
@@ -169,10 +175,16 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
       {/*Footer*/}
       <Footer />
 
-      {openModal && <EditPropertyModal
-      isOpen={() => setOpenModal(true)}
-      onClose={() => setOpenModal(false)}
+      {openEditDetails && <EditPropertyModal
+      isOpen={() => setOpenEditDetails(true)}
+      onClose={() => setOpenEditDetails(false)}
       propertyData={propertyData}/>}
+
+      {openEditMedia && <EditMediaModal
+      isOpen={() => setOpenEditMedia(true)}
+      onClose={() => setOpenEditMedia(false)}
+      propertyData={propertyData}/>}
+
     </div>
   );
 }

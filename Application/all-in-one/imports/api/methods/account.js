@@ -132,4 +132,15 @@ Meteor.methods({
 
   },
 
+  async 'EditPropertyMedia' ({propId, photo}) {
+    await Properties.updateAsync(
+      {prop_id: propId},
+      {$set: {
+        photo: photo
+      }}
+    )
+
+
+  },
+
 });
