@@ -45,7 +45,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
         if (property){
           const approvedApp= RentalApplications.findOne({
             prop_id: id,
-            status: "Approved",
+            landLordFinal: "Approved",
           });
 
           if (approvedApp && approvedApp.lease_start_date){
