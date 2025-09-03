@@ -20,8 +20,31 @@ function logDbTarget() {
   console.log('🗄️  MONGO_URL =>', maskMongoUrl(uri));
   if (!uri) {
     console.warn('⚠️  MONGO_URL is not set. The app will use the default local Meteor Mongo.');
+    return;
+  }
+
+  try {
+    // Attempt to parse the URI to extract host and db name for clarity
+    const url = new URL(uri);
+    const dbName = (url.pathname || '/').replace('/', '') || '(default)';
+    const host = url.host || '(unknown host)';
+    console.log(`✅ Connected DB target => host: ${host}, db: ${dbName}`);
+  } catch (e) {
+    // Fallback: simple extraction for non-standard URIs (e.g., multi-host mongodb://host1,host2/...)
+    try {
+      const withoutProtocol = uri.replace(/^mongodb(?:\+srv)?:\/\//, '');
+      const [hostsPart, pathAndQuery] = withoutProtocol.split('@').pop().split('/');
+      const hosts = hostsPart.split('?')[0];
+      const dbName = (pathAndQuery || '').split('?')[0] || '(default)';
+      console.log(`✅ Connected DB target => host(s): ${hosts}, db: ${dbName}`);
+    } catch (_e) {
+      console.log('ℹ️  Unable to parse MONGO_URL for display.');
+    }
   }
 }
+
+// Log the resolved database target at server startup
+logDbTarget();
 import {
   Properties,
   Photos,
@@ -71,133 +94,139 @@ import '/imports/api/methods/profileSettings.js';
 import 'dotenv/config';
 
 Meteor.startup(async () => {
-  // Insert mock data only if collections are empty
-  if ((await Properties.find().countAsync()) === 0) {
-    for (const property of mockData.properties) {
-      await Properties.insertAsync(property);
+  const shouldSeedMockData = process.env.SEED_MOCK_DATA === 'true';
+  if (shouldSeedMockData) {
+    console.log('🌱 SEED_MOCK_DATA=true → Seeding mock data where collections are empty');
+    // Insert mock data only if collections are empty
+    if ((await Properties.find().countAsync()) === 0) {
+      for (const property of mockData.properties) {
+        await Properties.insertAsync(property);
+      }
     }
-  }
 
-  if ((await Photos.find().countAsync()) === 0) {
-    for (const photo of mockData.photos) {
-      await Photos.insertAsync(photo);
+    if ((await Photos.find().countAsync()) === 0) {
+      for (const photo of mockData.photos) {
+        await Photos.insertAsync(photo);
+      }
     }
-  }
 
-  if ((await Videos.find().countAsync()) === 0) {
-    for (const video of mockData.videos) {
-      await Videos.insertAsync(video);
+    if ((await Videos.find().countAsync()) === 0) {
+      for (const video of mockData.videos) {
+        await Videos.insertAsync(video);
+      }
     }
-  }
 
-  if ((await Tenants.find().countAsync()) === 0) {
-    for (const tenant of mockData.tenants) {
-      await Tenants.insertAsync(tenant);
+    if ((await Tenants.find().countAsync()) === 0) {
+      for (const tenant of mockData.tenants) {
+        await Tenants.insertAsync(tenant);
+      }
     }
-  }
 
-  if ((await RentalApplications.find().countAsync()) === 0) {
-    for (const application of mockData.rentalApplications) {
-      await RentalApplications.insertAsync(application);
+    if ((await RentalApplications.find().countAsync()) === 0) {
+      for (const application of mockData.rentalApplications) {
+        await RentalApplications.insertAsync(application);
+      }
     }
-  }
 
-  if ((await Employment.find().countAsync()) === 0) {
-    for (const employment of mockData.employment) {
-      await Employment.insertAsync(employment);
+    if ((await Employment.find().countAsync()) === 0) {
+      for (const employment of mockData.employment) {
+        await Employment.insertAsync(employment);
+      }
     }
-  }
 
-  if ((await Addresses.find().countAsync()) === 0) {
-    for (const address of mockData.addresses) {
-      await Addresses.insertAsync(address);
+    if ((await Addresses.find().countAsync()) === 0) {
+      for (const address of mockData.addresses) {
+        await Addresses.insertAsync(address);
+      }
     }
-  }
 
-  if ((await Incomes.find().countAsync()) === 0) {
-    for (const income of mockData.incomes) {
-      await Incomes.insertAsync(income);
+    if ((await Incomes.find().countAsync()) === 0) {
+      for (const income of mockData.incomes) {
+        await Incomes.insertAsync(income);
+      }
     }
-  }
 
-  if ((await Identities.find().countAsync()) === 0) {
-    for (const identity of mockData.identities) {
-      await Identities.insertAsync(identity);
+    if ((await Identities.find().countAsync()) === 0) {
+      for (const identity of mockData.identities) {
+        await Identities.insertAsync(identity);
+      }
     }
-  }
 
-  if ((await Households.find().countAsync()) === 0) {
-    for (const household of mockData.households) {
-      await Households.insertAsync(household);
+    if ((await Households.find().countAsync()) === 0) {
+      for (const household of mockData.households) {
+        await Households.insertAsync(household);
+      }
     }
-  }
 
-  if ((await Agents.find().countAsync()) === 0) {
-    for (const agent of mockData.agents) {
-      await Agents.insertAsync(agent);
+    if ((await Agents.find().countAsync()) === 0) {
+      for (const agent of mockData.agents) {
+        await Agents.insertAsync(agent);
+      }
     }
-  }
 
-  if ((await Landlord.find().countAsync()) === 0) {
-    for (const landlord of mockData.landlords) {
-      await Landlord.insertAsync(landlord);
+    if ((await Landlord.find().countAsync()) === 0) {
+      for (const landlord of mockData.landlords) {
+        await Landlord.insertAsync(landlord);
+      }
     }
-  }
 
-  const agentEmail = "agent1@example.com";
-  const existingAgentUser = await Meteor.users.findOneAsync({
-    "emails.address": agentEmail,
-  });
-
-  if (!existingAgentUser) {
-    const agentUserId = await Accounts.createUser({
-      email: agentEmail,
-      password: "securepassword123",
-      profile: {
-        firstName: "Amy",
-        lastName: "Jones",
-        role: "agent",
-      },
+    const agentEmail = "agent1@example.com";
+    const existingAgentUser = await Meteor.users.findOneAsync({
+      "emails.address": agentEmail,
     });
 
-    await Agents.insertAsync({
-      agent_id: agentUserId,
-      agent_fname: "Amy",
-      agent_lname: "Jones",
-      agent_ph: "0400000000",
-      agent_email: agentEmail,
+    if (!existingAgentUser) {
+      const agentUserId = await Accounts.createUser({
+        email: agentEmail,
+        password: "securepassword123",
+        profile: {
+          firstName: "Amy",
+          lastName: "Jones",
+          role: "agent",
+        },
+      });
+
+      await Agents.insertAsync({
+        agent_id: agentUserId,
+        agent_fname: "Amy",
+        agent_lname: "Jones",
+        agent_ph: "0400000000",
+        agent_email: agentEmail,
+      });
+
+      console.log("✅ Agent created and added to Agents collection");
+    }
+
+    const landlordEmail = "landlord1@example.com";
+    const existingLandlordUser = await Meteor.users.findOneAsync({
+      "emails.address": landlordEmail,
     });
 
-    console.log("✅ Agent created and added to Agents collection");
-  }
+    if (!existingLandlordUser) {
+      const landlordUserId = await Accounts.createUser({
+        email: landlordEmail,
+        password: "securepassword123",
+        profile: {
+          firstName: "John",
+          lastName: "Doe",
+          role: "landlord",
+        },
+      });
 
-  const landlordEmail = "landlord1@example.com";
-  const existingLandlordUser = await Meteor.users.findOneAsync({
-    "emails.address": landlordEmail,
-  });
+      await Landlord.insertAsync({
+        ll_id: landlordUserId,
+        ll_fn: "John",
+        ll_ln: "Doe",
+        ll_email: landlordEmail,
+        ll_pn: "0499999999",
+        ll_pfp: "",
+        prop_id: "P001",
+      });
 
-  if (!existingLandlordUser) {
-    const landlordUserId = await Accounts.createUser({
-      email: landlordEmail,
-      password: "securepassword123",
-      profile: {
-        firstName: "John",
-        lastName: "Doe",
-        role: "landlord",
-      },
-    });
-
-    await Landlord.insertAsync({
-      ll_id: landlordUserId,
-      ll_fn: "John",
-      ll_ln: "Doe",
-      ll_email: landlordEmail,
-      ll_pn: "0499999999",
-      ll_pfp: "",
-      prop_id: "P001",
-    });
-
-    console.log("✅ Landlord created and added to Landlords collection");
+      console.log("✅ Landlord created and added to Landlords collection");
+    }
+  } else {
+    console.log('🌱 SEED_MOCK_DATA!=true → Skipping mock data seeding');
   }
 
   async function insertLink({ title, url }) {
