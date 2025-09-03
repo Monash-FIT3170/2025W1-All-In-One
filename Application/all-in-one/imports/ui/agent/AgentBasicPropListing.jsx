@@ -2,7 +2,7 @@ import React from "react";
 import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { useTracker } from "meteor/react-meteor-data";
-import { Properties, Photos, StarredProperties } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, StarredProperties, RentalApplications } from "../../api/database/collections"; // importing mock for now
 import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
@@ -14,17 +14,19 @@ import { Meteor } from "meteor/meteor";
 ////////////////////////////////////////////////////////////////////
 
 export default function AgentBasicPropListing() {
-  const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
+  const { isReady, properties, photos, starredProperties, rentalApplications }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
     const subPhotos= Meteor.subscribe("photos");
     const subStarred= Meteor.subscribe("starredProperties");
+    const subApps= Meteor.subscribe("rentalApplications");
 
-    const isReady= subProps.ready() && subPhotos.ready();
+    const isReady= subProps.ready() && subPhotos.ready() && subApps.ready();
     const properties= isReady ? Properties.find().fetch(): [];
     const photos= isReady ? Photos.find().fetch(): [];
     const starredProperties= isReady ? StarredProperties.find({userId: Meteor.userId()}).fetch(): [];
-      
-    return { isReady, properties, photos, starredProperties };
+    const rentalApplications = isReady ? RentalApplications.find().fetch() : [];
+
+    return { isReady, properties, photos, starredProperties, rentalApplications };
 
   });
 
@@ -33,7 +35,17 @@ export default function AgentBasicPropListing() {
   }
 
   const availableProperties= properties.filter(
-    (p)=> p.prop_status==="Available"
+    (p)=> {
+  // must be marked available
+  if (p.prop_status !== "Available") return false;
+
+  // check if there's any finalized rental app for this property
+  const hasFinalizedApp = rentalApplications.some(
+    (app) => app.prop_id === p.prop_id && app.landLordFinal === "Approved"
+  );
+
+  return !hasFinalizedApp;
+}
   );
 
   const starredSet= new Set(starredProperties.map(sp => sp.prop_id));

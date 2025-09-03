@@ -7,7 +7,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections";
+import { Properties, Photos, Videos, RentalApplications, Agents } from "../../api/database/collections";
 import {AddTicketDialog} from "./ticketPages/AddTicketDialog";
 import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
 import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
@@ -67,20 +67,21 @@ export default function DetailedLease() {
     }
   };
 
-  const { loading, property }= useTracker(()=>{
+  const { loading, property, agent }= useTracker(()=>{
     const propertyHandle= Meteor.subscribe("properties");
     const photoHandle= Meteor.subscribe("photos");
-    const videoHandle = Meteor.subscribe("videos")
-    const rentalAppHandle= Meteor.subscribe("rentalApplications")
+    const videoHandle = Meteor.subscribe("videos");
+    const rentalAppHandle= Meteor.subscribe("rentalApplications");
+    const agentHandle = Meteor.subscribe("agents");
 
-    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !videoHandle.ready()|| !rentalAppHandle.ready();
+    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !videoHandle.ready()|| !rentalAppHandle.ready() || !agentHandle.ready();
     
     
-    if (isLoading) return {loading: true, property: null};
+    if (isLoading) return {loading: true, property: null, agent: null};
 
     // find property
     const selectedProperty= Properties.findOne({ prop_id: id });
-    if (!selectedProperty) return { loading: false, property: null};
+    if (!selectedProperty) return { loading: false, property: null, agent: null };
 
     // finf images
     const photos= Photos.find({ prop_id: id}).fetch();
@@ -92,17 +93,19 @@ export default function DetailedLease() {
     const videos = Videos.find({ prop_id: id }).fetch();
     const videoUrls = videos.map(v => v.video_url);
 
-    // find macthing rental applications to get lease start date if leased
-    //const isLeased= selectedProperty.prop_status === "Leased";
-
-    //const leaseStartDate= isLeased ? RentalApplications.findOne({ prop_id: id, status: "Approved"})?.lease_start_date||null
-    //:null;
+  
 
     // find the lease start date if tenant is approved
     const leaseStartDate = RentalApplications.findOne({ 
   prop_id: id, 
-  status: "Approved" 
+  landLordFinal: "Approved" 
 })?.lease_start_date || null;
+
+// fetch agent
+  let agent = null;
+  if (selectedProperty.agent_id) {
+    agent = Agents.findOne({ agent_id: selectedProperty.agent_id });
+  }
 
 
     
@@ -130,6 +133,7 @@ export default function DetailedLease() {
           furnished: selectedProperty.prop_furnish? "Yes":"No",
         },
       },
+      agent,
     };
   })
   
@@ -157,6 +161,22 @@ export default function DetailedLease() {
           {property.description}
         </p>
       </div>
+
+      {/* Agent information */}
+      {agent && (
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
+          <h3 className="text-xl font-semibold mb-4">Agent Information</h3>
+          <p>
+            <span className="text-1xl text-gray-700">Name: </span> {agent.agent_fname} {agent.agent_lname}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Email: </span> {agent.agent_email}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Phone: </span> {agent.agent_ph}
+          </p>
+        </div>
+      )}
 
       {/*Tickets section with Filter button aligned right below heading*/}
       <div className="max-w-7xl mx-auto w-full px-6 mt-8 pt-4 border-t border-gray-300">

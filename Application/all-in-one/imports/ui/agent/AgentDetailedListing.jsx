@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, RentalApplications, Landlord } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, RentalApplications, Landlord,Tenants } from "../../api/database/collections"; // importing mock for now
 import EditPropertyModal from "./components/EditPropertyModal";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -17,20 +17,22 @@ export default function AgentDetailedListing() {
   const { id } = useParams();
   const[openModal, setOpenModal] = useState(false);
 
-const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useTracker(()=>{
+const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
         const subApps= Meteor.subscribe("rentalApplications");
         const subVideos = Meteor.subscribe("videos");
         const subLandlords = Meteor.subscribe("landlords");
+        const subTenants = Meteor.subscribe("tenants");
     
-        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready() && subLandlords.ready();
+        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready() && subLandlords.ready() && subTenants.ready();
   
         let property= null;
         let photos= [];
         let videos = [];
         let approvedLeaseStart=null;
         let landlord = null;
+        let tenant = null;
   
         // find property, photos and videos corresponding to the property ID passed.     
         if (isReady){
@@ -40,14 +42,17 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
         }
 
         
-        if (property && property.prop_status==="Leased"){
+        if (property){
           const approvedApp= RentalApplications.findOne({
             prop_id: id,
-            status: "Approved",
+            landLordFinal: "Approved",
           });
 
           if (approvedApp && approvedApp.lease_start_date){
             approvedLeaseStart= approvedApp.lease_start_date;
+
+            // Fetch tenant linked to approved application
+        tenant = Tenants.findOne({ ten_id: approvedApp.ten_id });
           }
         }
 
@@ -63,7 +68,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
                   landlord = Landlord.findOne({ ll_id: property.landlord_id });
                 }
   
-        return {isReady, property, photos, videos, approvedLeaseStart, landlord};
+        return {isReady, property, photos, videos, approvedLeaseStart, landlord, tenant};
   
     
       }, [id]);
@@ -150,9 +155,9 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
 
       </div>
 
-      {/* Agent information */}
+      {/* Landlord information */}
       {landlord && (
-        <div className="max-w-7xl max-auto p-6 mt-4 rounded shadow-md text-gray-800">
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
           <h3 className="text-xl font-semibold mb-4">Landlord Information</h3>
           <p>
             <span className="text-1xl text-gray-700">Name: </span> {landlord.ll_fn} {landlord.ll_ln}
@@ -165,6 +170,22 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
           </p>
         </div>
       )}
+
+      {/* Tenant Information */}
+{tenant && (
+  <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
+    <h3 className="text-xl font-semibold mb-4">Tenant Information</h3>
+    <p>
+      <span className="font-medium">Name: </span> {tenant.ten_fn} {tenant.ten_ln}
+    </p>
+    <p>
+      <span className="font-medium">Email: </span> {tenant.ten_email}
+    </p>
+    <p>
+      <span className="font-medium">Phone: </span> {tenant.ten_pn}
+    </p>
+  </div>
+)}
 
       {/*Footer*/}
       <Footer />

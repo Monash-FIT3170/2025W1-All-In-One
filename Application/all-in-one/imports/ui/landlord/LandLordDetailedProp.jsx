@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, RentalApplications, Videos, Agents } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, RentalApplications, Videos, Agents, Tenants } from "../../api/database/collections"; // importing mock for now
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a property to the landlord (accessed through the LandlordBasicPropListing page) //
@@ -31,20 +31,22 @@ export default function LandlordDetailedPropListing() {
   const [feedbackText, setFeedbackText] = React.useState("");
   const [rating, setRating] = React.useState("");
     
-const { isReady, property, photos, videos, approvedLeaseStart, agent }=  useTracker(()=>{
+const { isReady, property, photos, videos, approvedLeaseStart, agent, tenant }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
         const subApps= Meteor.subscribe("rentalApplications");
         const subVideos= Meteor.subscribe("videos")
         const subAgents= Meteor.subscribe("agents");
+        const subTenants= Meteor.subscribe("tenants");
     
-        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready() && subAgents.ready();
+        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready() && subAgents.ready() && subTenants.ready();
   
         let property= null;
         let photos= [];
         let videos = [];
         let approvedLeaseStart=null;
         let agent= null;
+        let tenant = null;
   
         // find property, photos and videos corresponding to the property ID passed.
         if (isReady){
@@ -54,14 +56,15 @@ const { isReady, property, photos, videos, approvedLeaseStart, agent }=  useTrac
         
 
         
-        if (property && property.prop_status==="Leased"){
+        if (property){
           const approvedApp= RentalApplications.findOne({
             prop_id: id,
-            status: "Approved",
+            landLordFinal: "Approved",
           });
 
-          if (approvedApp && approvedApp.lease_start_date){
-            approvedLeaseStart= approvedApp.lease_start_date;
+          if (approvedApp){
+            approvedLeaseStart= approvedApp.lease_start_date || null;
+            tenant = Tenants.findOne({ ten_id: approvedApp.ten_id });
           }
         }
         
@@ -80,7 +83,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, agent }=  useTrac
       }
       
 
-        return {isReady, property, photos, videos, approvedLeaseStart, agent};
+        return {isReady, property, photos, videos, approvedLeaseStart, agent, tenant};
   
     
       }, [id]);
@@ -150,7 +153,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, agent }=  useTrac
 
       {/* Agent information */}
       {agent && (
-        <div className="max-w-7xl max-auto p-6 mt-4 rounded shadow-md text-gray-800">
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
           <h3 className="text-xl font-semibold mb-4">Agent Information</h3>
           <p>
             <span className="text-1xl text-gray-700">Name: </span> {agent.agent_fname} {agent.agent_lname}
@@ -163,6 +166,21 @@ const { isReady, property, photos, videos, approvedLeaseStart, agent }=  useTrac
           </p>
         </div>
       )}
+
+      {/* Tenant Information */}
+      {tenant && (
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
+          <h3 className="text-xl font-semibold mb-4">Tenant Information</h3>
+          <p><span className="font-medium">Name: </span> {tenant.ten_fn} {tenant.ten_ln}</p>
+          <p><span className="font-medium">Email: </span> {tenant.ten_email}</p>
+          <p><span className="font-medium">Phone: </span> {tenant.ten_pn}</p>
+          {approvedLeaseStart && (
+            <p><span className="font-medium">Lease Start Date: </span> {new Date(approvedLeaseStart).toLocaleDateString()}</p>
+          )}
+        </div>
+      )}
+
+
       {/* Feedback Form */}
       <div className="max-w-7xl mx-auto p-6 text-gray-800">
         <h3 className="text-lg font-semibold mb-2">Leave Feedback</h3>

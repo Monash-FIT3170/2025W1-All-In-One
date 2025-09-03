@@ -6,7 +6,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, AgentAvailabilities, StarredProperties } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, AgentAvailabilities, StarredProperties, Agents } from "../../api/database/collections"; // importing mock for now
 import UpcomingOpenHouseModal from "./components/UpcomingOpenHouseModal";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -19,21 +19,23 @@ export default function TenDetailedPropListing() {
   const { id } = useParams();
   console.log("propId received:", id);
   
-  const { isReady, property, photos, videos, openHouses, starredProperties}=  useTracker(()=>{
+  const { isReady, property, photos, videos, openHouses, starredProperties, agent}=  useTracker(()=>{
     const tenantID = Meteor.userId();
     const subProps = Meteor.subscribe("properties");
     const subPhotos = Meteor.subscribe("photos");
     const subVideos = Meteor.subscribe("videos");
-    const subAvailabilities = Meteor.subscribe("agentAvailabilities")
+    const subAvailabilities = Meteor.subscribe("agentAvailabilities");
     const subStarred = Meteor.subscribe("starredProperties"); 
+    const subAgents= Meteor.subscribe("agents");
 
-    const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subAvailabilities.ready() && subStarred.ready();
+    const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subAvailabilities.ready() && subStarred.ready() && subAgents.ready();
 
     let property= null;
     let photos= [];
     let videos=[];
     let openHouses = [];
     let starredProperties = [];
+    let agent= null;
 
     // find property, photos and videos corresponding to the property ID passed.
     if (isReady){
@@ -43,9 +45,12 @@ export default function TenDetailedPropListing() {
       starredProperties = StarredProperties.find({ten_id: tenantID, prop_id: id}).fetch();
       openHouses = AgentAvailabilities.find({type: "Open House", is_private: false}).fetch();
       openHouses = openHouses.filter((p) => p.property.address === property.prop_address);
+      if (property?.agent_id){
+              agent= Agents.findOne({agent_id: property.agent_id});
+            }
     }
 
-    return {isReady, property, photos, videos, openHouses, starredProperties};
+    return {isReady, property, photos, videos, openHouses, starredProperties, agent};
   }, [id]);
 
   if (!isReady){
@@ -117,12 +122,6 @@ export default function TenDetailedPropListing() {
           </button>
 
           <Link
-          to={`/InspectionBooking/${id}`} // TBD: replace with actual link to inspection booking page
-          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-          >Book Inspection 
-          </Link>
-
-          <Link
           key={id}
           to={`/Apply/${id}?tenantId=${tenantID}`} // TBD: replace with actual link to application page
           className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
@@ -162,6 +161,19 @@ export default function TenDetailedPropListing() {
           {property.prop_desc}
         </p>
       </div>
+
+      {/* Agent information */}
+      {agent && (
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
+          <h3 className="text-xl font-semibold mb-4">Agent Information</h3>
+          <p>
+            <span className="text-1xl text-gray-700">Name: </span> {agent.agent_fname} {agent.agent_lname}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Email: </span> {agent.agent_email}
+          </p>
+        </div>
+      )}
 
       {/*Footer*/}
       <Footer />

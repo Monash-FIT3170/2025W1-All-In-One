@@ -7,7 +7,7 @@ import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, StarredProperties, Tenants } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, StarredProperties, Tenants, RentalApplications } from "../../api/database/collections"; 
 
 export default function TenantBasicPropListings() {
 
@@ -29,14 +29,15 @@ export default function TenantBasicPropListings() {
   
   const [showOnlySaved, setShowOnlySaved]= React.useState(false); // used to show only the saved properties
 
-  const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
+  const { isReady, properties, photos, starredProperties, rentalApplications }=  useTracker(()=>{
 
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
       const subStarred= Meteor.subscribe("starredProperties");
       const subTenants= Meteor.subscribe("tenants");
+      const subApps= Meteor.subscribe("rentalApplications");
   
-      const isReady= subProps.ready() && subPhotos.ready() && subStarred.ready() && subTenants.ready();
+      const isReady= subProps.ready() && subPhotos.ready() && subStarred.ready() && subTenants.ready() && subApps.ready();
       
       const properties= isReady ? Properties.find().fetch(): [];
       const photos= isReady ? Photos.find().fetch(): [];
@@ -45,7 +46,10 @@ export default function TenantBasicPropListings() {
       const starredProperties= isReady && tenant ?
         StarredProperties.find({ ten_id: tenant.ten_id }).fetch() : [];
       
-      return { isReady, properties, photos, starredProperties };
+      const rentalApplications = isReady ? RentalApplications.find().fetch() : [];
+
+      
+      return { isReady, properties, photos, starredProperties, rentalApplications };
   
     }, [showOnlySaved, Meteor.userId()]);
 
@@ -62,7 +66,17 @@ export default function TenantBasicPropListings() {
 
 
     const availableProperties= properties.filter(
-    (p)=> p.prop_status==="Available"
+    (p)=> {
+  // must be marked available
+  if (p.prop_status !== "Available") return false;
+
+  // check if there's any finalized rental app for this property
+  const hasFinalizedApp = rentalApplications.some(
+    (app) => app.prop_id === p.prop_id && app.landLordFinal === "Approved"
+  );
+
+  return !hasFinalizedApp;
+}
   );
 
 
