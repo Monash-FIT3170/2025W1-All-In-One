@@ -299,20 +299,22 @@ export const TicketTypeDialog = ({ isOpen, onClose, onSelect }) => {
                             />
                           </div>
 
-                          <div className="mb-3">
-                            <label className="mb-1 block text-xs font-semibold">
-                              When did the issue commence?
-                            </label>
-                            <input
-                              readOnly
-                              value={
-                                t.issueStartDate
-                                  ? new Date(t.issueStartDate).toLocaleDateString()
-                                  : ""
-                              }
-                              className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
-                            />
-                          </div>
+                          {t.type === 'Maintenance' && (
+                            <div className="mb-3">
+                              <label className="mb-1 block text-xs font-semibold">
+                                When did the issue commence?
+                              </label>
+                              <input
+                                readOnly
+                                value={
+                                  t.issueStartDate
+                                    ? new Date(t.issueStartDate).toLocaleDateString()
+                                    : ""
+                                }
+                                className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                              />
+                            </div>
+                          )}
 
                           <div className="mb-3">
                             <label className="mb-1 block text-xs font-semibold">
@@ -320,11 +322,7 @@ export const TicketTypeDialog = ({ isOpen, onClose, onSelect }) => {
                             </label>
                             <input
                               readOnly
-                              value={
-                                t.dateLogged
-                                  ? new Date(t.dateLogged).toLocaleDateString()
-                                  : ""
-                              }
+                              value={t.date_logged || ""}
                               className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
                             />
                           </div>
