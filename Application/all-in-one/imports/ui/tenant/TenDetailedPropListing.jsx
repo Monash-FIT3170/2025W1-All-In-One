@@ -117,12 +117,6 @@ export default function TenDetailedPropListing() {
           </button>
 
           <Link
-          to={`/InspectionBooking/${id}`} // TBD: replace with actual link to inspection booking page
-          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-          >Book Inspection 
-          </Link>
-
-          <Link
           key={id}
           to={`/Apply/${id}?tenantId=${tenantID}`} // TBD: replace with actual link to application page
           className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
