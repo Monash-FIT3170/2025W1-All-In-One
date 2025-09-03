@@ -7,23 +7,26 @@ import MapView from "./MapView.jsx";
 import BasicPropertyCard from "./BasicPropertyCard.jsx";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos } from "../../api/database/collections.js"; // importing mock for now
+import { Properties, Photos, RentalApplications } from "../../api/database/collections.js"; 
 import React, { useState } from "react";
 
 export default function GuestBasicPropListings() {
   /* the map pop up restriction */ 
   const [showMap, setShowMap] = useState(false);
 
-  const { isReady, properties, photos }=  useTracker(()=>{
+  const { isReady, properties, photos, applications }=  useTracker(()=>{
       const subProps= Meteor.subscribe("properties");
       const subPhotos= Meteor.subscribe("photos");
+      const subApps= Meteor.subscribe("rentalApplications");
       
   
-      const isReady= subProps.ready() && subPhotos.ready();
+      const isReady= subProps.ready() && subPhotos.ready() && subApps.ready();
+      
       const properties= isReady ? Properties.find().fetch(): [];
       const photos= isReady ? Photos.find().fetch(): [];
+      const applications= isReady ? RentalApplications.find().fetch(): [];
   
-      return { isReady, properties, photos};
+      return { isReady, properties, photos, applications };
   
     });
   
@@ -32,7 +35,15 @@ export default function GuestBasicPropListings() {
     }
 
     const availableProperties= properties.filter(
-    (p)=> p.prop_status==="Available"
+    (p)=> {// must be marked available
+  if (p.prop_status !== "Available") return false;
+
+  // check if there's any finalized rental app for this property
+  const hasFinalizedApp = applications.some(
+    (app) => app.prop_id === p.prop_id && app.landLordFinal === "Approved"
+  );
+
+  return !hasFinalizedApp;}
   );
   
     const propertyCards= availableProperties.map((p)=>{
