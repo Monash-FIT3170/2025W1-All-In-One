@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 import GuestOpenHouseModal from "./GuestOpenHouseModal.jsx";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// This page will display the details of a listed property (accessed through TenantBasicPropListing) //
+// This page will display the details of a listed property (accessed through GuestBasicPropListing) //
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function DetailedPropListing() {
@@ -108,12 +108,6 @@ export default function DetailedPropListing() {
           key={property}>
             Open House Availabilities
           </button>
-
-          <Link
-          to={`/login`}
-          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-          >Book Inspection 
-          </Link>
 
           <Link
           to={`/login`} 
