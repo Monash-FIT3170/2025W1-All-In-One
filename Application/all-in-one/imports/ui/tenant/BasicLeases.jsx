@@ -24,7 +24,7 @@ export default function BasicLeases() {
     // Get all approved applications for the tenant
     const approvedApps = RentalApplications.find({
       ten_id: userId,
-      status: "Approved",
+      landLordFinal: "Approved",
     }).fetch();
 
     if (approvedApps.length === 0) return [];
