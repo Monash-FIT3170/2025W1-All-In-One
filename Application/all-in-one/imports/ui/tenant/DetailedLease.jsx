@@ -92,16 +92,12 @@ export default function DetailedLease() {
     const videos = Videos.find({ prop_id: id }).fetch();
     const videoUrls = videos.map(v => v.video_url);
 
-    // find macthing rental applications to get lease start date if leased
-    //const isLeased= selectedProperty.prop_status === "Leased";
-
-    //const leaseStartDate= isLeased ? RentalApplications.findOne({ prop_id: id, status: "Approved"})?.lease_start_date||null
-    //:null;
+  
 
     // find the lease start date if tenant is approved
     const leaseStartDate = RentalApplications.findOne({ 
   prop_id: id, 
-  status: "Approved" 
+  landLordFinal: "Approved" 
 })?.lease_start_date || null;
 
 
