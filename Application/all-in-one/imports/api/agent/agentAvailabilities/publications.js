@@ -14,14 +14,16 @@ if (Meteor.isServer) {
   Meteor.publish('allAvailableInspections', function () {
     return AgentAvailabilities.find({
       activity_type: 'Availability',
-      status: { $ne: 'booked' } // Only show unbooked slots
-    });
+      status: { $ne: 'booked' }} // Only show unbooked slots 
+    &&
+      {availability_type: 'Open House',
+      is_private: false})       // Or Public Open Houses
   });
 
   Meteor.publish('allAvailabilities', function() {
     return AgentAvailabilities.find({
       activity_type: 'Availability',
     });
-  })
+  });
 }
 

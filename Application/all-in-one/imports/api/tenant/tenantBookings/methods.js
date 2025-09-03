@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 import { TenantBookings } from '/imports/api/database/collections';
+import { AgentAvailabilities } from '../../database/collections';
 
 Meteor.methods({
   async 'tenantBookings.insert'(bookingData) {
@@ -28,18 +29,22 @@ Meteor.methods({
     };
     const property = bookingData.property;
     const bookingID = bookingData.agentAvailabilityId;
+    const agentAvailability = await AgentAvailabilities.findOneAsync({_id: bookingID});
+    
+    // prevent double-booking for inspections
+    if (agentAvailability.availability_type === "Inspection"){
+      const existing = await TenantBookings.findOneAsync({
+        agentAvailabilityId: bookingID
+      });
+      if (existing) {
+        throw new Meteor.Error('already-booked', 'This slot is already booked.');
+      }
 
-    // prevent double-booking
-    const existing = await TenantBookings.findOneAsync({
-      agentAvailabilityId: bookingID
-    });
-    if (existing) {
-      throw new Meteor.Error('already-booked', 'This slot is already booked.');
+      if (bookingData.status === "Booked" ) {
+        await Meteor.callAsync('agentAvailabilities.markAsBooked', bookingID, {tenant: tenant, property: bookingData.property});
+      }
     }
 
-    if (bookingData.status === "Booked" ) {
-      await Meteor.callAsync('agentAvailabilities.markAsBooked', bookingID, {tenant: tenant, property: bookingData.property});
-    }
 
     // insert tenant booking record with property snapshot
     return TenantBookings.insertAsync({
