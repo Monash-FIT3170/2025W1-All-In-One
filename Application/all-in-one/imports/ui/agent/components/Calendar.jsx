@@ -1,10 +1,12 @@
 /**
- * Calendar Component (property info fix for Ticket popover)
+ * Calendar Component (Delete fix — robust kind detection)
  *
- * - Subscribes to Tickets + Properties
- * - Builds lookup maps
- * - Enriches TicketActivities events with {property, ticket}
- * - Falls back in eventClick to hydrate property if not present
+ * What changed:
+ * - 🩹 FIX: Robust `kind` detection in eventClick (even if tag missing)
+ * - 🩹 FIX: Always carry `kind` and `sourceId` into selectedEvent
+ * - 🩹 FIX: Central delete handler branches on kind
+ *
+ * Also keeps ticket→property hydration from earlier.
  */
 import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
@@ -13,7 +15,6 @@ import interactionPlugin from '@fullcalendar/interaction';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 
-// ✅ Collections
 import {
   AgentAvailabilities,
   OpenHouseAttendance,
@@ -41,6 +42,15 @@ function toDatetimeLocal(date) {
   return d.toISOString().slice(0, 16);
 }
 
+// 🩹 FIX: helper to robustly detect event kind
+const detectKind = (props) => {
+  if (!props) return 'availability';
+  if (props.kind) return props.kind; // trust explicit tag when present
+  // infer from common fields
+  if (props.ticket_id || props.ticket) return 'ticketActivity';
+  return 'availability';
+};
+
 export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showClearDialog, setShowClearDialog] = useState(false);
@@ -48,7 +58,7 @@ export const Calendar = () => {
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
 
-  // 👇 ticket flow state
+  // ticket flow state
   const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false);
   const [showTicketActivityDialog, setShowTicketActivityDialog] = useState(false);
   const [selectedTicketForActivity, setSelectedTicketForActivity] = useState(null);
@@ -70,7 +80,6 @@ export const Calendar = () => {
 
   const closeTicketPicker = () => setShowTicketTypeDialog(false);
 
-  // 🔄 Availabilities + Open House Attendance
   const { availabilities } = useTracker(() => {
     const h1 = Meteor.subscribe('agentAvailabilities');
     Meteor.subscribe('openHouseAttendance');
@@ -80,7 +89,6 @@ export const Calendar = () => {
     };
   });
 
-  // 🔄 Ticket Activities
   const { ticketActivities } = useTracker(() => {
     const h = Meteor.subscribe('ticketActivities');
     return {
@@ -89,7 +97,6 @@ export const Calendar = () => {
     };
   });
 
-  // 🔄 NEW: Tickets + Properties (for enriching ticket events)
   const { ticketsById, propertiesByPropId } = useTracker(() => {
     const tSub = Meteor.subscribe('tickets');
     const pSub = Meteor.subscribe('properties');
@@ -99,16 +106,14 @@ export const Calendar = () => {
 
     const tMap = new Map();
     tickets.forEach((t) => {
-      // Your schema has ticket_id as the domain id
-      // TicketActivities.ticket_id stores this string
-      const key = t._id || t.ticket_id; // support either, in case publications use _id
-      tMap.set(key, t);
-      if (t.ticket_id && !tMap.has(t.ticket_id)) tMap.set(t.ticket_id, t);
+      const key = t._id || t.ticket_id;
+      if (key) tMap.set(String(key), t);
+      if (t.ticket_id && !tMap.has(String(t.ticket_id))) tMap.set(String(t.ticket_id), t);
     });
 
     const pMap = new Map();
     props.forEach((p) => {
-      pMap.set(p.prop_id, p);
+      if (p.prop_id) pMap.set(String(p.prop_id), p);
     });
 
     return {
@@ -214,7 +219,6 @@ export const Calendar = () => {
     });
   };
 
-  // 👇 Hydrate ticket info for the TicketActivityDialog flow
   const handleTicketChosen = (ticket) => {
     setSelectedTicketForActivity(ticket);
     setShowTicketTypeDialog(false);
@@ -243,7 +247,6 @@ export const Calendar = () => {
     setPendingSlot(null);
   };
 
-  // 🧠 helper: normalize property object expected by the modal
   const toPropertyPayload = (propDoc) => {
     if (!propDoc) return null;
     return {
@@ -258,6 +261,23 @@ export const Calendar = () => {
     };
   };
 
+  // 🩹 FIX: central delete that routes by event kind (never calls wrong method)
+  const handleDeleteEvent = async (evt) => {
+    try {
+      const kind = detectKind(evt);
+      if (kind === 'ticketActivity') {
+        await callAsync('ticketActivities.remove', evt.sourceId || evt.id);
+      } else {
+        await callAsync('agentAvailabilities.remove', evt.sourceId || evt.id);
+        // optional: await callAsync('openHouseAttendance.removeByBooking', evt.sourceId || evt.id);
+      }
+      setSelectedEvent(null);
+    } catch (err) {
+      alert(`Failed to delete: ${err.reason || err.message}`);
+      console.error(err);
+    }
+  };
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       <div className="text-center mb-6">
@@ -270,9 +290,7 @@ export const Calendar = () => {
       <div className="border-t border-gray-300 max-w-6xl mx-auto mb-6"></div>
 
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-6xl mx-auto">
-        <style>{`
-          .fc .invite-pending { border-style: dashed !important; border-width: 2px !important; }
-        `}</style>
+        <style>{`.fc .invite-pending { border-style: dashed !important; border-width: 2px !important; }`}</style>
 
         <FullCalendar
           plugins={[timeGridPlugin, interactionPlugin]}
@@ -284,7 +302,7 @@ export const Calendar = () => {
           selectable
           select={handleSelect}
           events={[
-            // === Availabilities mapped ===
+            // Availabilities
             ...availabilities.map((slot) => {
               const type = slot.availability_type || slot.type;
               const statusLower = String(slot.status || '').toLowerCase();
@@ -336,6 +354,9 @@ export const Calendar = () => {
               return {
                 ...slot,
                 id: slot._id,
+                // (we still add these; but the fix does not rely on them)
+                kind: 'availability',
+                sourceId: slot._id,
                 title,
                 backgroundColor,
                 textColor,
@@ -344,18 +365,20 @@ export const Calendar = () => {
               };
             }),
 
-            // === Ticket Activities mapped (ENRICHED with ticket + property) ===
+            // Ticket Activities (enriched)
             ...ticketActivities.map((act) => {
               const ticketDoc =
-                ticketsById.get(act.ticket_id) ||
                 ticketsById.get(String(act.ticket_id)) ||
+                ticketsById.get(String(act.ticket?._id || act.ticket?.ticket_id)) ||
                 null;
 
-              const propDoc = ticketDoc ? propertiesByPropId.get(ticketDoc.prop_id) : null;
+              const propDoc = ticketDoc ? propertiesByPropId.get(String(ticketDoc.prop_id)) : null;
 
               return {
                 ...act,
                 id: act._id,
+                kind: 'ticketActivity', // tag if present
+                sourceId: act._id,
                 start: new Date(act.start),
                 end: new Date(act.end),
                 title: act.title || ticketDoc?.title || 'Ticket Activity',
@@ -363,11 +386,10 @@ export const Calendar = () => {
                 textColor: '#000000',
                 borderColor: '#FF9900',
                 ticket: ticketDoc || undefined,
-                property: toPropertyPayload(propDoc) || undefined, // ✨ this feeds the modal
+                property: toPropertyPayload(propDoc) || undefined,
               };
             }),
 
-            // Any ad-hoc new events you add in session
             ...newEvents.map((event) => ({
               ...event,
               backgroundColor: '#F2F2F2',
@@ -376,43 +398,44 @@ export const Calendar = () => {
             })),
           ]}
           eventClick={(info) => {
-            const clicked = info.event.extendedProps;
+            const props = info.event.extendedProps;
 
-            // If Open House, include attendance
-            if (clicked.type === 'Open House' || clicked.availability_type === 'Open House') {
-              Meteor.subscribe('openHouseAttendance');
-              const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: info.event.id });
+            // 🩹 FIX: robustly determine kind + safe sourceId
+            const kind = detectKind(props);
+            const sourceId = props?.sourceId || info.event.id;
 
-              setSelectedEvent({
-                id: info.event.id,
-                title: info.event.title,
-                start: info.event.start,
-                end: info.event.end,
-                attendanceList: attendanceRecord?.attendanceList || [],
-                ...clicked,
-              });
-              return;
-            }
-
-            // ✅ Ticket event fallback hydration (in case property wasn’t attached above yet)
-            let hydrated = { ...clicked };
-            if (!hydrated.property && (clicked.ticket_id || clicked.ticket?._id || clicked.ticket?.ticket_id)) {
-              const t =
-                ticketsById.get(clicked.ticket_id) ||
-                ticketsById.get(clicked.ticket?._id) ||
-                ticketsById.get(clicked.ticket?.ticket_id);
-              const p = t ? propertiesByPropId.get(t.prop_id) : null;
-              hydrated.ticket = hydrated.ticket || t || undefined;
-              hydrated.property = toPropertyPayload(p) || undefined;
-            }
-
-            setSelectedEvent({
+            // Base selected event
+            const base = {
               id: info.event.id,
               title: info.event.title,
               start: info.event.start,
               end: info.event.end,
-              ...hydrated,
-            });
+              kind,        // 🩹 FIX: store the resolved kind
+              sourceId,    // 🩹 FIX: store the resolved source id
+              ...props,
+            };
+
+            // Open house: pull attendance
+            if (props.type === 'Open House' || props.availability_type === 'Open House') {
+              Meteor.subscribe('openHouseAttendance');
+              const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: base.id });
+              setSelectedEvent({ ...base, attendanceList: attendanceRecord?.attendanceList || [] });
+              return;
+            }
+
+            // Ticket fallback hydration (no-op if already present)
+            let hydrated = { ...base };
+            if (!hydrated.property && (hydrated.ticket_id || hydrated.ticket?.ticket_id || hydrated.ticket?._id)) {
+              const t =
+                ticketsById.get(String(hydrated.ticket_id)) ||
+                ticketsById.get(String(hydrated.ticket?._id)) ||
+                ticketsById.get(String(hydrated.ticket?.ticket_id));
+              const p = t ? propertiesByPropId.get(String(t.prop_id)) : null;
+              hydrated.ticket = hydrated.ticket || t || undefined;
+              hydrated.property = toPropertyPayload(p) || undefined;
+            }
+
+            setSelectedEvent(hydrated);
           }}
           headerToolbar={{ left: 'prev today next', center: '', right: 'title' }}
           buttonText={{ today: 'Today' }}
@@ -446,6 +469,8 @@ export const Calendar = () => {
         <EventDetailModal
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
+          // 🩹 FIX: delete uses robust kind/sourceId from selectedEvent
+          onDelete={() => handleDeleteEvent(selectedEvent)}
           onAttendanceUpdate={() => {
             if (
               selectedEvent.type === 'Open House' ||
