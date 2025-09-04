@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
-import { Tenants, Properties, Photos } from '../database/collections.js'; // adjust path if needed
+import { Tenants, Properties, Photos, Landlord } from '../database/collections.js'; // adjust path if needed
 
 Meteor.methods({
   async registerUser({ email, password, firstName, lastName, role }) {
@@ -51,7 +51,7 @@ Meteor.methods({
 
       
       // First, find the landlord by email
-      const landlord = await Meteor.users.findOneAsync({ "emails.address": landlordEmail });
+      const landlord = await Landlord.findOneAsync({ ll_email: landlordEmail });
       
       if (!landlord) {
         throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
@@ -85,12 +85,12 @@ Meteor.methods({
         photo: photo || [],
       });
       
-      await Photos.insertAsync({
-        prop_id: propID,
-        photo_id: 'PH099',
-        photo_url: '/images/properties/P006/P006_1.jpg',
-        photo_order: 1
-      });
+      // await Photos.insertAsync({
+      //   prop_id: propID,
+      //   photo_id: 'PH099',
+      //   photo_url: '/images/properties/P006/P006_1.jpg',
+      //   photo_order: 1
+      // });
 
       return propID;
     } catch (error) {
@@ -101,7 +101,7 @@ Meteor.methods({
 
   async "EditPropertyListing" ({propId, propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordEmail, status, agentId}) {
       
-    const landlord = await Meteor.users.findOneAsync({ "emails.address": landlordEmail });
+    const landlord = await Landlord.findOneAsync({ ll_email: landlordEmail });
       
     if (!landlord) {
       throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
@@ -132,15 +132,15 @@ Meteor.methods({
 
   },
 
-  async 'EditPropertyMedia' ({propId, photo}) {
-    await Properties.updateAsync(
-      {prop_id: propId},
-      {$set: {
-        photo: photo
-      }}
-    )
+  // async 'EditPropertyMedia' ({propId, photo}) {
+  //   await Properties.updateAsync(
+  //     {prop_id: propId},
+  //     {$set: {
+  //       photo: photo
+  //     }}
+  //   )
 
 
-  },
+  // },
 
 });
