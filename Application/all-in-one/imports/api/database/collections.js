@@ -188,7 +188,7 @@ Tickets.schema = new SimpleSchema({
     optional: true, // When the issue began, primarily for maintenance tickets
   },
   date_logged: {
-    type: Date, // Timestamp when the ticket was created
+    type: String, // Timestamp when the ticket was created
   },
   status: {
     type: String,

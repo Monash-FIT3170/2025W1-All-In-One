@@ -1,68 +1,64 @@
 /**
- * Calendar Component
+ * Calendar Component (Delete fix — robust kind detection)
  *
- * A comprehensive calendar interface for agents to manage their schedule and activities.
- * Features:
- * - Interactive calendar view with time grid display
- * - Create availability slots for inspections and open houses
- * - Schedule and manage various activities (inspections, open houses, meetings)
- * - View and manage open house attendance
- * - Real-time data synchronization with MongoDB collections
- * - Multiple dialog modals for different activity types
+ * What changed:
+ * - 🩹 FIX: Robust `kind` detection in eventClick (even if tag missing)
+ * - 🩹 FIX: Always carry `kind` and `sourceId` into selectedEvent
+ * - 🩹 FIX: Central delete handler branches on kind
+ *
+ * Also keeps ticket→property hydration from earlier.
  */
-import React, { useState , useEffect } from 'react';
+import React, { useState } from 'react';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 
-// ✅ All collections
 import {
   AgentAvailabilities,
   OpenHouseAttendance,
-  TicketActivities
+  TicketActivities,
+  Tickets,
+  Properties,
 } from '../../../api/database/collections';
 
-import { ClearDialog } from './ClearDialog.jsx'; 
-import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx'; 
-import { ActivityTypeDialog } from './ActivityTypeDialog.jsx'; 
+import { ClearDialog } from './ClearDialog.jsx';
+import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx';
+import { ActivityTypeDialog } from './ActivityTypeDialog.jsx';
 import { EventDetailModal } from './EventDetailModal.jsx';
 import { TicketTypeDialog } from './TicketTypeDialog.jsx';
 import { TicketActivityDialog } from './TicketActivityDialog.jsx';
 
-/**
- * Utility function to call Meteor methods asynchronously
- *
- * @param {string} methodName - Name of the Meteor method to call
- * @param {...any} args - Arguments to pass to the method
- * @returns {Promise} Promise that resolves with the method result or rejects with error
- */
-const callAsync = (methodName, ...args) => {
-  return new Promise((resolve, reject) => {
-    Meteor.call(methodName, ...args, (err, res) => {
-      if (err) reject(err);
-      else resolve(res);
-    });
+const callAsync = (methodName, ...args) =>
+  new Promise((resolve, reject) => {
+    Meteor.call(methodName, ...args, (err, res) => (err ? reject(err) : resolve(res)));
   });
-};
 
 function toDatetimeLocal(date) {
   if (!date) return '';
   const d = new Date(date);
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
-  return d.toISOString().slice(0,16);
+  return d.toISOString().slice(0, 16);
 }
 
+// 🩹 FIX: helper to robustly detect event kind
+const detectKind = (props) => {
+  if (!props) return 'availability';
+  if (props.kind) return props.kind; // trust explicit tag when present
+  // infer from common fields
+  if (props.ticket_id || props.ticket) return 'ticketActivity';
+  return 'availability';
+};
+
 export const Calendar = () => {
-  // State management for various dialogs and events
   const [newEvents, setNewEvents] = useState([]);
   const [showClearDialog, setShowClearDialog] = useState(false);
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
 
-  // 👇 ticket flow state
+  // ticket flow state
   const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false);
   const [showTicketActivityDialog, setShowTicketActivityDialog] = useState(false);
   const [selectedTicketForActivity, setSelectedTicketForActivity] = useState(null);
@@ -70,9 +66,6 @@ export const Calendar = () => {
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
 
-  /**
-   * Closes all dialogs and resets related state
-   */
   const closeDialogs = () => {
     setShowClearDialog(false);
     setShowActivityTypeDialog(false);
@@ -85,53 +78,60 @@ export const Calendar = () => {
     setSelectedTicketForActivity(null);
   };
 
-  /**
-   * Fetches agent availabilities using Meteor subscription
-   *
-   * @type {Object} Object containing availabilities data and loading state
-   */
   const closeTicketPicker = () => setShowTicketTypeDialog(false);
 
-  const { availabilities, isLoading } = useTracker(() => {
-    const handler = Meteor.subscribe('agentAvailabilities');
-    const attendanceHandler = Meteor.subscribe('openHouseAttendance');
-    const data = AgentAvailabilities.find().fetch();
+  const { availabilities } = useTracker(() => {
+    const h1 = Meteor.subscribe('agentAvailabilities');
+    Meteor.subscribe('openHouseAttendance');
     return {
-      availabilities: data,
-      isLoading: !handler.ready() || !attendanceHandler.ready(),
+      availabilities: AgentAvailabilities.find().fetch(),
+      isLoading: !h1.ready(),
     };
   });
 
   const { ticketActivities } = useTracker(() => {
-    const handler = Meteor.subscribe('ticketActivities');
+    const h = Meteor.subscribe('ticketActivities');
     return {
       ticketActivities: TicketActivities.find().fetch(),
-      isLoading: !handler.ready(),
+      isLoading: !h.ready(),
     };
   });
 
-  /**
-   * Handles calendar slot selection to schedule new activities
-   *
-   * @param {Object} info - Calendar selection information
-   */
+  const { ticketsById, propertiesByPropId } = useTracker(() => {
+    const tSub = Meteor.subscribe('tickets');
+    const pSub = Meteor.subscribe('properties');
+
+    const tickets = Tickets.find().fetch();
+    const props = Properties.find().fetch();
+
+    const tMap = new Map();
+    tickets.forEach((t) => {
+      const key = t._id || t.ticket_id;
+      if (key) tMap.set(String(key), t);
+      if (t.ticket_id && !tMap.has(String(t.ticket_id))) tMap.set(String(t.ticket_id), t);
+    });
+
+    const pMap = new Map();
+    props.forEach((p) => {
+      if (p.prop_id) pMap.set(String(p.prop_id), p);
+    });
+
+    return {
+      ticketsById: tMap,
+      propertiesByPropId: pMap,
+      isLoading: !tSub.ready() || !pSub.ready(),
+    };
+  });
+
   const handleSelect = (info) => {
     setPendingSlot({ start: info.start, end: info.end });
     setShowActivityTypeDialog(true);
   };
 
-  /**
-   * Handles activity type selection from dialog
-   *
-   * @param {string} activity_type - Type of activity selected
-   */
   const handleActivityTypeSelect = (activity_type) => {
     setShowActivityTypeDialog(false);
-    if (activity_type === 'Availability') {
-      setShowAvailabilityTypeDialog(true);
-    } else if (activity_type === 'Ticket') {
-      setShowTicketTypeDialog(true);
-    }
+    if (activity_type === 'Availability') setShowAvailabilityTypeDialog(true);
+    else if (activity_type === 'Ticket') setShowTicketTypeDialog(true);
   };
 
   const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note, eoi) => {
@@ -153,11 +153,10 @@ export const Calendar = () => {
     image,
     note,
     is_private,
-    eoi
+    eoi,
   }) => {
     const status = type === 'Open House' && is_private ? 'Invitation sent' : 'confirmed';
 
-    // Immediately insert into DB
     try {
       const currentUserId = Meteor.userId();
       const insertedId = await callAsync(
@@ -178,23 +177,17 @@ export const Calendar = () => {
         currentUserId
       );
 
-      // Creates an attendance list for any new open house availabilities
-      if (type === 'Open House' && !is_private){
-        const curr_booking = AgentAvailabilities.findOne({
-          start: start.toISOString() });
-
-        const booking_id = curr_booking._id;
-        const attendanceList = [];
-
+      if (type === 'Open House' && !is_private) {
         await callAsync(
           'openHouseAttendance.insert',
           insertedId,
           address,
           start.toISOString(),
           end.toISOString(),
-          attendanceList
+          []
         );
       }
+
       if (type === 'Open House' && is_private && eoi != null) {
         const curr_booking = AgentAvailabilities.findOne({ start: start.toISOString() });
         const booking_id = curr_booking?._id;
@@ -203,8 +196,8 @@ export const Calendar = () => {
         });
       }
     } catch (error) {
-      alert('Insert failed: ' + error.reason);
-      console.error('Failed to create availability:', error.reason);
+      alert('Insert failed: ' + (error.reason || error.message));
+      console.error('Failed to create availability:', error);
       return;
     }
 
@@ -214,31 +207,15 @@ export const Calendar = () => {
 
   const handleClearButtonClick = () => setShowClearDialog(true);
 
-
-  /**
-   * Handles clearing all availabilities from the database
-   */
   const handleClearConfirm = () => {
     Meteor.call('agentAvailabilities.clear', (error) => {
       if (error) {
         console.error('Failed to clear availabilities: ' + error.reason);
       } else {
-        console.log('All availabilities cleared!');
-        setNewEvents([]); 
+        setNewEvents([]);
         setShowClearDialog(false);
-        Meteor.subscribe('agentAvailabilities'); 
+        Meteor.subscribe('agentAvailabilities');
       }
-    });
-  };
-
-  // Add this function to extract details for booked events
-  const handleEventClick = (info) => {
-    setSelectedEvent({
-      id: info.event.id,
-      title: info.event.title,
-      start: info.event.start,
-      end: info.event.end,
-      ...info.event.extendedProps,
     });
   };
 
@@ -270,9 +247,39 @@ export const Calendar = () => {
     setPendingSlot(null);
   };
 
+  const toPropertyPayload = (propDoc) => {
+    if (!propDoc) return null;
+    return {
+      address: propDoc.prop_address,
+      price: propDoc.prop_pricepweek,
+      bedrooms: propDoc.prop_numbeds,
+      bathrooms: propDoc.prop_numbaths,
+      parking: propDoc.prop_numcarspots,
+      type: propDoc.prop_type,
+      image: Array.isArray(propDoc.photo) && propDoc.photo.length ? propDoc.photo[0] : undefined,
+      prop_id: propDoc.prop_id,
+    };
+  };
+
+  // 🩹 FIX: central delete that routes by event kind (never calls wrong method)
+  const handleDeleteEvent = async (evt) => {
+    try {
+      const kind = detectKind(evt);
+      if (kind === 'ticketActivity') {
+        await callAsync('ticketActivities.remove', evt.sourceId || evt.id);
+      } else {
+        await callAsync('agentAvailabilities.remove', evt.sourceId || evt.id);
+        // optional: await callAsync('openHouseAttendance.removeByBooking', evt.sourceId || evt.id);
+      }
+      setSelectedEvent(null);
+    } catch (err) {
+      alert(`Failed to delete: ${err.reason || err.message}`);
+      console.error(err);
+    }
+  };
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
-      {/* Calendar header and description */}
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
         <p className="text-gray-500 mt-2">
@@ -280,17 +287,10 @@ export const Calendar = () => {
         </p>
       </div>
 
-      {/* Visual separator */}
       <div className="border-t border-gray-300 max-w-6xl mx-auto mb-6"></div>
 
-      {/* Main calendar container */}
       <div className="bg-white p-4 rounded-lg shadow-lg max-w-6xl mx-auto">
-        <style>{`
-          .fc .invite-pending {
-            border-style: dashed !important;
-            border-width: 2px !important;
-          }
-        `}</style>
+        <style>{`.fc .invite-pending { border-style: dashed !important; border-width: 2px !important; }`}</style>
 
         <FullCalendar
           plugins={[timeGridPlugin, interactionPlugin]}
@@ -299,10 +299,11 @@ export const Calendar = () => {
           slotMaxTime="18:00:00"
           scrollTime="07:00:00"
           allDaySlot={false}
-          selectable={true}
+          selectable
           select={handleSelect}
           events={[
-            ...availabilities.map(slot => {
+            // Availabilities
+            ...availabilities.map((slot) => {
               const type = slot.availability_type || slot.type;
               const statusLower = String(slot.status || '').toLowerCase();
               const isBooked = statusLower === 'booked';
@@ -311,32 +312,51 @@ export const Calendar = () => {
                 slot.is_private === true &&
                 /^(invitation sent|invite sent|invited)$/.test(statusLower);
 
-              let title, backgroundColor, textColor, borderColor, classNames = [];
+              let title,
+                backgroundColor,
+                textColor,
+                borderColor,
+                classNames = [];
 
               if (isBooked) {
                 title = 'Booked';
-                backgroundColor = '#e5e7eb'; textColor = '#6b7280'; borderColor = '#9ca3af';
+                backgroundColor = '#e5e7eb';
+                textColor = '#6b7280';
+                borderColor = '#9ca3af';
               } else if (isPrivateInvite) {
                 title = 'Private Open House (Invite Sent)';
-                backgroundColor = '#e5e7eb'; textColor = '#374151'; borderColor = '#9ca3af';
+                backgroundColor = '#e5e7eb';
+                textColor = '#374151';
+                borderColor = '#9ca3af';
                 classNames = ['invite-pending'];
               } else if (slot.status === 'pending') {
                 title = `Pending: ${type} Availability`;
-                backgroundColor = '#F2F2F2'; textColor = '#000000'; borderColor = '#000000';
+                backgroundColor = '#F2F2F2';
+                textColor = '#000000';
+                borderColor = '#000000';
               } else if (slot.status === 'rejected') {
                 title = 'Private Open House (Invite Rejected)';
-                backgroundColor = '#888888'; textColor = '#353535'; borderColor = '#ff0000';
+                backgroundColor = '#888888';
+                textColor = '#353535';
+                borderColor = '#ff0000';
               } else if (type === 'Open House') {
                 title = 'Open House Availability';
-                backgroundColor = '#DCFFCD'; textColor = '#68A44F'; borderColor = '#A98A22';
+                backgroundColor = '#DCFFCD';
+                textColor = '#68A44F';
+                borderColor = '#A98A22';
               } else {
                 title = 'Inspection Availability';
-                backgroundColor = '#CEF4F1'; textColor = '#24A89E'; borderColor = '#24A89E';
+                backgroundColor = '#CEF4F1';
+                textColor = '#24A89E';
+                borderColor = '#24A89E';
               }
 
               return {
                 ...slot,
                 id: slot._id,
+                // (we still add these; but the fix does not rely on them)
+                kind: 'availability',
+                sourceId: slot._id,
                 title,
                 backgroundColor,
                 textColor,
@@ -344,82 +364,94 @@ export const Calendar = () => {
                 classNames,
               };
             }),
-            ...ticketActivities.map(act => ({
-              ...act,
-              id: act._id,
-              start: new Date(act.start),
-              end: new Date(act.end),
-              title: act.title || 'Ticket Activity',
-              backgroundColor: '#FFE6CC',
-              textColor: '#000000',
-              borderColor: '#FF9900',
-            })),
-            // Map new events to calendar events
-            ...newEvents.map(event => ({
+
+            // Ticket Activities (enriched)
+            ...ticketActivities.map((act) => {
+              const ticketDoc =
+                ticketsById.get(String(act.ticket_id)) ||
+                ticketsById.get(String(act.ticket?._id || act.ticket?.ticket_id)) ||
+                null;
+
+              const propDoc = ticketDoc ? propertiesByPropId.get(String(ticketDoc.prop_id)) : null;
+
+              return {
+                ...act,
+                id: act._id,
+                kind: 'ticketActivity', // tag if present
+                sourceId: act._id,
+                start: new Date(act.start),
+                end: new Date(act.end),
+                title: act.title || ticketDoc?.title || 'Ticket Activity',
+                backgroundColor: '#FFE6CC',
+                textColor: '#000000',
+                borderColor: '#FF9900',
+                ticket: ticketDoc || undefined,
+                property: toPropertyPayload(propDoc) || undefined,
+              };
+            }),
+
+            ...newEvents.map((event) => ({
               ...event,
               backgroundColor: '#F2F2F2',
               textColor: '#000000',
               borderColor: '#000000',
             })),
-          ]}                   
+          ]}
           eventClick={(info) => {
-            const clicked = info.event.extendedProps;
+            const props = info.event.extendedProps;
 
-            // If this is an Open House event, fetch the attendance list
-            if (clicked.type === 'Open House') {
-              // Subscribe to open house attendance data
+            // 🩹 FIX: robustly determine kind + safe sourceId
+            const kind = detectKind(props);
+            const sourceId = props?.sourceId || info.event.id;
+
+            // Base selected event
+            const base = {
+              id: info.event.id,
+              title: info.event.title,
+              start: info.event.start,
+              end: info.event.end,
+              kind,        // 🩹 FIX: store the resolved kind
+              sourceId,    // 🩹 FIX: store the resolved source id
+              ...props,
+            };
+
+            // Open house: pull attendance
+            if (props.type === 'Open House' || props.availability_type === 'Open House') {
               Meteor.subscribe('openHouseAttendance');
-
-              // Find the attendance record for this event
-              const attendanceRecord = OpenHouseAttendance.findOne({
-                bookingID: info.event.id
-              });
-
-              setSelectedEvent({
-                id: info.event.id, // Include the MongoDB _id
-                title: info.event.title,
-                start: info.event.start,
-                end: info.event.end,
-                attendanceList: attendanceRecord?.attendanceList || [],
-                ...clicked,
-              });
-            } else {
-              setSelectedEvent({
-                id: info.event.id, // Include the MongoDB _id
-                title: info.event.title,
-                start: info.event.start,
-                end: info.event.end,
-                ...clicked,
-              });
+              const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: base.id });
+              setSelectedEvent({ ...base, attendanceList: attendanceRecord?.attendanceList || [] });
+              return;
             }
-          }}          
-          headerToolbar={{
-            left: 'prev today next',
-            center: '',
-            right: 'title'
+
+            // Ticket fallback hydration (no-op if already present)
+            let hydrated = { ...base };
+            if (!hydrated.property && (hydrated.ticket_id || hydrated.ticket?.ticket_id || hydrated.ticket?._id)) {
+              const t =
+                ticketsById.get(String(hydrated.ticket_id)) ||
+                ticketsById.get(String(hydrated.ticket?._id)) ||
+                ticketsById.get(String(hydrated.ticket?.ticket_id));
+              const p = t ? propertiesByPropId.get(String(t.prop_id)) : null;
+              hydrated.ticket = hydrated.ticket || t || undefined;
+              hydrated.property = toPropertyPayload(p) || undefined;
+            }
+
+            setSelectedEvent(hydrated);
           }}
-          buttonText={{
-            today: 'Today'
-          }}
-          titleFormat={{ 
-            year: 'numeric', month: 'long' 
-          }}
+          headerToolbar={{ left: 'prev today next', center: '', right: 'title' }}
+          buttonText={{ today: 'Today' }}
+          titleFormat={{ year: 'numeric', month: 'long' }}
           height="auto"
         />
 
         <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={closeDialogs} />
         <ActivityTypeDialog isOpen={showActivityTypeDialog} onSelect={handleActivityTypeSelect} onClose={closeDialogs} />
-        <AvailabilityTypeDialog 
-          isOpen={showAvailabilityTypeDialog} 
+        <AvailabilityTypeDialog
+          isOpen={showAvailabilityTypeDialog}
           pendingSlot={pendingSlot}
           onSelect={handleAvailabilityTypeSelect}
-          onClose={closeDialogs} 
+          onClose={closeDialogs}
         />
-        <TicketTypeDialog
-          isOpen={showTicketTypeDialog}
-          onClose={closeTicketPicker}
-          onSelect={handleTicketChosen}
-        />
+        <TicketTypeDialog isOpen={showTicketTypeDialog} onClose={closeTicketPicker} onSelect={handleTicketChosen} />
         <TicketActivityDialog
           isOpen={showTicketActivityDialog}
           ticket={selectedTicketForActivity}
@@ -433,21 +465,21 @@ export const Calendar = () => {
         />
       </div>
 
-      {/* Show event detail modal for booked events */}
       {selectedEvent && (
         <EventDetailModal
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
+          // 🩹 FIX: delete uses robust kind/sourceId from selectedEvent
+          onDelete={() => handleDeleteEvent(selectedEvent)}
           onAttendanceUpdate={() => {
-            // Refresh the attendance data when attendance is updated
-            if (selectedEvent.type === 'Open House') {
-              // Force a re-render by updating the selectedEvent with fresh data
-              const attendanceRecord = OpenHouseAttendance.findOne({
-                bookingID: selectedEvent.id
-              });
-              setSelectedEvent(prev => ({
+            if (
+              selectedEvent.type === 'Open House' ||
+              selectedEvent.availability_type === 'Open House'
+            ) {
+              const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: selectedEvent.id });
+              setSelectedEvent((prev) => ({
                 ...prev,
-                attendanceList: attendanceRecord?.attendanceList || []
+                attendanceList: attendanceRecord?.attendanceList || [],
               }));
             }
           }}
@@ -455,11 +487,14 @@ export const Calendar = () => {
       )}
 
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
-        <button onClick={handleClearButtonClick} className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md">
+        <button
+          onClick={handleClearButtonClick}
+          className="bg-red-500 hover:bg-red-400 text-white font-bold py-3 px-6 rounded-md"
+        >
           Clear All
         </button>
         <p className="text-sm text-gray-800 mb-4">
-            Booked slots cannot be cleared. You can only clear unbooked availabilities.
+          Booked slots cannot be cleared. You can only clear unbooked availabilities.
         </p>
       </div>
     </div>
