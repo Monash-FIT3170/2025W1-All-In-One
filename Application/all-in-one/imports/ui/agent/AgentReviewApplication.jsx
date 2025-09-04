@@ -71,6 +71,7 @@ export default function ReviewApplication() {
       const properties = Properties.find({ agent_id: agentId }).fetch();
       const applications = RentalApplications.find({
         prop_id: { $in: properties.map((p) => p.prop_id) },
+        submitted: true,
       }).fetch();
       const tenants = Tenants.find().fetch();
       const employments = Employment.find().fetch();
@@ -339,94 +340,94 @@ export default function ReviewApplication() {
                     landlordFinal={app.landLordFinal}
                     finaliseButton={null}
                     status={currentStatus}
-                    statusIcon={
-                      <div className="flex gap-2 items-center">
-                        {app.status === "Withdrawn" ? (
-                          <div className="flex gap-2 items-center">
-                            <span className="text-sm font-semibold text-gray-600">
-                              Withdrawn
-                            </span>
-                          </div>
-                        ) : currentStatus === null ? (
-                          flags.map((flag) => (
-                            <img
-                              // src="/icons/Frame32.png"
-                              // alt="Red Flag"
-                              width={20}
-                              height={20}
-                              key={flag.label}
-                              src={flag.src}
-                              alt={flag.label}
-                              className={`w-10 h-10 cursor-pointer hover:scale-110 transition ${isLoading ? "opacity-50 cursor-wait" : ""
-                                }`}
-                              onClick={() =>
-                                !isLoading && handleClick(app._id, flag.label)
-                              }
-                            />
-                          ))
-                        ) : (
-                          <div className="flex gap-2 items-center">
-                            {(() => {
-                              const matchedFlag = flags.find(
-                                (f) => f.label === currentStatus
-                              );
-                              if (!matchedFlag) {
-                                return (
-                                  <span className="text-sm text-red-500">
-                                    Unknown flag: {currentStatus}
-                                  </span>
-                                );
-                              }
+                  statusIcon={
+                    <div className="flex gap-2 items-center">
+                      {app.status === "Withdrawn" ? (
+                        <div className="flex gap-2 items-center">
+                          <span className="text-sm font-semibold text-gray-600">
+                            Withdrawn
+                          </span>
+                        </div>
+                      ) : app.landLordFinal === "Approved" || app.landLordFinal === "Rejected" ? (
+                        // If landlord made a final decision -> show landlord decision
+                        <div className="flex gap-2 items-center">
+                          <img
+                            src={
+                              app.landLordFinal === "Approved"
+                                ? "/images/GreenTick.png"
+                                : "/images/red.png"
+                            }
+                            alt={app.landLordFinal}
+                            className="w-10 h-10"
+                          />
+                          <span className="text-sm font-semibold">{app.landLordFinal}</span>
+                        </div>
+                      ) : currentStatus === null ? (
+                        // Otherwise, show flag options
+                        flags.map((flag) => (
+                          <img
+                            width={20}
+                            height={20}
+                            key={flag.label}
+                            src={flag.src}
+                            alt={flag.label}
+                            className={`w-10 h-10 cursor-pointer hover:scale-110 transition ${
+                              isLoading ? "opacity-50 cursor-wait" : ""
+                            }`}
+                            onClick={() => !isLoading && handleClick(app._id, flag.label)}
+                          />
+                        ))
+                      ) : (
+                        // If a flag is already selected, show it with "Change" option
+                        <div className="flex gap-2 items-center">
+                          {(() => {
+                            const matchedFlag = flags.find((f) => f.label === currentStatus);
+                            if (!matchedFlag) {
                               return (
-                                <>
-                                  <img
-                                    src={matchedFlag.src}
-                                    alt={currentStatus}
-                                    className="w-10 h-10"
-                                  />
-                                  <span className="text-sm font-semibold">
-                                    {currentStatus}
-                                  </span>
-                                  <button
-                                    onClick={() => {
-                                      // Reset UI
-                                      setStatuses((prev) => ({
-                                        ...prev,
-                                        [app._id]: null,
-                                      }));
-
-
-                                      // Reset DB
-                                      Meteor.call(
-                                        "rentalApplications.clearAgentFlag",
-                                        app._id,
-                                        (err) => {
-                                          if (err) {
-                                            alert(
-                                              "Error clearing agent flag: " +
-                                              err.reason
-                                            );
-                                          }
-                                        }
-                                      );
-                                    }}
-                                    className="ml-2 text-sm font-semibold text-blue-500 underline"
-                                    disabled={isLoading}
-                                  >
-                                    Change
-                                  </button>
-                                </>
+                                <span className="text-sm text-red-500">
+                                  Unknown flag: {currentStatus}
+                                </span>
                               );
-                            })()}
-                          </div>
-                        )}
-                      </div>
-                    }
+                            }
+                            return (
+                              <>
+                                <img
+                                  src={matchedFlag.src}
+                                  alt={currentStatus}
+                                  className="w-10 h-10"
+                                />
+                                <span className="text-sm font-semibold">{currentStatus}</span>
+                                <button
+                                  onClick={() => {
+                                    // Reset UI
+                                    setStatuses((prev) => ({
+                                      ...prev,
+                                      [app._id]: null,
+                                    }));
 
-
-
-
-
+                                    // Reset DB
+                                    Meteor.call(
+                                      "rentalApplications.clearAgentFlag",
+                                      app._id,
+                                      (err) => {
+                                        if (err) {
+                                          alert("Error clearing agent flag: " + err.reason);
+                                        }
+                                      }
+                                    );
+                                  }}
+                                  className="ml-2 text-sm font-semibold text-blue-500 underline"
+                                  disabled={isLoading}
+                                >
+                                  Change
+                                </button>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      )}
+                    </div>
+                  }
                     attendanceStatus={getAttendanceStatus(app)}
                     onAttendanceClick={() => handleAttendanceClick(app)}
                   />

@@ -364,7 +364,7 @@ export default function ReviewApplication() {
                         return (
                           <Link
                             key={member.ten_id}
-                            to={`/agent/application/${memberApp?._id}`}
+                            to={`/landlord/application/${memberApp?._id}`}
                             className="block py-1 px-2 bg-white rounded-md shadow-sm mb-1 hover:bg-purple-50 cursor-pointer"
                           >
                             {member.ten_fn} {member.ten_ln}

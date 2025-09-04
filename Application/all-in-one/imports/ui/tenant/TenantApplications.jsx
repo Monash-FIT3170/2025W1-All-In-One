@@ -92,38 +92,58 @@ export default function TenantApplications() {
                         return (
                             // Application card container with flexbox layout
                             <div key={app._id} className="flex overflow-hidden gap-8">
-                                {/* Left side: Property image with overlay information */}
-                                <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden">
-                                    {/* Property image (currently using placeholder) */}
-                                    <img
-                                        src="/images/property.png"
-                                        alt="Property"
-                                        className="absolute inset-0 w-full h-full object-cover"
-                                    />
-                                    
-                                    {/* Overlay panel at bottom with property details */}
-                                    <div className="absolute bottom-0 left-0 w-full" style={{ height: '35%' }}>
-                                        <div className="bg-white bg-opacity-95 h-full flex flex-col justify-center px-6 py-2 shadow-lg">
-                                            {/* Rent amount and property address */}
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-bold text-gray-900">
-                                                    ${app.app_rent} per week
-                                                </span>
-                                                <span className="text-sm font-semibold text-gray-700 truncate">
-                                                    {property?.prop_address || 'Unknown address'}
-                                                </span>
-                                            </div>
-                                            
-                                            {/* Property features: beds, baths, car spots */}
-                                            <div className="flex gap-4 mt-1 text-gray-700 text-md">
-                                                <span>🛏 {property?.prop_numbeds || 0}</span>
-                                                <span>🛁 {property?.prop_numbaths || 0}</span>
-                                                <span>🚗 {property?.prop_numcarspots || 0}</span>
-                                            </div>
+                            {/* Left side: Property image with overlay information */}
+                            <div className="relative w-1/4 h-64 rounded-2xl overflow-hidden">
+                                {/* Dynamic Property Image */}
+                                {(() => {
+                                    let firstPhotoUrl;
+                                    if (property && Array.isArray(property.photo)) {
+                                        const firstNonVideoPhoto = property.photo.find((item) => {
+                                            if (typeof item === 'string') return item.trim().length > 0;
+                                            if (item && typeof item === 'object') {
+                                                const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+                                                const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+                                                return Boolean(item.url) && isNotVideo && isNotPdf;
+                                            }
+                                            return false;
+                                        });
+                                        if (typeof firstNonVideoPhoto === 'string') {
+                                            firstPhotoUrl = firstNonVideoPhoto;
+                                        } else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') {
+                                            firstPhotoUrl = firstNonVideoPhoto.url;
+                                        }
+                                    }
+                                    const imgSrc = firstPhotoUrl || '/images/default.jpg';
+                                    return (
+                                        <img
+                                            src={imgSrc}
+                                            alt="Property"
+                                            className="absolute inset-0 w-full h-full object-cover"
+                                        />
+                                    );
+                                })()}
+
+                                {/* Overlay panel at bottom with property details */}
+                                <div className="absolute bottom-0 left-0 w-full" style={{ height: '35%' }}>
+                                    <div className="bg-white bg-opacity-95 h-full flex flex-col justify-center px-6 py-2 shadow-lg">
+                                        {/* Rent amount and property address */}
+                                        <div className="flex items-center gap-2">
+                                            <span className="text-sm font-bold text-gray-900">
+                                                ${app.app_rent} per week
+                                            </span>
+                                            <span className="text-sm font-semibold text-gray-700 truncate">
+                                                {property?.prop_address || 'Unknown address'}
+                                            </span>
+                                        </div>
+                                        {/* Property features */}
+                                        <div className="flex gap-4 mt-1 text-gray-700 text-md">
+                                            <span>🛏 {property?.prop_numbeds || 0}</span>
+                                            <span>🛁 {property?.prop_numbaths || 0}</span>
+                                            <span>🚗 {property?.prop_numcarspots || 0}</span>
                                         </div>
                                     </div>
                                 </div>
-
+                            </div>
                                 {/* Right side: Application information and status */}
                                 <div className="w-3/4 p-8 bg-[#CBADD8] rounded-2xl flex flex-col justify-between">
                                     <ApplicantCard
