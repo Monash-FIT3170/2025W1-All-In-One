@@ -265,12 +265,12 @@ export const Calendar = () => {
   const handleDeleteEvent = async (evt) => {
     try {
       const kind = detectKind(evt);
+      // [CHANGE] Prevent calendar-level deletion of ticket activities
       if (kind === 'ticketActivity') {
-        await callAsync('ticketActivities.remove', evt.sourceId || evt.id);
-      } else {
-        await callAsync('agentAvailabilities.remove', evt.sourceId || evt.id);
-        // optional: await callAsync('openHouseAttendance.removeByBooking', evt.sourceId || evt.id);
+        return;
       }
+      await callAsync('agentAvailabilities.remove', evt.sourceId || evt.id);
+      // optional: await callAsync('openHouseAttendance.removeByBooking', evt.sourceId || evt.id);
       setSelectedEvent(null);
     } catch (err) {
       alert(`Failed to delete: ${err.reason || err.message}`);
@@ -470,7 +470,12 @@ export const Calendar = () => {
           event={selectedEvent}
           onClose={() => setSelectedEvent(null)}
           // 🩹 FIX: delete uses robust kind/sourceId from selectedEvent
-          onDelete={() => handleDeleteEvent(selectedEvent)}
+          // [CHANGE] Only pass onDelete for NON-ticket events (tickets can’t be deleted from calendar)
+          onDelete={
+            selectedEvent.kind !== 'ticketActivity'
+              ? () => handleDeleteEvent(selectedEvent)
+              : undefined
+          }
           onAttendanceUpdate={() => {
             if (
               selectedEvent.type === 'Open House' ||

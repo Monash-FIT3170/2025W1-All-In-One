@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { TenantBookings, Tenants, Employment } from '../../../api/database/collections';
 
-export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
+export const EventDetailModal = ({ event, onClose, onAttendanceUpdate, onDelete /* [CHANGE] accept optional onDelete from parent */ }) => {
   if (!event) return null;
 
   // Debug logging to see what data is being passed
@@ -36,6 +36,11 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
   const [draftNotes, setDraftNotes] = useState((mergedEvent.notes ?? mergedEvent.note ?? '').toString());
 
   const isBooked = mergedEvent.status === 'booked';
+
+  // [CHANGE] Identify ticket events so we can disable Edit/Delete just for tickets
+  const isTicket =
+    mergedEvent.kind === 'ticketActivity' ||
+    Boolean(mergedEvent.ticket_id || mergedEvent.ticket);
 
   function toLocalInputValue(d) {
     if (!d) return '';
@@ -87,7 +92,12 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
       }
     );
   };
+
   const handleSave = () => {
+    // [CHANGE] Block save for tickets (tickets aren’t editable here)
+    if (isTicket) {
+      return;
+    }
     Meteor.call(
       'agentAvailabilities.update',
       mergedEvent._id || mergedEvent.id,
@@ -128,8 +138,17 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
       }
     );
   };
+
   const handleDelete = () => {
     if (!window.confirm('Are you sure you want to delete this availability?')) return;
+
+    // [CHANGE] If parent provided onDelete (and this is not a ticket), use it; keeps central routing if you added it
+    if (!isTicket && typeof onDelete === 'function') {
+      onDelete();
+      return;
+    }
+
+    // Original behaviour for availabilities (kept)
     Meteor.call(
       'agentAvailabilities.remove',
       mergedEvent._id || mergedEvent.id,
@@ -167,6 +186,7 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
       }
     );
   };
+
   // --- Render for unbooked inspection: allow edit/delete ---
   if (isUnbookedInspection) {
     return (
@@ -406,29 +426,37 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
               {formatTime(startDate, endDate)}
             </p>
           ) : (
-            <div className="grid grid-cols-1 gap-3">
-              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>Start</label>
-              <input
-                type="datetime-local"
-                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
-                value={draftStart}
-                onChange={(e) => setDraftStart(e.target.value)}
-                disabled={isBooked}
-              />
-              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>End</label>
-              <input
-                type="datetime-local"
-                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
-                value={draftEnd}
-                onChange={(e) => setDraftEnd(e.target.value)}
-                disabled={isBooked}
-              />
-              {isBooked && (
-                <p className="text-xs text-gray-600 -mt-1">
-                  Time is locked for booked slots. You can still update the note below.
-                </p>
-              )}
-            </div>
+            // [CHANGE] For tickets, don’t show editable time inputs
+            !isTicket ? (
+              <div className="grid grid-cols-1 gap-3">
+                <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>Start</label>
+                <input
+                  type="datetime-local"
+                  className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
+                  value={draftStart}
+                  onChange={(e) => setDraftStart(e.target.value)}
+                  disabled={isBooked}
+                />
+                <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>End</label>
+                <input
+                  type="datetime-local"
+                  className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
+                  value={draftEnd}
+                  onChange={(e) => setDraftEnd(e.target.value)}
+                  disabled={isBooked}
+                />
+                {isBooked && (
+                  <p className="text-xs text-gray-600 -mt-1">
+                    Time is locked for booked slots. You can still update the note below.
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-600 italic">
+                {/* [CHANGE] Explanation text so users know why they can’t edit ticket times */}
+                Ticket activity time is fixed. Please manage timing from the ticket itself.
+              </div>
+            )
           )}
 
           {/* Combined Tenant Information & Attendance List */}
@@ -513,20 +541,6 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
               </div>
             )}
           </div>
-          {/*{tenantName ? (*/}
-          {/*  <div className="bg-white p-4 rounded-xl space-y-2 mt-4">*/}
-          {/*    <p className="font-semibold text-lg">{tenantName}</p>*/}
-          {/*    <p className="text-sm text-gray-600">Age: {tenantAge ?? '—'}</p>*/}
-          {/*    <p className="text-sm text-gray-600">Occupation: {occupation ?? '—'}</p>*/}
-          {/*    {booking?.status && (*/}
-          {/*      <p className="text-xs text-gray-500">Booking status: {booking.status}</p>*/}
-          {/*    )}*/}
-          {/*  </div>*/}
-          {/*) : (*/}
-          {/*  <div className="text-sm text-gray-600 mt-4 italic">*/}
-          {/*    {dataReady ? 'No tenant information.' : 'Loading tenant information...'}*/}
-          {/*  </div>*/}
-          {/*)}*/}
 
           {/* Notes */}
           {!isEditing ? (
@@ -567,40 +581,55 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
                 >
                   Cancel
                 </button>
-                <button
-                  className="px-4 py-2 rounded bg-[#9747FF] text-white"
-                  onClick={handleSave}
-                >
-                  Save
-                </button>
+                {/* [CHANGE] Hide Save for tickets */}
+                {!isTicket && (
+                  <button
+                    className="px-4 py-2 rounded bg-[#9747FF] text-white"
+                    onClick={handleSave}
+                  >
+                    Save
+                  </button>
+                )}
               </>
             ) : (
               <>
                 {/* Delete (blocked if booked) */}
-                <button
-                  className={`px-4 py-2 rounded flex items-center gap-2 ${
-                    isBooked ? 'bg-red-300 cursor-not-allowed' : 'bg-red-500 text-white'
-                  }`}
-                  onClick={handleDelete}
-                  disabled={isBooked}
-                  title={isBooked ? 'Booked slots cannot be deleted' : 'Delete this availability'}
-                >
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </button>
+                {/* [CHANGE] Hide Delete for tickets */}
+                {!isTicket && (
+                  <button
+                    className={`px-4 py-2 rounded flex items-center gap-2 ${
+                      isBooked ? 'bg-red-300 cursor-not-allowed' : 'bg-red-500 text-white'
+                    }`}
+                    onClick={handleDelete}
+                    disabled={isBooked}
+                    title={isBooked ? 'Booked slots cannot be deleted' : 'Delete this availability'}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                )}
 
                 {/* Single EDIT button */}
-                <button
-                  className="px-4 py-2 rounded flex items-center gap-2 bg-[#9747FF] text-white"
-                  onClick={() => setIsEditing(true)}
-                  title={isBooked ? 'Edit note (time locked)' : 'Edit time and note'}
-                >
-                  <Pencil className="w-4 h-4" />
-                  Edit
-                </button>
-                {isBooked && (
+                {/* [CHANGE] Hide Edit for tickets */}
+                {!isTicket && (
+                  <button
+                    className="px-4 py-2 rounded flex items-center gap-2 bg-[#9747FF] text-white"
+                    onClick={() => setIsEditing(true)}
+                    title={isBooked ? 'Edit note (time locked)' : 'Edit time and note'}
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Edit
+                  </button>
+                )}
+                {isBooked && !isTicket && (
                   <p className="text-xs text-gray-700 mt-3 italic">
                     This slot is booked. Booked slots cannot be deleted but notes are still editable.
+                  </p>
+                )}
+                {/* [CHANGE] Helper message for tickets */}
+                {isTicket && (
+                  <p className="text-xs text-gray-700 mt-3 italic">
+                    Ticket activities can’t be edited or deleted from the calendar. Update the ticket itself.
                   </p>
                 )}
               </>
