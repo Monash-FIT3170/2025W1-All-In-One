@@ -84,10 +84,27 @@ export default function DetailedLease() {
     if (!selectedProperty) return { loading: false, property: null, agent: null };
 
     // finf images
+    // Build image URLs prioritizing Cloudinary entries from property.photo
     const photos= Photos.find({ prop_id: id}).fetch();
-    const sortedUrls= photos
-    .sort((a,b)=> a.photo_order-b.photo_order)
-    .map((p) => p.photo_url);
+    const cloudinaryImageUrls = Array.isArray(selectedProperty.photo)
+      ? selectedProperty.photo
+          .filter((item) => {
+            if (typeof item === 'string') return item.trim().length > 0;
+            if (item && typeof item === 'object') {
+              const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+              const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+              return Boolean(item.url) && isNotVideo && isNotPdf;
+            }
+            return false;
+          })
+          .map((item) => (typeof item === 'string' ? item : item.url))
+      : [];
+
+    const sortedUrls = (cloudinaryImageUrls.length
+      ? cloudinaryImageUrls
+      : photos
+          .sort((a, b) => a.photo_order - b.photo_order)
+          .map((p) => p.photo_url)) || [];
 
     // get video of the property
     const videos = Videos.find({ prop_id: id }).fetch();

@@ -208,13 +208,12 @@ export const Calendar = () => {
   const handleClearButtonClick = () => setShowClearDialog(true);
 
   const handleClearConfirm = () => {
-    Meteor.call('agentAvailabilities.clear', (error) => {
+    Meteor.call('calendar.clearAll', (error) => {
       if (error) {
-        console.error('Failed to clear availabilities: ' + error.reason);
+        console.error('Failed to clear calendar: ' + error.reason);
       } else {
         setNewEvents([]);
         setShowClearDialog(false);
-        Meteor.subscribe('agentAvailabilities');
       }
     });
   };
@@ -249,6 +248,21 @@ export const Calendar = () => {
 
   const toPropertyPayload = (propDoc) => {
     if (!propDoc) return null;
+    // Prefer Cloudinary-style image URLs from propDoc.photo
+    let firstPhotoUrl = undefined;
+    if (Array.isArray(propDoc.photo)) {
+      const firstNonVideoPhoto = propDoc.photo.find((item) => {
+        if (typeof item === 'string') return item.trim().length > 0;
+        if (item && typeof item === 'object') {
+          const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+          const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+          return Boolean(item.url) && isNotVideo && isNotPdf;
+        }
+        return false;
+      });
+      if (typeof firstNonVideoPhoto === 'string') firstPhotoUrl = firstNonVideoPhoto;
+      else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') firstPhotoUrl = firstNonVideoPhoto.url;
+    }
     return {
       address: propDoc.prop_address,
       price: propDoc.prop_pricepweek,
@@ -256,7 +270,7 @@ export const Calendar = () => {
       bathrooms: propDoc.prop_numbaths,
       parking: propDoc.prop_numcarspots,
       type: propDoc.prop_type,
-      image: Array.isArray(propDoc.photo) && propDoc.photo.length ? propDoc.photo[0] : undefined,
+      image: firstPhotoUrl,
       prop_id: propDoc.prop_id,
     };
   };
@@ -494,7 +508,7 @@ export const Calendar = () => {
           Clear All
         </button>
         <p className="text-sm text-gray-800 mb-4">
-          Booked slots cannot be cleared. You can only clear unbooked availabilities.
+          Clears all availabilities and ticket activities from the calendar.
         </p>
       </div>
     </div>

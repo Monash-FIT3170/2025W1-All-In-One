@@ -37,6 +37,34 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
 
   const isBooked = mergedEvent.status === 'booked';
 
+  // Derive best image from possible Cloudinary photo arrays or direct fields
+  const derivedImage = (() => {
+    // Priority: mergedEvent.property.photo -> mergedEvent.photo -> mergedEvent.property.image -> mergedEvent.image
+    const chooseFromArray = (arr) => {
+      if (!Array.isArray(arr)) return null;
+      const firstNonVideoPhoto = arr.find((item) => {
+        if (typeof item === 'string') return item.trim().length > 0;
+        if (item && typeof item === 'object') {
+          const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+          const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+          return Boolean(item.url) && isNotVideo && isNotPdf;
+        }
+        return false;
+      });
+      if (typeof firstNonVideoPhoto === 'string') return firstNonVideoPhoto;
+      if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') return firstNonVideoPhoto.url;
+      return null;
+    };
+
+    return (
+      chooseFromArray(mergedEvent.property?.photo) ||
+      chooseFromArray(mergedEvent.photo) ||
+      mergedEvent.property?.image ||
+      mergedEvent.image ||
+      '/images/default.jpg'
+    );
+  })();
+
   function toLocalInputValue(d) {
     if (!d) return '';
     const copy = new Date(d);
@@ -341,7 +369,7 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
           </h2>
 
           <img
-            src={mergedEvent.property?.image || mergedEvent.image || '/images/default.jpg'}
+            src={derivedImage}
             alt="Property"
             className="rounded-xl mb-2 w-full h-48 object-cover"
             onError={(e) => {

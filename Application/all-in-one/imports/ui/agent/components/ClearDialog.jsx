@@ -26,9 +26,9 @@ export const ClearDialog = ({ isOpen, onConfirm, onCancel }) => {
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
       <div className="bg-white p-6 rounded-lg shadow-lg w-80 text-center">
-        <h2 className="text-xl font-bold mb-4 text-gray-800">Clear All Availabilities</h2>
-        <p className="text-black-100 mb-6">Are you sure you want to clear all availabilities?</p>
-        <p className="text-gray-600 mb-6">Note that booked slots cannot be cleared. Only unbooked slots will be cleared from the calendar.</p>
+        <h2 className="text-xl font-bold mb-4 text-gray-800">Clear Entire Calendar</h2>
+        <p className="text-black-100 mb-6">Are you sure you want to clear all availabilities and ticket activities?</p>
+        <p className="text-gray-600 mb-6">This will remove all unbooked availabilities and all ticket activities from the calendar.</p>
         <div className="flex justify-around">
           <button
             onClick={onCancel}

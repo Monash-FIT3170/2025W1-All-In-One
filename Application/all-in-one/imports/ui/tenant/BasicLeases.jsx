@@ -41,12 +41,36 @@ export default function BasicLeases() {
     }).fetch();
 
     return properties.map((property) => {
-      const photo = allPhotos.find((p) => p.prop_id === property.prop_id);
+      // Prefer Cloudinary-style URLs from property.photo if available
+      let firstPhotoUrl = null;
+      if (Array.isArray(property.photo)) {
+        const firstNonVideoPhoto = property.photo.find((item) => {
+          if (typeof item === 'string') return item.trim().length > 0;
+          if (item && typeof item === 'object') {
+            const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+            const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+            return Boolean(item.url) && isNotVideo && isNotPdf;
+          }
+          return false;
+        });
+        if (typeof firstNonVideoPhoto === 'string') {
+          firstPhotoUrl = firstNonVideoPhoto;
+        } else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') {
+          firstPhotoUrl = firstNonVideoPhoto.url;
+        }
+      }
+
+      // Fallback to Photos collection (photo_order 1)
+      if (!firstPhotoUrl) {
+        const photo = allPhotos.find((p) => p.prop_id === property.prop_id);
+        firstPhotoUrl = photo ? photo.photo_url : null;
+      }
+
       return {
         id: property.prop_id,
         location: property.prop_address,
         price: `$${property.prop_pricepweek}`,
-        image: photo ? photo.photo_url : "/default.jpg",
+        image: firstPhotoUrl || "/images/default.jpg",
         beds: property.prop_numbeds,
         baths: property.prop_numbaths,
         cars: property.prop_numcarspots,
