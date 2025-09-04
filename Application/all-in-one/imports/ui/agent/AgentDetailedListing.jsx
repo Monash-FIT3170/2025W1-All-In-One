@@ -8,7 +8,7 @@ import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, RentalApplications, Landlord,Tenants } from "../../api/database/collections"; // importing mock for now
 import EditPropertyModal from "./components/EditPropertyModal";
-import EditMediaModal from "./components/EditMediaModal";
+// import EditMediaModal from "./components/EditMediaModal";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a the agent's own assigned property listing to the agent (accessed through AgentListings) //
@@ -17,7 +17,7 @@ import EditMediaModal from "./components/EditMediaModal";
 export default function AgentDetailedListing() {
   const { id } = useParams();
   const[openEditDetails, setOpenEditDetails] = useState(false);
-  const[openEditMedia, setOpenEditMedia] = useState(false);
+  // const[openEditMedia, setOpenEditMedia] = useState(false);
 
 const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
@@ -152,10 +152,10 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
             onClick={() => setOpenEditDetails(true)}>
               Edit Property Details
             </button>
-            <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+            {/* <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
             onClick={() => setOpenEditMedia(true)}>
               Edit Photos/Videos
-            </button>
+            </button> */}
           </div>
         </div>
 
@@ -201,10 +201,10 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
       onClose={() => setOpenEditDetails(false)}
       propertyData={propertyData}/>}
 
-      {openEditMedia && <EditMediaModal
+      {/* {openEditMedia && <EditMediaModal
       isOpen={() => setOpenEditMedia(true)}
       onClose={() => setOpenEditMedia(false)}
-      propertyData={propertyData}/>}
+      propertyData={propertyData}/>} */}
 
     </div>
   );
