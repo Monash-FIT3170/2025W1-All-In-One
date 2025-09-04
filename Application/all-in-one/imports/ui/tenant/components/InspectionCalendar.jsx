@@ -54,6 +54,7 @@ export const InspectionCalendar = ({ propertyId, propertySnapshot }) => {
       id: info.event.id,
       start: info.event.start,
       end: info.event.end,
+      property: info.event.extendedProps.property,  // always an object
     });
     setShowDialog(true);
   };
@@ -62,6 +63,10 @@ export const InspectionCalendar = ({ propertyId, propertySnapshot }) => {
     if (!selectedSlot) return;
 
     const tenantId = Meteor.userId();
+    
+    // Use the actual property data from props, not from the agent's availability
+    const propertyData = property || propertySnapshot;
+    
     const bookingData = {
       agentAvailabilityId: String(selectedSlot.id),
       tenantId,
@@ -72,13 +77,20 @@ export const InspectionCalendar = ({ propertyId, propertySnapshot }) => {
         'Anonymous',
       start: new Date(selectedSlot.start),
       end: new Date(selectedSlot.end),
-
-      property: propertySnapshot && propertySnapshot.id
-        ? propertySnapshot
-        : { id: propertyId, address: '-', image: '/images/default.jpg' },
-
-      status: 'pending',
+      property: {
+        id: propertyId,
+        address: propertyData?.prop_address || 'No address available',
+        price: propertyData?.prop_pricepweek || null,
+        bedrooms: propertyData?.prop_numbeds || null,
+        bathrooms: propertyData?.prop_numbaths || null,
+        parking: propertyData?.prop_numcarspots || null,
+        image: propertyData?.photo?.[0] || '/images/default.jpg',
+      },
+      status: 'booked', 
     };
+
+    console.log("bookingData.property keys:", Object.keys(bookingData.property));
+    console.log("Property data used:", propertyData);
 
     Meteor.call('tenantBookings.insert', bookingData, (err) => {
       if (err) {

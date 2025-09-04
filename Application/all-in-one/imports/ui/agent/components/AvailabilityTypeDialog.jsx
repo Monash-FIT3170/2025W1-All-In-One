@@ -82,12 +82,12 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
 
     onSelect(type, start, end, {
       id: selected?.prop_id || null,
-      address: selected?.prop_address || property?.prop_address || '-',
+      address: selected?.prop_address || property?.prop_address || null,
       image: propertyImage,
-      price: selected?.prop_pricepweek || '-',
-      bedrooms: selected?.prop_numbeds || '-',
-      bathrooms: selected?.prop_numbaths || '-',
-      parking: selected?.prop_numcarspots || '-',
+      price: selected?.prop_pricepweek || null,
+      bedrooms: selected?.prop_numbeds || null,
+      bathrooms: selected?.prop_numbaths || null,
+      parking: selected?.prop_numcarspots || null,
       is_private: isPrivate
     }, note, selectedEOI);
   };
