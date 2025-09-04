@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 
 function EditPropertyModal({isOpen, onClose, propertyData}) {
 
-  const currLandlordEmail = (Landlord.findOneAsync({ll_id: propertyData.landlord})).ll_email;
+  const currLandlordEmail = (Landlord.findOne({_id: propertyData.landlord})).ll_email;
 
   const propId = propertyData.id;
   const status = propertyData.status;
