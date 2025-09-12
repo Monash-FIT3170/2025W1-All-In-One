@@ -306,7 +306,7 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
           </div>
           <div className="text-1xl text-gray-600">
             Pets Allowed:{" "}
-            <span className="text-gray-700">{property.prop_pets ? "Yes" : "No"}</span>
+            <span className="text-gray-700">{property.Pets ? "Yes" : "No"}</span>
           </div>
 
           {/*Icons and data associated*/}
@@ -325,7 +325,7 @@ export default function PropertyDetailsCard({ property, showSaveButton= false })
             </div>
             <div className="flex items-center gap-2">
               <FaCouch className="text-gray-600 text-lg" />
-              <span className="text-xl">{property.prop_furnish ? "Furnished" : "Unfurnished"}</span>
+              <span className="text-xl">{property.details.furnished? "Furnished" : "Unfurnished"}</span>
             </div>
           </div>
         </div>

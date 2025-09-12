@@ -82,7 +82,7 @@ export default function DetailedPropListing() {
           price:property.prop_pricepweek,
           type:property.prop_type,
           AvailableDate: property.prop_available_date,
-          Pets: property.prop_pets ? "True":"False",
+          Pets: property.prop_pets,
 
           imageUrls: imageUrlsFinal.length ? imageUrlsFinal : ["/images/default.jpg"],
 
@@ -93,7 +93,7 @@ export default function DetailedPropListing() {
           beds: property.prop_numbeds ?? "N/A",
           baths: property.prop_numbaths ?? "N/A",
           carSpots: property.prop_numcarspots ?? "N/A",
-          furnished: property.prop_furnish? "Yes":"No",
+          furnished: property.prop_furnish,
           },
           description: property.prop_desc,
           photo: property.photo,

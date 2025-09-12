@@ -40,12 +40,11 @@ function Navbar() {
   return (
     <div className="flex items-center justify-between px-6 h-[63px] bg-[#CBADD8]">
       {/* Logo linked back to agent property listings */}
-      <Link
-        to="/AgentBasicPropListing"
+      <div
         className="flex items-center gap-2 h-full"
       >
         <img src="/images/logo.png" alt="Logo" className="h-12" />
-      </Link>
+      </div>
 
       {/* Navigation bar options */}
       <div className="flex items-center gap-4">
