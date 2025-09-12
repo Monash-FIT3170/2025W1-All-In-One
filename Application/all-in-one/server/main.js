@@ -312,3 +312,14 @@ Meteor.startup(async () => {
     return Tickets.find();
   })
 });
+
+Meteor.publish("userById", function (userId) {
+  check(userId, String); // Validate input
+
+  // Only publish safe fields (never publish `services`)
+  return Meteor.users.find(
+    { _id: userId },
+    { fields: { username: 1, emails: 1, profile: 1 } }
+  );
+});
+

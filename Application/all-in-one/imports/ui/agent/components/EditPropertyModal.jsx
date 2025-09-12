@@ -1,13 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Meteor } from 'meteor/meteor';
 import {formatDate} from '../../globalComponents/DateTimeFormatting'
-import { Landlord } from '../../../api/database/collections';
+// import { Landlord } from '../../../api/database/collections';
 import { useNavigate } from 'react-router-dom';
 
 
 function EditPropertyModal({isOpen, onClose, propertyData}) {
 
-  const currLandlordEmail = (Landlord.findOne({_id: propertyData.landlord})).ll_email;
+  const subUsers = Meteor.subscribe("userById", propertyData.landlord);
+  const currLandlordEmail = (Meteor.users.findOne(propertyData.landlord)).emails[0].address;
 
   const propId = propertyData.id;
   const status = propertyData.status;

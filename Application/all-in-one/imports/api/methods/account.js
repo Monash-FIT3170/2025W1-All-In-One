@@ -51,7 +51,7 @@ Meteor.methods({
 
       
       // First, find the landlord by email
-      const landlord = await Landlord.findOneAsync({ ll_email: landlordEmail });
+      const landlord = await Accounts.findUserByEmail(landlordEmail);
       
       if (!landlord) {
         throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
@@ -101,7 +101,7 @@ Meteor.methods({
 
   async "EditPropertyListing" ({propId, propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordEmail, status, agentId}) {
       
-    const landlord = await Landlord.findOneAsync({ ll_email: landlordEmail });
+    const landlord = await Accounts.findUserByEmail(landlordEmail);
       
     if (!landlord) {
       throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
