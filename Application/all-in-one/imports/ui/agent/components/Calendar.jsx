@@ -21,6 +21,7 @@ import {
   TicketActivities,
   Tickets,
   Properties,
+  OtherActivities
 } from '../../../api/database/collections';
 
 import { ClearDialog } from './ClearDialog.jsx';
@@ -29,6 +30,7 @@ import { ActivityTypeDialog } from './ActivityTypeDialog.jsx';
 import { EventDetailModal } from './EventDetailModal.jsx';
 import { TicketTypeDialog } from './TicketTypeDialog.jsx';
 import { TicketActivityDialog } from './TicketActivityDialog.jsx';
+import { OtherActivityDialog } from './OtherActivityDialog.jsx';
 
 const callAsync = (methodName, ...args) =>
   new Promise((resolve, reject) => {
@@ -57,6 +59,7 @@ export const Calendar = () => {
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
+  const [showOtherActivityDialog, setShowOtherActivityDialog] = useState(false);
 
   // ticket flow state
   const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false);
@@ -76,6 +79,7 @@ export const Calendar = () => {
     setPendingSlot(null);
     setSelectedEvent(null);
     setSelectedTicketForActivity(null);
+    setShowOtherActivityDialog(false);
   };
 
   const closeTicketPicker = () => setShowTicketTypeDialog(false);
@@ -132,6 +136,7 @@ export const Calendar = () => {
     setShowActivityTypeDialog(false);
     if (activity_type === 'Availability') setShowAvailabilityTypeDialog(true);
     else if (activity_type === 'Ticket') setShowTicketTypeDialog(true);
+    else if (activity_type === 'Other') setShowOtherActivityDialog(true); 
   };
 
   const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note, eoi) => {
@@ -245,6 +250,26 @@ export const Calendar = () => {
     setShowTicketActivityDialog(false);
     setPendingSlot(null);
   };
+
+  const handleCreateOtherActivity = async ({ start, end, title, notes }) => {
+    try {
+      await callAsync(
+        'otherActivities.insert',
+        Meteor.userId() || '',
+        start.toISOString(),
+        end.toISOString(),
+        String(title),
+        String(notes),
+      );
+    } catch (err) {
+      alert('Failed to save other activity: ' + (err.reason || err.message));
+      console.error(err);
+      return;
+    }
+
+    setShowOtherActivityDialog(false);
+    setPendingSlot(null);
+  }
 
   const toPropertyPayload = (propDoc) => {
     if (!propDoc) return null;
@@ -477,7 +502,14 @@ export const Calendar = () => {
           }}
           onClose={() => setShowTicketActivityDialog(false)}
         />
+
+        <OtherActivityDialog
+          isOpen={showOtherActivityDialog}
+          pendingSlot={pendingSlot}
+          onSelect={handleCreateOtherActivity}
+          onClose={closeDialogs}/>
       </div>
+
 
       {selectedEvent && (
         <EventDetailModal
