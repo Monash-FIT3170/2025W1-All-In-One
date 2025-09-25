@@ -249,7 +249,9 @@ export const AvailabilityTypeDialog = ({ isOpen, pendingSlot, onSelect, onClose 
                 <input
                   id="privateOpenHouse"
                   type="checkbox"
+                  checked={isPrivate}
                   onChange={(e) => setIsPrivate(e.target.checked)}
+                  disabled={!selectedEOI} // 👈 disable until an EOI is selected
                   className="rounded-lg border-gray-300"
                 />
                 <label htmlFor="privateOpenHouse" className="text-left">
