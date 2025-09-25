@@ -3,6 +3,7 @@ import { Calendar } from './components/Calendar.jsx';
 import { Mail, BedDouble, ShowerHead, CarFront } from 'lucide-react';
 import { mockData } from '/imports/api/database/mockData.js';
 import AgentNavbar from './components/AgentNavbar.jsx';
+import KPISection from './components/KPISection.jsx';
 
 /**
  * AgentDashboard Component
@@ -64,13 +65,24 @@ const AgentDashboard = () => {
     };
   });
 
+  // KPI placeholders
+  const kpis = [
+    { label: 'Pending EOIs', value: '12', actionLabel: 'View EOIs', onAction: () => console.log('View EOIs clicked') },
+    { label: 'Unscheduled Inspections', value: '7' },
+    { label: 'Unbooked Availabilities', value: '15' },
+    { label: 'Unresolved Tickets', value: '4', actionLabel: 'View Tickets', onAction: () => console.log('View Tickets clicked') },
+  ];
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20">
       {/* Navigation bar for agent interface */}
       <AgentNavbar />
 
+      {/* KPI Section */}
+      <KPISection kpis={kpis} />
+
       {/* Calendar Section - Displays scheduling and appointment information */}
-      <div className="mt-20">
+      <div className="mt-10">
         <Calendar />
       </div>
 
