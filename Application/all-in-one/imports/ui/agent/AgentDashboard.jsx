@@ -1,9 +1,13 @@
 import React from 'react';
+import { Meteor } from 'meteor/meteor';
 import { Calendar } from './components/Calendar.jsx';
 import { Mail, BedDouble, ShowerHead, CarFront } from 'lucide-react';
 import { mockData } from '/imports/api/database/mockData.js';
 import AgentNavbar from './components/AgentNavbar.jsx';
 import KPISection from './components/KPISection.jsx';
+import { useTracker } from 'meteor/react-meteor-data';
+import { ExpressionOfInterest, Properties } from '/imports/api/database/collections.js';
+
 
 /**
  * AgentDashboard Component
@@ -65,9 +69,30 @@ const AgentDashboard = () => {
     };
   });
 
+  // reactive count of pending EOIs
+  const pendingEOICount = useTracker(() => {
+    // subscribe to collections 
+    Meteor.subscribe('expressionOfInterest');
+    Meteor.subscribe('properties');
+
+    // get this agent’s ID (depends on your login setup)
+    const agentId = Meteor.userId();
+
+    // find properties belonging to this agent
+    const agentProps = Properties.find({ agent_id: agentId }).map(p => p.prop_id);
+
+    // count EOIs for those properties that are still pending
+    return ExpressionOfInterest.find({
+      propertyID: { $in: agentProps },
+      $or: [
+        { inviteSent: false }
+      ]
+  }).count();
+  }, []);
+
   // KPI placeholders
   const kpis = [
-    { label: 'Pending EOIs', value: '12', actionLabel: 'View EOIs', onAction: () => console.log('View EOIs clicked') },
+    { label: 'Pending EOIs', value: pendingEOICount, actionLabel: 'View EOIs', onAction: () => console.log('View EOIs clicked') },
     { label: 'Unscheduled Inspections', value: '7' },
     { label: 'Unbooked Availabilities', value: '15' },
     { label: 'Unresolved Tickets', value: '4', actionLabel: 'View Tickets', onAction: () => console.log('View Tickets clicked') },
