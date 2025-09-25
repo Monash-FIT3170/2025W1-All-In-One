@@ -8,7 +8,7 @@ import KPISection from './components/KPISection.jsx';
 import { useTracker } from 'meteor/react-meteor-data';
 import { ExpressionOfInterest, Properties } from '/imports/api/database/collections.js';
 import { Tickets } from '/imports/api/database/collections.js';
-
+import { AgentAvailabilities } from '/imports/api/database/collections.js';
 
 /**
  * AgentDashboard Component
@@ -103,12 +103,26 @@ const AgentDashboard = () => {
   }).count();
   }, []);
 
+  const unbookedAvailabilitiesCount = useTracker(() => {
+    const subAvail = Meteor.subscribe('agentAvailabilities');
+    if (!subAvail.ready()) return 0;
+
+    const agentId = Meteor.userId();
+
+    return AgentAvailabilities.find({
+      agent_id: agentId,
+      $or: [
+        { tenant: { $exists: false } },
+        { tenant: null }
+      ]
+  }).count();
+}, []);
 
   // KPI
   const kpis = [
     { label: 'Pending EOIs', value: pendingEOICount, actionLabel: 'View EOIs', onAction: () => console.log('View EOIs clicked') },
     { label: 'Unscheduled Inspections', value: '7' },
-    { label: 'Unbooked Availabilities', value: '15' },
+    { label: 'Unbooked Availabilities', value: unbookedAvailabilitiesCount },
     { label: 'Unresolved Tickets', value: unresolvedTicketsCount, actionLabel: 'View Tickets', onAction: () => console.log('View Tickets clicked') },
   ];
 
