@@ -6,31 +6,33 @@ import Footer from "./Footer.jsx";
 import PropertyDetailsCard from "./PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, AgentAvailabilities } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, AgentAvailabilities, Agents } from "../../api/database/collections"; 
 import { Link } from "react-router-dom";
 import GuestOpenHouseModal from "./GuestOpenHouseModal.jsx";
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-// This page will display the details of a listed property (accessed through TenantBasicPropListing) //
+// This page will display the details of a listed property (accessed through GuestBasicPropListing) ///
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 export default function DetailedPropListing() {
   const { id } = useParams();
   const[openModal, setOpenModal] = useState(false);
 
-  const { isReady, property, photos, videos, openHouses }=  useTracker(()=>{
+  const { isReady, property, photos, videos, openHouses, agent }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
     const subPhotos= Meteor.subscribe("photos");
     const subVideos= Meteor.subscribe("videos");
     const subAvailabilities = Meteor.subscribe("agentAvailabilities");
+    const subAgents= Meteor.subscribe("agents");
     
-    const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subAvailabilities.ready();
+    const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subAvailabilities.ready() && subAgents.ready();
   
     let property= null;
     let photos= [];
     let videos=[];
     let openHouses = [];
-  
+    let agent= null;
+
     // find property, photos and videos corresponding to the property ID passed.
     if (isReady){
       property= Properties.findOne({prop_id: id});
@@ -38,9 +40,12 @@ export default function DetailedPropListing() {
       videos= Videos.find({prop_id: id}).fetch();
       openHouses = AgentAvailabilities.find({type: "Open House"}).fetch()
       openHouses = openHouses.filter((p) => p.property.address === property.prop_address)
+      if (property?.agent_id){
+        agent= Agents.findOne({agent_id: property.agent_id});
+      }
     }
   
-    return {isReady, property, photos, videos, openHouses};
+    return {isReady, property, photos, videos, openHouses, agent};
   }, [id]);
     
   if (!isReady){
@@ -51,25 +56,48 @@ export default function DetailedPropListing() {
     return (<div className="min-h-screen flex items-center justify-center text-xl text-red-600">Property Not Found!</div>);
   }
     
-  // data passed on to propertyDetailsCard
-  const propertyData= {
-    id: property.prop_id,
-    address: property.prop_address,
-    price:property.prop_pricepweek,
-    type:property.prop_type,
-    AvailableDate: property.prop_available_date,
-    Pets: property.prop_pets ? "True":"False",
-    imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
-    videoUrls: videos.length ? videos.map((video) => video.video_url) : [],
-    details:{
-      beds: property.prop_numbeds ?? "N/A",
-      baths: property.prop_numbaths ?? "N/A",
-      carSpots: property.prop_numcarspots ?? "N/A",
-      furnished: property.prop_furnish? "Yes":"No",
-    },
-    description: property.prop_desc,
-    };
+      // Build image URLs from property.photo (Cloudinary) with fallback to Photos
+      const imageUrlsFromProperty = Array.isArray(property.photo)
+        ? property.photo
+            .filter((item) => {
+              if (typeof item === 'string') return item.trim().length > 0;
+              if (item && typeof item === 'object') {
+                const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+                const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+                return Boolean(item.url) && isNotVideo && isNotPdf;
+              }
+              return false;
+            })
+            .map((item) => (typeof item === 'string' ? item : item.url))
+        : [];
 
+      const imageUrlsFinal = (imageUrlsFromProperty.length
+        ? imageUrlsFromProperty
+        : (photos.length ? photos.map((photo) => photo.photo_url) : [])) || [];
+
+      // data passed on to propertyDetailsCard
+      const propertyData= {
+          id: property.prop_id,
+          address: property.prop_address,
+          price:property.prop_pricepweek,
+          type:property.prop_type,
+          AvailableDate: property.prop_available_date,
+          Pets: property.prop_pets,
+
+          imageUrls: imageUrlsFinal.length ? imageUrlsFinal : ["/images/default.jpg"],
+
+          photo: property.photo || [],
+
+          videoUrls: videos.length ? videos.map((video) => video.video_url) : [],
+          details:{
+          beds: property.prop_numbeds ?? "N/A",
+          baths: property.prop_numbaths ?? "N/A",
+          carSpots: property.prop_numcarspots ?? "N/A",
+          furnished: property.prop_furnish,
+          },
+          description: property.prop_desc,
+          photo: property.photo,
+        };
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
@@ -79,18 +107,12 @@ export default function DetailedPropListing() {
       <div className="max-w-7xl mx-auto w-full px-6">
         <PropertyDetailsCard property={propertyData} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
-          
+
           <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
           onClick={() => setOpenModal(true)}
-          key={propertyData}>
+          key={property}>
             Open House Availabilities
           </button>
-
-          <Link
-          to={`/login`}
-          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-          >Book Inspection 
-          </Link>
 
           <Link
           to={`/login`} 
@@ -110,6 +132,19 @@ export default function DetailedPropListing() {
           {propertyData.description}
         </p>
       </div>
+
+      {/* Agent Information */}
+      {agent && (
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
+          <h3 className="text-xl font-semibold mb-4">Agent Information</h3>
+          <p>
+            <span className="text-1xl text-gray-700">Name: </span> {agent.agent_fname} {agent.agent_lname}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Email: </span> {agent.agent_email}
+          </p>
+        </div>
+      )}
 
       {/*Footer*/}
       <Footer />

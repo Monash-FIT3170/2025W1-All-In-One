@@ -34,3 +34,4 @@ export const ActivityTypeDialog = ({ isOpen, onSelect, onClose }) => {
     </div>
   );
 };
+

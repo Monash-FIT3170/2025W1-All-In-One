@@ -100,28 +100,6 @@ export const mockData = {
       ten_role: 'Tenant',
       ten_dob: new Date('1990-05-15'),
       prop_id: 'P001'
-    },
-    {
-      ten_id: 'T002',
-      ten_fn: 'Bob',
-      ten_ln: 'Lee',
-      ten_email: 'bob.lee@example.com',
-      ten_pn: '0412340000',
-      ten_pfp: '/images/tenants/bob.jpg',
-      ten_role: 'Tenant',
-      ten_dob: new Date('1988-11-23'),
-      prop_id: 'P002'
-    },
-    {
-      ten_id: 'T003',
-      ten_fn: 'Emma',
-      ten_ln: 'Wilson',
-      ten_email: 'emma.wilson@example.com',
-      ten_pn: '0423456789',
-      ten_pfp: '/images/tenants/emma.jpg',
-      ten_role: 'Tenant',
-      ten_dob: new Date('1995-03-10'),
-      prop_id: 'P003'
     }
   ],
 
@@ -135,26 +113,6 @@ export const mockData = {
       ll_password: 'hashedpassword1',
       ll_pfp: '/images/landlords/john.jpg',
       prop_id: 'P001'
-    },
-    {
-      ll_id: 'L002',
-      ll_fn: 'Sarah',
-      ll_ln: 'Johnson',
-      ll_email: 'sarah.j@example.com',
-      ll_pn: '0400000002',
-      ll_password: 'hashedpassword2',
-      ll_pfp: '/images/landlords/sarah.jpg',
-      prop_id: 'P002'
-    },
-    {
-      ll_id: 'L003',
-      ll_fn: 'Michael',
-      ll_ln: 'Brown',
-      ll_email: 'michael.b@example.com',
-      ll_pn: '0400000003',
-      ll_password: 'hashedpassword3',
-      ll_pfp: '/images/landlords/michael.jpg',
-      prop_id: 'P003'
     }
   ],
 
@@ -166,14 +124,6 @@ export const mockData = {
       agent_ph: '0400000004',
       agent_email: 'david.w@example.com',
       agent_password: 'hashedpassword4'
-    },
-    {
-      agent_id: 'A002',
-      agent_fname: 'Lisa',
-      agent_lname: 'Chen',
-      agent_ph: '0400000005',
-      agent_email: 'lisa.c@example.com',
-      agent_password: 'hashedpassword5'
     }
   ],
 
@@ -191,21 +141,6 @@ export const mockData = {
       status: 'Pending',
       household_pets: false,
       emergency_contact_id: 'EC001'
-    },
-    {
-      rental_app_id: 'RA002',
-      prop_id: 'P002',
-      rental_app_prop_inspected: false,
-      lease_start_date: new Date('2025-07-15'),
-      lease_term: '6 months',
-      app_rent: 650,
-      app_desc: 'Relocating for work, interested in short-term lease.',
-      ten_id: 'T002',
-      employment_id: 'E002',
-      status: 'Approved',
-      household_pets: true,
-      pet_description : "2 Dogs",
-      emergency_contact_id: 'EC002'
     }
   ],
 
@@ -218,24 +153,6 @@ export const mockData = {
       emp_job_title: 'Software Developer',
       emp_start_date: new Date('2023-02-01'),
       emp_verification: 'verified'
-    },
-    {
-      employment_id: 'E002',
-      ten_id: 'T002',
-      emp_type: 'Part-Time',
-      emp_comp: 'Seaside Creative Agency',
-      emp_job_title: 'Graphic Designer',
-      emp_start_date: new Date('2023-08-15'),
-      emp_verification: 'verified'
-    },
-    {
-      employment_id: 'E003',
-      ten_id: 'T003',
-      emp_type: 'Full-Time',
-      emp_comp: 'Healthcare Solutions',
-      emp_job_title: 'Nurse',
-      emp_start_date: new Date('2022-05-10'),
-      emp_verification: 'pending'
     }
   ],
 
@@ -252,19 +169,6 @@ export const mockData = {
       address_reference_email: 'prev.landlord@example.com',
       address_reference_number: '0400000006',
       address_status: 'Verified'
-    },
-    {
-      address_id: 'AD002',
-      rental_app_id: 'RA002',
-      address_address: '456 Old Ave, Sydney NSW 2000',
-      address_movein: new Date('2019-06-01'),
-      address_moveout: new Date('2025-06-30'),
-      address_ownership: 'Rented',
-      address_reference_type: 'Previous Landlord',
-      address_reference_name: 'Old Landlord Name',
-      address_reference_email: 'old.landlord@example.com',
-      address_reference_number: '0400000007',
-      address_status: 'Verified'
     }
   ],
 
@@ -275,29 +179,10 @@ export const mockData = {
       inc_type: 'Salary',
       inc_amt: 85000,
       inc_supporting_doc: '/documents/income/T001/salary.pdf'
-    },
-    {
-      inc_id: 'INC002',
-      rental_app_id: 'RA002',
-      inc_type: 'Freelance',
-      inc_amt: 65000,
-      inc_supporting_doc: '/documents/income/T002/freelance.pdf'
     }
   ],
 
   identities: [
-    {
-      identity_id: 'ID001',
-      rental_app_id: 'RA001',
-      identity_type: 'Passport',
-      identity_scan: '/documents/identity/T001/passport.pdf'
-    },
-    {
-      identity_id: 'ID002',
-      rental_app_id: 'RA002',
-      identity_type: 'Driver License',
-      identity_scan: '/documents/identity/T002/license.pdf'
-    }
   ],
 
   households: [
@@ -306,18 +191,7 @@ export const mockData = {
       rental_app_id: 'RA001',
       occupant_name: 'Alice Smith',
       occupant_age: 33
-    },
-    {
-      occupant_id: 'H002',
-      rental_app_id: 'RA001',
-      occupant_name: 'Partner Name',
-      occupant_age: 31
-    },
-    {
-      occupant_id: 'H003',
-      rental_app_id: 'RA002',
-      occupant_name: 'Bob Lee',
-      occupant_age: 35
     }
   ]
 }; 
+

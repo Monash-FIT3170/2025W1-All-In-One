@@ -6,8 +6,9 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, RentalApplications, Landlord } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, RentalApplications, Landlord,Tenants } from "../../api/database/collections"; // importing mock for now
 import EditPropertyModal from "./components/EditPropertyModal";
+// import EditMediaModal from "./components/EditMediaModal";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a the agent's own assigned property listing to the agent (accessed through AgentListings) //
@@ -15,22 +16,25 @@ import EditPropertyModal from "./components/EditPropertyModal";
 
 export default function AgentDetailedListing() {
   const { id } = useParams();
-  const[openModal, setOpenModal] = useState(false);
-  
-const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useTracker(()=>{
+  const[openEditDetails, setOpenEditDetails] = useState(false);
+  // const[openEditMedia, setOpenEditMedia] = useState(false);
+
+const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
         const subPhotos= Meteor.subscribe("photos");
         const subApps= Meteor.subscribe("rentalApplications");
         const subVideos = Meteor.subscribe("videos");
         const subLandlords = Meteor.subscribe("landlords");
+        const subTenants = Meteor.subscribe("tenants");
     
-        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready() && subLandlords.ready();
+        const isReady= subProps.ready() && subPhotos.ready() && subVideos.ready() && subApps.ready() && subLandlords.ready() && subTenants.ready();
   
         let property= null;
         let photos= [];
         let videos = [];
         let approvedLeaseStart=null;
         let landlord = null;
+        let tenant = null;
   
         // find property, photos and videos corresponding to the property ID passed.     
         if (isReady){
@@ -40,14 +44,17 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
         }
 
         
-        if (property && property.prop_status==="Leased"){
+        if (property){
           const approvedApp= RentalApplications.findOne({
             prop_id: id,
-            status: "Approved",
+            landLordFinal: "Approved",
           });
 
           if (approvedApp && approvedApp.lease_start_date){
             approvedLeaseStart= approvedApp.lease_start_date;
+
+            // Fetch tenant linked to approved application
+        tenant = Tenants.findOne({ ten_id: approvedApp.ten_id });
           }
         }
 
@@ -63,7 +70,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
                   landlord = Landlord.findOne({ ll_id: property.landlord_id });
                 }
   
-        return {isReady, property, photos, videos, approvedLeaseStart, landlord};
+        return {isReady, property, photos, videos, approvedLeaseStart, landlord, tenant};
   
     
       }, [id]);
@@ -77,6 +84,26 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
       }
 
 
+      // derive image URLs from property.photo (Cloudinary) with fallback to Photos collection
+      const imageUrlsFromProperty = Array.isArray(property.photo)
+        ? property.photo
+            .filter((item) => {
+              if (typeof item === 'string') return item.trim().length > 0;
+              if (item && typeof item === 'object') {
+                const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+                const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+                return Boolean(item.url) && isNotVideo && isNotPdf;
+              }
+              return false;
+            })
+            .map((item) => (typeof item === 'string' ? item : item.url))
+        : [];
+
+      const imageUrlsFinal = (imageUrlsFromProperty.length
+        ? imageUrlsFromProperty
+        : (photos.length ? photos.map((photo) => photo.photo_url) : []))
+        || [];
+
       // data passed on to propertyDetailsCard
       const propertyData= {
           id: property.prop_id,
@@ -87,7 +114,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
           leaseStartDate: approvedLeaseStart,
           AvailableDate: property.prop_available_date,
           Pets: property.prop_pets,
-          imageUrls: photos.length? photos.map((photo)=>photo.photo_url):["/images/default.jpg"],
+          imageUrls: imageUrlsFinal.length ? imageUrlsFinal : ["/images/default.jpg"],
           videoUrls: videos.length ? videos.map((video) => video.video_url) : null,
           details:{
           beds: property.prop_numbeds ?? "N/A",
@@ -96,9 +123,9 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
           furnished: property.prop_furnish,
           },
           description: property.prop_desc,
+          photo: property.photo,
           bond: property.prop_bond,
           landlord: property.landlord_id,
-
         };
 
 
@@ -120,19 +147,23 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
         </p>
 
         <div className="mt-4 w-full flex justify-center">
-          <div className="w-[1220px] px-4 py-3 flex justify-center rounded-lg">
+          <div className="w-[1220px] px-4 py-3 flex justify-center rounded-lg gap-4">
             <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
-            onClick={() => setOpenModal(true)}>
+            onClick={() => setOpenEditDetails(true)}>
               Edit Property Details
             </button>
+            {/* <button className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"
+            onClick={() => setOpenEditMedia(true)}>
+              Edit Photos/Videos
+            </button> */}
           </div>
         </div>
 
       </div>
 
-      {/* Agent information */}
+      {/* Landlord information */}
       {landlord && (
-        <div className="max-w-7xl max-auto p-6 mt-4 rounded shadow-md text-gray-800">
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
           <h3 className="text-xl font-semibold mb-4">Landlord Information</h3>
           <p>
             <span className="text-1xl text-gray-700">Name: </span> {landlord.ll_fn} {landlord.ll_ln}
@@ -146,13 +177,35 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord }=  useT
         </div>
       )}
 
+      {/* Tenant Information */}
+{tenant && (
+  <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
+    <h3 className="text-xl font-semibold mb-4">Tenant Information</h3>
+    <p>
+      <span className="font-medium">Name: </span> {tenant.ten_fn} {tenant.ten_ln}
+    </p>
+    <p>
+      <span className="font-medium">Email: </span> {tenant.ten_email}
+    </p>
+    <p>
+      <span className="font-medium">Phone: </span> {tenant.ten_pn}
+    </p>
+  </div>
+)}
+
       {/*Footer*/}
       <Footer />
 
-      {openModal && <EditPropertyModal
-      isOpen={() => setOpenModal(true)}
-      onClose={() => setOpenModal(false)}
+      {openEditDetails && <EditPropertyModal
+      isOpen={() => setOpenEditDetails(true)}
+      onClose={() => setOpenEditDetails(false)}
       propertyData={propertyData}/>}
+
+      {/* {openEditMedia && <EditMediaModal
+      isOpen={() => setOpenEditMedia(true)}
+      onClose={() => setOpenEditMedia(false)}
+      propertyData={propertyData}/>} */}
+
     </div>
   );
 }

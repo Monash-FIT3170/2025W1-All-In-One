@@ -44,7 +44,7 @@ Meteor.methods({
 
         const result = await OpenHouseAttendance.updateAsync(
           { bookingID: book_id }, 
-          { $push: {attendanceList: {tenantID: ten_id, tenantName: ten_name, tenantAttendance: attendance }}
+          { $push: {attendanceList: {tenantID: ten_id, tenantName: ten_name, tenantAttendance: attendance, notes: '' }}
         });
         
       console.log(`[SERVER] Added tenant to attendance list ${result}`);
@@ -54,6 +54,60 @@ Meteor.methods({
         console.error('[SERVER ERROR] openHouseAttendance.addTenant:', err);
         throw new Meteor.Error('update-failed', err.message);
       }
+  },
+
+  // Add an unregistered attendee with first and last name
+  async 'openHouseAttendance.addAnonymousAttendee' (
+    book_id, first_name, last_name
+  ) {
+    try {
+      check(book_id, String);
+      check(first_name, String);
+      check(last_name, String);
+
+      const fullName = `${first_name} ${last_name}`.trim();
+      const generatedId = `anon_${Date.now()}`;
+
+      const result = await OpenHouseAttendance.updateAsync(
+        { bookingID: book_id },
+        { $push: { attendanceList: { tenantID: generatedId, tenantName: fullName, tenantAttendance: false, notes: '' } } }
+      );
+
+      return { tenantID: generatedId, tenantName: fullName, ok: result };
+    } catch (err) {
+      console.error('[SERVER ERROR] openHouseAttendance.addAnonymousAttendee:', err);
+      throw new Meteor.Error('update-failed', err.message);
+    }
+  },
+
+  // Update notes for an attendee
+  async 'openHouseAttendance.updateNotes' (
+    book_id, ten_id, notes
+  ) {
+    try {
+      check(book_id, String);
+      check(ten_id, String);
+      check(notes, String);
+
+      const attendanceRecord = await OpenHouseAttendance.findOneAsync({ bookingID: book_id });
+      if (!attendanceRecord) {
+        throw new Meteor.Error('not-found', 'Attendance record not found');
+      }
+      const tenantIndex = attendanceRecord.attendanceList.findIndex(t => t.tenantID === ten_id);
+      if (tenantIndex === -1) {
+        throw new Meteor.Error('not-found', 'Tenant not found in attendance list');
+      }
+
+      const result = await OpenHouseAttendance.updateAsync(
+        { bookingID: book_id },
+        { $set: { [`attendanceList.${tenantIndex}.notes`]: notes } }
+      );
+
+      return result;
+    } catch (err) {
+      console.error('[SERVER ERROR] openHouseAttendance.updateNotes:', err);
+      throw new Meteor.Error('update-failed', err.message);
+    }
   },
 
   async 'openHouseAttendance.toggleAttendance' (
@@ -66,13 +120,35 @@ Meteor.methods({
         check(book_id, String);
         check(ten_id, String);
 
+        // First, find the current attendance record to get the current value
+        const attendanceRecord = await OpenHouseAttendance.findOneAsync({ 
+          bookingID: book_id 
+        });
+        
+        if (!attendanceRecord) {
+          throw new Meteor.Error('not-found', 'Attendance record not found');
+        }
+
+        // Find the specific tenant in the attendance list
+        const tenantIndex = attendanceRecord.attendanceList.findIndex(
+          tenant => tenant.tenantID === ten_id
+        );
+        
+        if (tenantIndex === -1) {
+          throw new Meteor.Error('not-found', 'Tenant not found in attendance list');
+        }
+
+        // Toggle the attendance value
+        const newAttendanceValue = !attendanceRecord.attendanceList[tenantIndex].tenantAttendance;
+        
+        // Update using the array index
         const result = await OpenHouseAttendance.updateAsync(
-          { bookingID: book_id, 'attendanceList.$.tenantID': ten_id }, 
-          { $bit: {tenantAttendance: {xor: 1} } }
+          { bookingID: book_id }, 
+          { $set: { [`attendanceList.${tenantIndex}.tenantAttendance`]: newAttendanceValue } }
         );
 
-      console.log(`[SERVER] Toggle tenant attendance ${result}`);
-      return result;
+        console.log(`[SERVER] Toggle tenant attendance ${result}, new value: ${newAttendanceValue}`);
+        return result;
 
       } catch (err) {
         console.error('[SERVER ERROR] openHouseAttendance.toggleAttendance:', err);

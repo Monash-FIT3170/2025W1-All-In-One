@@ -52,7 +52,7 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
       bookingID: openHouse_id});
     
     if (attendanceList.attendanceList.find( ten => ten.tenantID === tenant_id)){
-      alert('You have already signed up for this open house')
+      alert(`You have already joined the following Open House:\n\n*** ${formatDisplayDate(attendanceList.start)} at ${formatTime(attendanceList.start, attendanceList.end)} ***`);
       return;
     }
     
@@ -65,8 +65,38 @@ function UpcomingOpenHouseModal({isOpen, onClose, propertyData, openHouses}) {
         if (err) {
           alert("Adding Tenant to List Failed: " + err.reason);
         }
+      }
+    );
+
+    /* Adding to Tenant Bookings */
+    const property = {
+      id: propertyData.id,
+      address: propertyData.address,
+      price:  propertyData.price,
+      bedrooms: propertyData.details.beds,
+      bathrooms: propertyData.details.baths,
+      parking: propertyData.details.carSpots,
+      image: propertyData.imageUrls[0],
+    }
+    const bookingData = {
+      agentAvailabilityId: openHouse_id,
+      tenantName: tenantFullName,
+      tenantId: tenant_id,
+      start: new Date(attendanceList.start),
+      end: new Date(attendanceList.end),
+      property: property,
+      status: "Booked"
+    }
+    Meteor.call(
+      'tenantBookings.insert', 
+        bookingData
+      ,
+      (err) => {
+        if (err) {
+          alert("Adding Tenant Booking Failed: " + err.reason);
+        }
         else {
-          alert("Tenant Successfully Added!");
+alert(`You have successfully joined the following Open House:\n\n*** ${formatDisplayDate(attendanceList.start)} at ${formatTime(attendanceList.start, attendanceList.end)} ***`);
           onClose();
         }
       }

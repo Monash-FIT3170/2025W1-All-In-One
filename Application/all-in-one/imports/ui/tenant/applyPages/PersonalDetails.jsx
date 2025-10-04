@@ -158,3 +158,4 @@ const PersonalDetails = ({ propId, tenId}) => {
 };
 
 export default PersonalDetails;
+

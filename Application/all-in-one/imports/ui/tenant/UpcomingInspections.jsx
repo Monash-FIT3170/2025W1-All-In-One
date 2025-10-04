@@ -29,7 +29,7 @@ export const UpcomingInspections = () => {
 
   // Subscribe to data
   const { availabilities, properties, agents, photos, isReady } = useTracker(() => {
-    const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
+    const availabilitiesHandle = Meteor.subscribe('allAvailableInspections');
     const propertiesHandle = Meteor.subscribe('properties');
     const agentsHandle = Meteor.subscribe('agents');
     const photosHandle = Meteor.subscribe('photos');
@@ -303,10 +303,10 @@ export const UpcomingInspections = () => {
             <div className="text-gray-400 mb-4">
               <Search size={48} className="mx-auto" />
             </div>
-            <h3 className="text-xl font-medium text-gray-600 mb-2">No upcoming inspections found</h3>
+            <h3 className="text-xl font-medium text-gray-600 mb-2">No upcoming inspections or open houses found</h3>
             <p className="text-gray-500">
               {availabilities.length === 0 
-                ? "You haven't booked any inspections yet" 
+                ? "There are no available inspections or openhouses" 
                 : "Try adjusting your search or filter criteria"
               }
             </p>

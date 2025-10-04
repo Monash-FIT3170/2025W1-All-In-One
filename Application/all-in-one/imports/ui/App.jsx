@@ -2,11 +2,11 @@
 import React from 'react';
 import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './globalComponents/LoginPage.jsx';
-import { HomePage } from './globalComponents/HomePage.jsx'; 
+import { HomePage } from './globalComponents/HomePage.jsx';
 import { SignUpPage } from './globalComponents/SignUpPage.jsx';
 
 
-import ProtectedAgentRoutes from './utils/ProtectedAgentRoutes.jsx'; 
+import ProtectedAgentRoutes from './utils/ProtectedAgentRoutes.jsx';
 import ProtectedLandlordRoutes from './utils/ProtectedLandlordRoutes.jsx';
 import ProtectedTenantRoutes from './utils/ProtectedTenantRoutes.jsx';
 
@@ -23,6 +23,9 @@ import Apply from './tenant/TenantApply.jsx';
 import { PropertyListing } from './tenant/PropertyListing.jsx';
 import { InspectionBooking } from './tenant/InspectionBooking.jsx';
 import TenantApplications from './tenant/TenantApplications.jsx';
+
+import TenantSettings from './tenant/Settings.jsx';
+
 import { UpcomingInspections } from './tenant/UpcomingInspections.jsx';
 
 // importing agent pages
@@ -33,21 +36,30 @@ import AgentDetailedPropListing from "./agent/AgentDetailedPropListing.jsx"
 import AgentListings from "./agent/AgentListings.jsx"
 import ReviewApplication from "./agent/AgentReviewApplication.jsx"
 import AgentDashboard from './agent/AgentDashboard.jsx';
+import EditPropertyDetails from './agent/EditPropertyDetails.jsx';
 
+import ViewApplication from "./globalComponents/ViewApplication.jsx";
 // importing landlord pages
 import LandlordBasicPropListings from "./landlord/LandlordBasicPropListings.jsx";
 import LandlordDetailedProp from "./landlord/LandLordDetailedProp.jsx";
 import LandlordDetailedPropListing from "./landlord/LandlordDetailedPropListing.jsx";
 import LandlordProperties from "./landlord/LandlordProperties.jsx";
+import LandlordReviewApplication from "./landlord/LandlordReviewApplication.jsx";
+
+import UploadImage from './UploadImage.jsx';
+import MultiFileUpload from './MultiFileUpload.jsx';
 
 const App = () => (
   <BrowserRouter>
     <div>
       <Routes>
+
+        <Route path="/U" element={<UploadImage />} />
+        <Route path="/M" element={<MultiFileUpload />} />
         {/* Home Page */}
         <Route path="/" element={<HomePage />} />
 
-        {/* Login Page */}
+        {/* Authentication Pages */}
         <Route path="/login" element={<LoginPage />} />
 
         {/* Sign Up Page */}
@@ -66,7 +78,7 @@ const App = () => (
         {/* ROUTING gues to view properties */}
         <Route path="/search" element={<GuestBasicPropListings />} />
 
-        {/* Protected Tenant Routes */}
+        {/* Protected Tenant Routes - Require tenant authentication */}
         <Route element={<ProtectedTenantRoutes />}>
 
           {/* Signed In Tenant Page */}
@@ -79,6 +91,7 @@ const App = () => (
           {/* Add any other protected tenant routes here */}
 
           {/* Inspection Booking Page */}
+
           <Route path="/InspectionListing" element={<PropertyListing />} />
           <Route
             path="/InspectionBooking/:id"
@@ -94,11 +107,16 @@ const App = () => (
             element={<TenDetailedPropListing />}
           />
           <Route path="/DetailedLease/:id" element={<DetailedLease />} />
+
+          <Route path="/tenant/application/:appId" element={<ViewApplication />} />
+
+            <Route path="/Settings" element={<TenantSettings />} />"
+
         </Route>
 
-        {/* Protected Agent Routes */}
+        {/* Protected Agent Routes - Require agent authentication */}
         <Route element={<ProtectedAgentRoutes />}>
-          
+
           {/* Dashboard Page*/}
           <Route path="/dashboard" element={<AgentDashboard />} />{" "}
           {/* Dashboard after log in */}
@@ -112,13 +130,14 @@ const App = () => (
                   <Route path="/AgentDetailedPropListing/:id" element={<AgentDetailedPropListing/>}/>
                   <Route path="/AgentListings" element={<AgentListings/>}/>
                   <Route path="/AgentReviewApplication" element={<ReviewApplication/>}/>
-          
+                  <Route path="/EditPropertyDetails" element={<EditPropertyDetails/>}/>
+
           
         
 
-
+          <Route path="/agent/application/:appId" element={<ViewApplication />} />
         </Route>
-        
+
         {/* Protected Landlord Routes */}
         <Route element={<ProtectedLandlordRoutes />}>
           {/* Signed In Landlord Page*/}
@@ -139,6 +158,10 @@ const App = () => (
             element={<LandlordDetailedPropListing />}
           />
           <Route path="/LandlordProperties" element={<LandlordProperties />} />
+
+          <Route path="/LandlordReviewApplication" element={<LandlordReviewApplication />} />
+
+          <Route path="/landlord/application/:appId" element={<ViewApplication />} />
         </Route>
       </Routes>
     </div>

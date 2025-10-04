@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
-import { ExpressionOfInterest, AgentAvailabilities, Tenants } from '../../database/collections';
+import { ExpressionOfInterest, AgentAvailabilities, Tenants, Properties } from '../../database/collections';
 
 Meteor.methods({
   async 'expressionOfInterest.insert' ( propertyID, tenantID, EOI) {
@@ -46,25 +46,33 @@ Meteor.methods({
       const bookingStart = new Date(booking.start);
       const bookingEnd = new Date(booking.end);
       const property = booking.property;
+      const propertyID = (await Properties.findOneAsync({prop_address: property.address})).prop_id;
       const bookingData = {
         agentAvailabilityId: bookingID,
         tenantName: tenantName,
         tenantId: tenantID,
         start: bookingStart,
         end: bookingEnd,
-        property: property,
+        property: {
+          id: propertyID,
+          address: property.address,
+          price: property.price,
+          bedrooms: property.bedrooms,
+          bathrooms: property.bathrooms,
+          parking: property.parking,
+          image: property.image
+        },
         status: "Invited"
       }
 
-      const result = await ExpressionOfInterest.updateAsync(
-        {_id: eoiID}, {$set: {inviteSent: true}}) 
-        &&
-        await Meteor.call('tenantBookings.insert', bookingData, 
-        (err) => {if (err) console.error('EOI invite send failed: ', err);
+      await ExpressionOfInterest.updateAsync({_id: eoiID}, {$set: {inviteSent: true}});
+        
+      await Meteor.call('tenantBookings.insert', bookingData, 
+        (err) => {if (err) 
+          console.error('EOI invite send failed: ', err);
         });
 
-      console.log(`[Server] Sent Invite ${result}`);
-      return result;
+      console.log(`[Server] Sent Invite Successfully`);
     } catch (err){
       console.error('[SERVER ERROR] expressionOfInterest.sendInvite: ', err);
       throw new Meteor.Error('sending-invite-failed', err.message);
@@ -94,5 +102,11 @@ Meteor.methods({
     }
   },
 
+  async 'eoi.remove'(eoiID) {
+    check(id, String);
+    ExpressionOfInterest.remove({ _id: eoiID });
+  }
+
+});
+
   
-})

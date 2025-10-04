@@ -7,7 +7,7 @@ import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections";
+import { Properties, Photos, Videos, RentalApplications, Agents } from "../../api/database/collections";
 import {AddTicketDialog} from "./ticketPages/AddTicketDialog";
 import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
 import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
@@ -67,42 +67,65 @@ export default function DetailedLease() {
     }
   };
 
-  const { loading, property }= useTracker(()=>{
+  const { loading, property, agent }= useTracker(()=>{
     const propertyHandle= Meteor.subscribe("properties");
     const photoHandle= Meteor.subscribe("photos");
-    const videoHandle = Meteor.subscribe("videos")
-    const rentalAppHandle= Meteor.subscribe("rentalApplications")
+    const videoHandle = Meteor.subscribe("videos");
+    const rentalAppHandle= Meteor.subscribe("rentalApplications");
+    const agentHandle = Meteor.subscribe("agents");
 
-    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !videoHandle.ready()|| !rentalAppHandle.ready();
+    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !videoHandle.ready()|| !rentalAppHandle.ready() || !agentHandle.ready();
     
     
-    if (isLoading) return {loading: true, property: null};
+    if (isLoading) return {loading: true, property: null, agent: null};
 
     // find property
     const selectedProperty= Properties.findOne({ prop_id: id });
-    if (!selectedProperty) return { loading: false, property: null};
+    if (!selectedProperty) return { loading: false, property: null, agent: null };
 
     // finf images
+    // Build image URLs prioritizing Cloudinary entries from property.photo
     const photos= Photos.find({ prop_id: id}).fetch();
-    const sortedUrls= photos
-    .sort((a,b)=> a.photo_order-b.photo_order)
-    .map((p) => p.photo_url);
+    const cloudinaryImageUrls = Array.isArray(selectedProperty.photo)
+      ? selectedProperty.photo
+          .filter((item) => {
+            if (typeof item === 'string') return item.trim().length > 0;
+            if (item && typeof item === 'object') {
+              const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+              const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+              return Boolean(item.url) && isNotVideo && isNotPdf;
+            }
+            return false;
+          })
+          .map((item) => (typeof item === 'string' ? item : item.url))
+      : [];
+
+    const sortedUrls = (cloudinaryImageUrls.length
+      ? cloudinaryImageUrls
+      : photos
+          .sort((a, b) => a.photo_order - b.photo_order)
+          .map((p) => p.photo_url)) || [];
 
     // get video of the property
     const videos = Videos.find({ prop_id: id }).fetch();
     const videoUrls = videos.map(v => v.video_url);
 
-    // find macthing rental applications to get lease start date if leased
-    //const isLeased= selectedProperty.prop_status === "Leased";
-
-    //const leaseStartDate= isLeased ? RentalApplications.findOne({ prop_id: id, status: "Approved"})?.lease_start_date||null
-    //:null;
+  
 
     // find the lease start date if tenant is approved
     const leaseStartDate = RentalApplications.findOne({ 
   prop_id: id, 
-  status: "Approved" 
+  landLordFinal: "Approved" 
 })?.lease_start_date || null;
+
+// fetch agent
+  let agent = null;
+  if (selectedProperty.agent_id) {
+    agent = Agents.findOne({ agent_id: selectedProperty.agent_id });
+  }
+
+
+    
 
     return{
       loading: false,
@@ -115,7 +138,7 @@ export default function DetailedLease() {
         AvailableDate: selectedProperty.prop_available_date,
         leaseStartDate: leaseStartDate,
         status: selectedProperty.prop_status,
-        Pets: selectedProperty.prop_pets?"Yes":"No",
+        Pets: selectedProperty.prop_pets,
         imageUrls: sortedUrls.length>0? sortedUrls:["/images/default.jpg"],
         videoUrls: videoUrls.length > 0 ? videoUrls : null, 
         description: selectedProperty.prop_desc,
@@ -124,9 +147,10 @@ export default function DetailedLease() {
           baths: selectedProperty.prop_numbaths,
           beds: selectedProperty.prop_numbeds,
           carSpots: selectedProperty.prop_numcarspots,
-          furnished: selectedProperty.prop_furnish? "Yes":"No",
+          furnished: selectedProperty.prop_furnish,
         },
       },
+      agent,
     };
   })
   
@@ -155,11 +179,27 @@ export default function DetailedLease() {
         </p>
       </div>
 
+      {/* Agent information */}
+      {agent && (
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
+          <h3 className="text-xl font-semibold mb-4">Agent Information</h3>
+          <p>
+            <span className="text-1xl text-gray-700">Name: </span> {agent.agent_fname} {agent.agent_lname}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Email: </span> {agent.agent_email}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Phone: </span> {agent.agent_ph}
+          </p>
+        </div>
+      )}
+
       {/*Tickets section with Filter button aligned right below heading*/}
       <div className="max-w-7xl mx-auto w-full px-6 mt-8 pt-4 border-t border-gray-300">
         <h2 className="text-4xl mt-8 mb-8 font-bold text-black">Tickets</h2>
         <div className="flex justify-end mb-4">
-          <div className="relative"> 
+          <div className="relative">
             <button
               className="bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
               onClick={() => setShowFilterTicketsDialog(!showFilterTicketsDialog)}
@@ -183,8 +223,8 @@ export default function DetailedLease() {
         ) : (
           <div className="max-w-7xl mx-auto w-full px-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
             {filteredTickets.map((ticket) => (
-              <Ticket 
-                ticket={ticket} 
+              <Ticket
+                ticket={ticket}
                 setShowResolveTicketDialog={(ticketId) => {
                   setSelectedTicketId(ticketId);
                   setShowResolveTicketDialog(true);
@@ -203,32 +243,32 @@ export default function DetailedLease() {
         </button>
       </div>
 
-      <AddTicketDialog 
-        isOpen={showAddTicketDialog} 
-        onSelect={handleTicketSelect} 
-        onClose={closeDialogs} 
+      <AddTicketDialog
+        isOpen={showAddTicketDialog}
+        onSelect={handleTicketSelect}
+        onClose={closeDialogs}
       />
-      <MaintenanceTicketDialog 
-        isOpen={showMaintenanceDialog} 
-        onClose={closeDialogs} 
+      <MaintenanceTicketDialog
+        isOpen={showMaintenanceDialog}
+        onClose={closeDialogs}
         propertyAddress={property?.address}
         propId={property?.id}
-        agentId={property?.agent_id} 
+        agentId={property?.agent_id}
       />
-      <GeneralTicketDialog 
-        isOpen={showGeneralDialog} 
-        onClose={closeDialogs} 
+      <GeneralTicketDialog
+        isOpen={showGeneralDialog}
+        onClose={closeDialogs}
         propertyAddress={property?.address}
         propId={property?.id}
         agentId={property?.agent_id}
       />
       <ResolveTicketDialog
-        isOpen={showResolveTicketDialog} 
-        onClose={closeDialogs} 
+        isOpen={showResolveTicketDialog}
+        onClose={closeDialogs}
         ticketId={selectedTicketId}
       />
-      
-      
+
+
 
       {/*Footer*/}
       <Footer />
