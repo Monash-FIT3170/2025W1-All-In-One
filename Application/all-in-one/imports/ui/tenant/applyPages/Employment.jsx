@@ -18,7 +18,7 @@ function EmploymentSection({ propId, tenId }) {
   }, [propId, tenId]);
 
   const employment = useTracker(() => {
-    if (rentalApp?.employment_id) {
+    if (rentalApp && rentalApp.employment_id !== null && rentalApp.employment_id !== undefined) {
       Meteor.subscribe('employment');
       return Employment.findOne({ employment_id: rentalApp.employment_id });
     }
@@ -41,12 +41,20 @@ function EmploymentSection({ propId, tenId }) {
 
   useEffect(() => {
     if (employment) {
+      // employment record exists
       setEmpType(employment.emp_type || '');
       setCompanyName(employment.emp_comp || '');
       setJobTitle(employment.emp_job_title || '');
       setStartDate(employment.emp_start_date?.toISOString().slice(0, 10) || '');
       setNotEmployed(false);
-    } else if (defaultEmployment){
+    } else if (rentalApp && rentalApp.employment_id === null){
+      setNotEmployed(true);
+      setEmpType('');
+      setCompanyName('');
+      setJobTitle('');
+      setStartDate('');
+    }
+     else if (defaultEmployment && rentalApp && rentalApp.employment_id === undefined){
       setEmpType(defaultEmployment.emp_type || '');
       setCompanyName(defaultEmployment.emp_comp || '');
       setJobTitle(defaultEmployment.emp_job_title || '');
