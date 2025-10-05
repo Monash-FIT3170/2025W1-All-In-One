@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
-import { Incomes, RentalApplications } from '/imports/api/database/collections';
+import { Incomes, RentalApplications, Ten_SettingsIncomes } from '/imports/api/database/collections';
 import IncomeModal from '../components/IncomeModal';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
@@ -27,6 +27,43 @@ function Income({ propId, tenId }) {
     Meteor.subscribe('incomes');
     return Incomes.find({ rental_app_id: rentalAppId }).fetch();
   }, [rentalAppId]);
+
+  // data for income settings for prefilling
+  const settingsIncome = useTracker(() => {
+    const handle = Meteor.subscribe('tenSettingsIncomes');
+    if (!handle.ready()) return null;
+    return Ten_SettingsIncomes.findOne({ ten_id: tenId });
+  }, [tenId]);
+
+  // handler to load income from settings
+  const handleLoadFromProfile = () => {
+    if (!rentalAppId) {
+      setStatusMessage('Please complete the general section first.');
+      return;
+    }
+
+    if (!settingsIncome) {
+      setStatusMessage('No income data found in your profile.');
+      return;
+    }
+
+    const newIncome = {
+      inc_id: Random.id(),
+      rental_app_id: rentalAppId,
+      inc_type: settingsIncome.inc_type || '',
+      inc_amt: settingsIncome.inc_amt || 0,
+      inc_supporting_doc: settingsIncome.inc_supporting_doc || '',
+      inc_public_id: settingsIncome.inc_public_id || '',
+    };
+
+    Meteor.call('incomes.insert', newIncome, (err) => {
+      if (err) {
+        setStatusMessage(`Error loading income from profile: ${err.message}`);
+      } else {
+        setStatusMessage('Income loaded from profile successfully! You can now edit it here.');
+      }
+    });
+  };
 
   const handleAddIncome = async (incomeData) => {
     if (!rentalAppId) {
@@ -171,6 +208,11 @@ function Income({ propId, tenId }) {
     }
   };
 
+  // constants to check if settings income exists and can be loaded
+  const hasProfileIncome= settingsIncome && (settingsIncome.inc_type || settingsIncome.inc_amt || settingsIncome.inc_supporting_doc);
+  const hasExistingIncomes= incomes.length > 0;
+  const canLoadFromProfile= hasProfileIncome && rentalAppId && !hasExistingIncomes;
+
   return (
     <div>
       <h3 className="text-xl font-semibold mb-2">Income</h3>
@@ -180,15 +222,40 @@ function Income({ propId, tenId }) {
 
       <div className="mb-4">
         <label htmlFor="income" className="block mb-1 font-medium">Income</label>
-        <button
-          onClick={() => {
-            setEditingIncome(null);
-            setOpenModal(true);
-          }}
-          className="bg-[#CBADD8] px-6 py-2 rounded-full font-semibold hover:bg-[#9747FF] hover:text-white transition"
-        >
-          Add Source
-        </button>
+        {/* MODIFIED: Added flex container with gap for both buttons */}
+        <div className="flex gap-3 flex-wrap">
+          <button
+            onClick={() => {
+              setEditingIncome(null);
+              setOpenModal(true);
+            }}
+            className="bg-[#CBADD8] px-6 py-2 rounded-full font-semibold hover:bg-[#9747FF] hover:text-white transition"
+          >
+            Add Source
+          </button>
+          
+          {/* Load from Profile button - only show if no existing incomes */}
+          {!hasExistingIncomes && (
+            <button
+              onClick={handleLoadFromProfile}
+              disabled={!canLoadFromProfile}
+              className={`px-6 py-2 rounded-full font-semibold transition ${
+                canLoadFromProfile
+                  ? 'bg-[#CBADD8] hover:bg-[#9747FF] hover:text-white transition'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+              title={!rentalAppId ? 'Please complete the general section first' : !hasProfileIncome ? 'No income data in profile' : 'Load income from your profile'}
+            >
+              Load from Profile
+            </button>
+          )}
+        </div>
+        {/*Disclaimer text */}
+        {canLoadFromProfile && (
+          <p className="text-xs text-gray-500 mt-2 italic">
+            You can edit the details in this application once loaded from profile
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
