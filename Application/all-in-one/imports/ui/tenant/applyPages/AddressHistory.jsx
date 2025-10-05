@@ -200,7 +200,7 @@ function AddressHistory({ propId, tenId }) {
                     disabled={!canLoad}
                     className={`px-6 py-2 rounded-full font-semibold transition ${
                       canLoad
-                        ? 'bg-blue-500 text-white hover:bg-blue-600'
+                        ? 'bg-[#CBADD8] font-semibold hover:bg-[#9747FF] hover:text-white transition'
                         : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                     }`}
                     title={!rentalAppId ? 'Please complete the general section first' : !hasProfile ? `No ${status.toLowerCase()} address in profile` : `Load ${status.toLowerCase()} address from profile`}
