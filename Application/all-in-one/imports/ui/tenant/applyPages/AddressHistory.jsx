@@ -51,6 +51,10 @@ function AddressHistory({ propId, tenId }) {
       return;
     }
 
+    // NEW: For Current, only load the first one
+    const addressesToLoad = status === 'Current' ? [profileAddressesForStatus[0]] : profileAddressesForStatus;
+
+
     let successCount = 0;
     let errorCount = 0;
 
@@ -166,12 +170,17 @@ function AddressHistory({ propId, tenId }) {
         const hasExisting = existingAddressesForStatus.length > 0;
         const hasProfile = profileAddressesForStatus.length > 0;
         const canLoad = hasProfile && rentalAppId && !hasExisting;
+
+        // NEW: For Current, only allow 1 address
+        const canAddMore = status === 'Past' || (status === 'Current' && existingAddressesForStatus.length === 0);
+        
         return (
         <div key={status} className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <h4 className="text-lg font-medium">{status} Address</h4>
         {/* Wrapped buttons in flex container */}
               <div className="flex gap-3 flex-wrap">
+                {canAddMore && (
                 <button
                   onClick={() => {
                     setSelectedStatus(status);
@@ -182,6 +191,7 @@ function AddressHistory({ propId, tenId }) {
                 >
                   Enter Address
                 </button>
+                )}
 
           {/* Load from Profile button */}
                 {!hasExisting && (
