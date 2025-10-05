@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { RentalApplications, Employment } from '/imports/api/database/collections';
+import { RentalApplications, Employment, Ten_SettingsEmployment } from '/imports/api/database/collections';
 
 function EmploymentSection({ propId, tenId }) {
   const [notEmployed, setNotEmployed] = useState(false);
@@ -25,6 +25,12 @@ function EmploymentSection({ propId, tenId }) {
     return null;
   }, [rentalApp]);
 
+  // get employment datafrom settings
+  const defaultEmployment = useTracker(() => {
+    Meteor.subscribe('tenSettingsEmployment');
+    return Ten_SettingsEmployment.findOne({ ten_id: tenId });
+  }, [tenId]);
+
   useEffect(() => {
     if (rentalApp) {
       setRentalAppId(rentalApp._id);
@@ -40,10 +46,17 @@ function EmploymentSection({ propId, tenId }) {
       setJobTitle(employment.emp_job_title || '');
       setStartDate(employment.emp_start_date?.toISOString().slice(0, 10) || '');
       setNotEmployed(false);
-    } else if (rentalApp && rentalApp.employment_id === null) {
+    } else if (defaultEmployment){
+      setEmpType(defaultEmployment.emp_type || '');
+      setCompanyName(defaultEmployment.emp_comp || '');
+      setJobTitle(defaultEmployment.emp_job_title || '');
+      setStartDate(defaultEmployment.emp_start_date ? defaultEmployment.emp_start_date.toISOString().slice(0, 10) : '');
+      setNotEmployed(false);
+    }
+    else if (rentalApp && rentalApp.employment_id === null) {
       setNotEmployed(true);
     }
-  }, [employment, rentalApp]);
+  }, [employment, defaultEmployment, rentalApp]);
 
   const handleSubmit = () => {
     if (!rentalAppId) {
