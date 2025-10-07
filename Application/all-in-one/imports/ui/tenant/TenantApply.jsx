@@ -7,9 +7,12 @@ import Employment from './applyPages/Employment';
 import Income from './applyPages/Income';
 import Identity from './applyPages/Identity';
 import Household from './applyPages/Household';
+import SharedLease from './applyPages/SharedLease';
 import Navbar from './components/TenNavbar';
 import Footer from './components/Footer';
 import { useLocation, useParams } from "react-router-dom";
+import {RentalApplications} from '/imports/api/database/collections';
+import { useTracker } from 'meteor/react-meteor-data';
 
 function useQuery() {
   return new URLSearchParams(useLocation().search);
@@ -23,6 +26,14 @@ function Apply() {
 
   console.log("Property ID:", id);
   console.log("Tenant ID:", tenantId);
+
+  const rentalApplication = useTracker(() => {
+    Meteor.subscribe('rentalApplications');
+    return RentalApplications.findOne({ prop_id: id, ten_id: tenantId });
+  }, [id, tenantId]);
+
+  console.log("Rental application:", rentalApplication);
+
   const sectionList = [
     'General',
     'Personal Details',
@@ -32,11 +43,11 @@ function Apply() {
     'Income',
     'Identity',
     'Household',
+    'Shared Lease',
   ];
 
   const [activeSection, setActiveSection] = useState(sectionList[0]);
   const currentIndex = sectionList.indexOf(activeSection);
-
   const goNext = () => {
     if (currentIndex < sectionList.length - 1) {
       setActiveSection(sectionList[currentIndex + 1]);
@@ -69,6 +80,8 @@ function Apply() {
       return <Identity {...sharedProps} />;
     case 'Household':
       return <Household {...sharedProps} />;
+    case 'Shared Lease':
+      return <SharedLease {...sharedProps} />;
     default:
       return <div>Select a section from the sidebar.</div>;
     }
@@ -136,6 +149,52 @@ function Apply() {
             </div>
           </div>
         </div>
+
+        {/* Submit Button */}
+        <div className="flex mt-12">
+          <button
+            onClick={() => {
+              if (!rentalApplication) {
+                alert("No rental application found. Please complete your application before submitting.");
+                return;
+              }
+
+              // First mark as submitted = true
+              Meteor.call(
+                "rentalApplications.update",
+                rentalApplication._id,
+                { submitted: true },
+                (err, res) => {
+                  if (err) {
+                    alert(err.reason || "Error submitting application");
+                    return;
+                  }
+                  if (res === 0) {
+                    alert("No rental application found. Please complete your application before submitting.");
+                    return;
+                  }
+
+                  // ✅ Then set status = Pending
+                  Meteor.call(
+                    "rentalApplications.setStatus",
+                    rentalApplication._id,
+                    "Pending",
+                    (err2) => {
+                      if (err2) {
+                        alert(err2.reason || "Error setting status to Pending");
+                      } else {
+                        alert("Application submitted successfully!");
+                      }
+                    }
+                  );
+                }
+              );
+            }}
+            className="px-6 py-3 bg-[#9747FF] text-white font-semibold rounded-lg shadow hover:bg-violet-900 transition"
+          >
+            Submit
+          </button>
+        </div>
       </div>
       <Footer/>
       </div>
@@ -144,3 +203,4 @@ function Apply() {
 }
 
 export default Apply;
+

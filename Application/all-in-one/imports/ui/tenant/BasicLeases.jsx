@@ -6,14 +6,11 @@ import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, RentalApplications } from "../../api/database/collections"; // importing mock for now
-
-////////////////////////////////////////////////////////////////////////////////////////////
-// This page will display the list of properties that are leased by the particular tenant //
-////////////////////////////////////////////////////////////////////////////////////////////
+import { Properties, Photos, RentalApplications } from "../../api/database/collections";
 
 export default function BasicLeases() {
-  const userId= Meteor.userId();
+  const userId = Meteor.userId();
+
 
 
   const [showFilters, setShowFilters] = useState(false);
@@ -30,44 +27,76 @@ export default function BasicLeases() {
   });
 
   const leasedProperties= useTracker(()=>{
+
     if (!userId) return [];
 
-  const applicationsHandle = Meteor.subscribe('rentalApplications');
-  const propertiesHandle = Meteor.subscribe('properties');
-  const photosHandle = Meteor.subscribe('photos');
+    const appsHandle = Meteor.subscribe("rentalApplications");
+    const propsHandle = Meteor.subscribe("properties");
+    const photosHandle = Meteor.subscribe("photos");
 
-  const isLoading = !applicationsHandle.ready() || !propertiesHandle.ready() || !photosHandle.ready();
-  if (isLoading) return [];
+    const isLoading = !appsHandle.ready() || !propsHandle.ready() || !photosHandle.ready();
+    if (isLoading) return [];
 
-    const finalisedApplications= RentalApplications.find({
+    // Get all approved applications for the tenant
+    const approvedApps = RentalApplications.find({
       ten_id: userId,
-      status: "Approved",
+      landLordFinal: "Approved",
     }).fetch();
 
-    // exract unique property IDs
-    const approvedPropIds= finalisedApplications.map((app)=>app.prop_id);
+    if (approvedApps.length === 0) return [];
 
-    const properties= Properties.find({prop_id:{$in: approvedPropIds}}).fetch();
+    const approvedPropIds = approvedApps.map((app) => app.prop_id);
 
-    const allPhotos= Photos.find({prop_id:{$in: approvedPropIds}}).fetch();
+    // Get all properties corresponding to approved apps
+    const properties = Properties.find({ prop_id: { $in: approvedPropIds } }).fetch();
 
-    return properties.map((property)=>{
-      const photo= allPhotos.find((p)=> p.prop_id===property.prop_id && p.photo_order ===1);
+    // Get all first photos for those properties
+    const allPhotos = Photos.find({
+      prop_id: { $in: approvedPropIds },
+      photo_order: 1,
+    }).fetch();
+
+    return properties.map((property) => {
+      // Prefer Cloudinary-style URLs from property.photo if available
+      let firstPhotoUrl = null;
+      if (Array.isArray(property.photo)) {
+        const firstNonVideoPhoto = property.photo.find((item) => {
+          if (typeof item === 'string') return item.trim().length > 0;
+          if (item && typeof item === 'object') {
+            const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+            const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+            return Boolean(item.url) && isNotVideo && isNotPdf;
+          }
+          return false;
+        });
+        if (typeof firstNonVideoPhoto === 'string') {
+          firstPhotoUrl = firstNonVideoPhoto;
+        } else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') {
+          firstPhotoUrl = firstNonVideoPhoto.url;
+        }
+      }
+
+      // Fallback to Photos collection (photo_order 1)
+      if (!firstPhotoUrl) {
+        const photo = allPhotos.find((p) => p.prop_id === property.prop_id);
+        firstPhotoUrl = photo ? photo.photo_url : null;
+      }
+
       return {
         id: property.prop_id,
         location: property.prop_address,
         price: `$${property.prop_pricepweek}`,
-        image: photo?photo.photo_url: "/default.jpg",
+        image: firstPhotoUrl || "/images/default.jpg",
         beds: property.prop_numbeds,
         baths: property.prop_numbaths,
         cars: property.prop_numcarspots,
         type: property.prop_type,
         furnished: property.prop_furnished,
         pets: property.prop_petsallowed,
+
       };
     });
-  },[]);
-  
+  }, [userId]);
 
 
 
@@ -114,21 +143,14 @@ const filteredLeasedProperties = leasedProperties.filter((p) => {
 
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
-      {/*Header*/}
       <Navbar />
 
       {/* Page Heading */}
       <div className="max-w-7xl mx-auto w-full px-6 mt-6">
         <div className="pl-6">
-          <h1 className="text-3xl font-medium text-gray-800">
-            Leased Properties
-          </h1>
-          <p className="text-gray-600 text-base mt-1">
-            All leased properties in one place!
-          </p>
-          <hr
-            className="my-6 border-t-2 border-gray-300 w-full"
-          />
+          <h1 className="text-3xl font-medium text-gray-800">Leased Properties</h1>
+          <p className="text-gray-600 text-base mt-1">All leased properties in one place!</p>
+          <hr className="my-6 border-t-2 border-gray-300 w-full" />
         </div>
       </div>
 
@@ -166,6 +188,7 @@ const filteredLeasedProperties = leasedProperties.filter((p) => {
                 </button>
               </div>
             </div>
+
 
 
 
@@ -312,12 +335,11 @@ const filteredLeasedProperties = leasedProperties.filter((p) => {
               <BasicPropertyCard property={property} />
             </Link>
           )))}
+
         </div>
       </div>
-      {/* Blank space before footer */}
-      <div className="h-40" />
 
-      {/*Footer*/}
+      <div className="h-40" /> {/* Spacer before footer */}
       <Footer />
     </div>
   );

@@ -2,55 +2,58 @@ import React, { useState, useEffect } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Meteor } from 'meteor/meteor';
 import { Search, Filter, ChevronDown, X } from 'lucide-react';
-import { TenantBookings } from '../../api/TenantBookings';
-import { AgentAvailabilities } from '../../api/AgentAvailabilities';
-import { Properties, Agents, Photos } from "../../api/database/collections";
+import { TenantBookings } from '../../api/database/collections';
+import { AgentAvailabilities } from '../../api/database/collections';
+import { Properties, Agents, Photos, Tenants } from "../../api/database/collections"; // ✅ add Tenants
 import Navbar from "./components/TenNavbar";
+import { Link } from "react-router-dom";
+import { UpcomingInspections } from './UpcomingInspections.jsx';
+import { formatDisplayDate, getOrdinalSuffix, formatTime } from '../globalComponents/DateTimeFormatting.js';
 
-// Group events by date
-const groupEventsByDate = (events) => {
+// Group events by type
+const groupEventsByType = (events) => {
   const grouped = {};
   events.forEach(event => {
-    if (!grouped[event.date]) {
-      grouped[event.date] = [];
+    if (!grouped[event.availabilityType]) {
+      grouped[event.availabilityType] = [];
     }
-    grouped[event.date].push(event);
+    grouped[event.availabilityType].push(event);
   });
   return grouped;
 };
 
-// Format date for display
-const formatDisplayDate = (dateString) => {
-  const date = new Date(dateString);
-  const options = { month: 'long', day: 'numeric' };
-  return date.toLocaleDateString('en-US', options) + getOrdinalSuffix(date.getDate());
-};
+// // Format date for display
+// const formatDisplayDate = (dateString) => {
+//   const date = new Date(dateString);
+//   const options = { month: 'long', day: 'numeric' };
+//   return date.toLocaleDateString('en-US', options) + getOrdinalSuffix(date.getDate());
+// };
 
 // Get ordinal suffix for date
-const getOrdinalSuffix = (day) => {
-  if (day > 3 && day < 21) return 'th';
-  switch (day % 10) {
-    case 1: return 'st';
-    case 2: return 'nd';
-    case 3: return 'rd';
-    default: return 'th';
-  }
-};
+// const getOrdinalSuffix = (day) => {
+//   if (day > 3 && day < 21) return 'th';
+//   switch (day % 10) {
+//     case 1: return 'st';
+//     case 2: return 'nd';
+//     case 3: return 'rd';
+//     default: return 'th';
+//   }
+// };
 
 // Format time for display
-const formatTime = (start, end) => {
-  const startTime = new Date(start).toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
-  const endTime = new Date(end).toLocaleTimeString('en-US', { 
-    hour: 'numeric', 
-    minute: '2-digit',
-    hour12: true 
-  });
-  return `${startTime} - ${endTime}`;
-};
+// const formatTime = (start, end) => {
+//   const startTime = new Date(start).toLocaleTimeString('en-US', { 
+//     hour: 'numeric', 
+//     minute: '2-digit',
+//     hour12: true 
+//   });
+//   const endTime = new Date(end).toLocaleTimeString('en-US', { 
+//     hour: 'numeric', 
+//     minute: '2-digit',
+//     hour12: true 
+//   });
+//   return `${startTime} - ${endTime}`;
+// };
 
 export const PropertyListing = () => {
   const [searchTerm, setSearchTerm] = useState('');
@@ -60,19 +63,40 @@ export const PropertyListing = () => {
   const [selectedDates, setSelectedDates] = useState(['All Dates']);
   const [loading, setLoading] = useState(true);
 
-  // Subscribe to data - only get current user's bookings
+  // Subscribe to data - only get current user's bookings (by Tenants.ten_id)
   const { myBookings, availabilities, properties, agents, photos, isReady } = useTracker(() => {
     const bookingsHandle = Meteor.subscribe('tenantBookings');
-    const availabilitiesHandle = Meteor.subscribe('agentAvailabilities');
+    const availabilitiesHandle = Meteor.subscribe('allAvailabilities');
     const propertiesHandle = Meteor.subscribe('properties');
     const agentsHandle = Meteor.subscribe('agents');
     const photosHandle = Meteor.subscribe('photos');
-    
+    const tenantsHandle = Meteor.subscribe('tenants'); // ✅ ensure we can read Tenants.ten_id
+
     const ready = bookingsHandle.ready() && 
                   availabilitiesHandle.ready() && 
                   propertiesHandle.ready() && 
                   agentsHandle.ready() &&
-                  photosHandle.ready();
+                  photosHandle.ready() &&
+                  tenantsHandle.ready?.() !== false;
+
+    // ✅ determine the current tenant's ten_id and use it to filter bookings
+    const currentUserId = Meteor.userId();
+    let tenId = null;
+
+    // most common: tenant record keyed by the Meteor user id
+    const tById = currentUserId ? Tenants.findOne({ ten_id: currentUserId }) : null;
+    if (tById?.ten_id) tenId = tById.ten_id;
+
+    // if you also store tenants by email, this helps in mixed setups
+    if (!tenId) {
+      const email = Meteor.user()?.emails?.[0]?.address;
+      const tByEmail = email ? Tenants.findOne({ ten_email: email }) : null;
+      if (tByEmail?.ten_id) tenId = tByEmail.ten_id;
+    }
+
+    const myBookings = tenId
+      ? TenantBookings.find({ tenantId: tenId }).fetch() // ✅ use Tenants.ten_id here
+      : [];
 
     return {
       myBookings: TenantBookings.find({ tenantId: Meteor.userId() }).fetch(),
@@ -90,42 +114,56 @@ export const PropertyListing = () => {
 
   // Transform booked data for display 
   const transformedEvents = myBookings.map(booking => {
-    // Find the corresponding availability
-    const availability = availabilities.find(a => a._id === booking.agentAvailabilityId) || {};
+    // Find the corresponding availability (string-safe compare)
+    const availability = (availabilities.find(a => String(a._id) === String(booking.agentAvailabilityId)) || {});
     
     let property = {};
     
-    // Try to find property by availability.property first
-    if (availability.property && availability.property !== "") {
-      property = properties.find(p => p.prop_id === availability.property) || {};
+    // Priority 1: Try to find property from booking.property.id (most reliable)
+    if (booking.property && typeof booking.property === 'object' && booking.property.id) {
+      property = properties.find(p => p.prop_id === booking.property.id) || {};
     }
-    
-    // If no property found, try to get from booking.property if it exists
-    if (!property.prop_id && booking.property) {
-      // Check if booking.property has property info directly
-      if (typeof booking.property === 'object' && booking.property.address) {
-        // Use property data directly from booking
-        property = {
-          prop_id: booking.property.id || 'unknown',
-          prop_address: booking.property.address,
-          prop_pricepweek: booking.property.price,
-          prop_numbeds: booking.property.bedrooms,
-          prop_numbaths: booking.property.bathrooms,
-          prop_numcarspots: booking.property.parking,
-          prop_type: booking.property.type || 'Property',
-          prop_available_date: new Date(),
-          prop_pets: false,
-          prop_furnish: false,
-          prop_desc: 'Booked property'
-        };
+
+    // Priority 2: Try availability.property if booking didn't work
+    if (!property.prop_id && availability.property) {
+      // Check if availability.property is an object with id/prop_id
+      if (typeof availability.property === 'object' && availability.property.id) {
+        property = properties.find(p => p.prop_id === availability.property.id) || {};
+      }
+      // Check if availability.property is a string prop_id
+      else if (typeof availability.property === 'string' && availability.property !== "") {
+        property = properties.find(p => p.prop_id === availability.property) || {};
       }
     }
     
-    // If still no property, use first available property as fallback
+    // Priority 3: Use booking.property data directly if available
+    if (!property.prop_id && booking.property && typeof booking.property === 'object' && booking.property.address) {
+      // Create property object from booking data
+      property = {
+        prop_id: booking.property.id || `booking-${booking._id}`,
+        prop_address: booking.property.address,
+        prop_pricepweek: booking.property.price || 0,
+        prop_numbeds: booking.property.bedrooms || 0,
+        prop_numbaths: booking.property.bathrooms || 0,
+        prop_numcarspots: booking.property.parking || 0,
+        prop_type: booking.property.type || 'Property',
+        prop_available_date: new Date(),
+        prop_pets: false,
+        prop_furnish: false,
+        prop_desc: 'Property details from booking',
+        agent_id: booking.property.agentId || null,
+        prop_bond: booking.property.bond || 0
+      };
+    }
+    
+    // Priority 4: If still no property, use first available property as fallback
     if (!property.prop_id && properties.length > 0) {
       property = properties[0]; // Use first property as fallback
     }
     
+    // If still nothing, skip this booking
+    if (!property.prop_address) return null;
+
     // Find corresponding agent details
     const agent = agents.find(a => a.agent_id === property.agent_id) || {};
     
@@ -159,6 +197,8 @@ export const PropertyListing = () => {
       image: propertyData.imageUrls[0],
       activityType: availability.activity_type || 'Inspection',
       availabilityType: availability.availability_type || 'Standard',
+      is_private: availability.is_private || false,
+      agentAvailabilityId: booking.agentAvailabilityId,
       status: booking.status,
       bookingDate: booking.createdAt,
       propertyDetails: {
@@ -169,7 +209,7 @@ export const PropertyListing = () => {
       },
       fullPropertyData: propertyData
     };
-  });
+  }).filter(Boolean);
 
   // Filter events based on selected filters
   const filteredEvents = transformedEvents.filter(event => {
@@ -186,8 +226,8 @@ export const PropertyListing = () => {
     return agentMatch && propertyMatch && dateMatch && searchMatch;
   });
   
-  // Group filtered events by date
-  const eventsByDate = groupEventsByDate(filteredEvents);
+  // Group filtered events by type
+  const eventsByType = groupEventsByType(filteredEvents);
   
   // Generate filter options from actual data
   const agentOptions = ['All Agents', ...new Set(transformedEvents.map(e => e.agent))];
@@ -223,6 +263,30 @@ export const PropertyListing = () => {
     );
   }
   
+  const handleAccept = (bookingID, agentAvailabilityID) => {
+    Meteor.call('tenantBookings.markAsBooked', bookingID, agentAvailabilityID,
+      (err) => {
+        if (err) {
+          alert("Accepting Booking Failed: " + err.reason);
+        }
+        else {
+          alert("Booking has been successfully accepted!");
+        }
+      });
+  };
+
+  const handleReject = (bookingID, agentAvailabilityID) => {
+    Meteor.call('tenantBookings.markAsRejected', bookingID, agentAvailabilityID,
+      (err) => {
+        if (err) {
+          alert("Rejecting Booking Failed: " + err.reason);
+        }
+        else {
+          alert("Booking has been rejected!");
+        }
+      });
+  ;}
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20"> 
       {/* Header */}
@@ -343,7 +407,7 @@ export const PropertyListing = () => {
         </div>
         
         {/* Events List */}
-        {Object.keys(eventsByDate).length === 0 ? (
+        {Object.keys(eventsByType).length === 0 ? (
           <div className="text-center py-12">
             <div className="text-gray-400 mb-4">
               <Search size={48} className="mx-auto" />
@@ -356,9 +420,9 @@ export const PropertyListing = () => {
               }
             </p>
           </div>
-        ) : (
+          ) : (
           <div className="space-y-8">
-            {Object.keys(eventsByDate).map(date => (
+            {Object.keys(eventsByType).map(date => (
               <div key={date}>
                 <div className="flex items-center mb-6">
                   <div className="border-t border-gray-400 flex-grow"></div>
@@ -366,8 +430,10 @@ export const PropertyListing = () => {
                   <div className="border-t border-gray-400 flex-grow"></div>
                 </div>
                 
-                {eventsByDate[date].map(event => (
-                  <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm" style={{backgroundColor: '#EADAFF'}}>
+                {eventsByType[date].map(event => (
+                  <div key={event.id} className="rounded-lg mb-4 flex overflow-hidden shadow-sm"
+                    style={{backgroundColor: event.status === "Invited" ? '#b8b8b8ff' :
+                    event.status === "Rejected" ? '#888888' : '#EADAFF'}}>
                     <div className="w-48 h-32 flex-shrink-0">
                       <img src={event.image} alt="Property" className="w-full h-full object-cover" />
                     </div>
@@ -376,15 +442,18 @@ export const PropertyListing = () => {
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="text-lg font-semibold text-gray-800">{event.property}</h4>
                         <div className="flex gap-2">
+                          { event.is_private ?
+                          <span className={`px-2 py-1 text-xs rounded-full bg-yellow-100 text-blue-800`}> Private Open House </span> :
+                          !event.is_private && event.availabilityType === 'Open House' ?
+                          <span className={`px-2 py-1 text-xs rounded-full bg-red-100 text-blue-800`}> {event.availabilityType} </span> :
+                          <span className={`px-2 py-1 text-xs rounded-full bg-blue-100 text-blue-800`}> {event.availabilityType} </span>
+                          }
+
                           <span className={`px-2 py-1 text-xs rounded-full ${
-                            event.activityType === 'Inspection' ? 'bg-blue-100 text-blue-800' :
-                            event.activityType === 'Open House' ? 'bg-green-100 text-green-800' :
-                            'bg-gray-100 text-gray-800'
-                          }`}>
-                            {event.activityType}
-                          </span>
-                          <span className="px-2 py-1 text-xs rounded-full bg-green-100 text-green-800">
-                            Booked
+                            event.status === 'Invited' ? 'bg-[#CBADD8] text-green-800' :
+                            event.status === 'Rejected' ? 'bg-red-300 text-green-800' : 
+                            'bg-green-100 text-green-800'}`}>
+                            {event.status}
                           </span>
                         </div>
                       </div>
@@ -428,17 +497,49 @@ export const PropertyListing = () => {
                           )}
                         </div>
                       )}
-                    </div>
-                    
-                    <div className="bg-white rounded-lg m-4 p-6 w-64">
-                      <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
-                      <p className="text-sm text-gray-500 mb-2">
-                        Inspection Available
-                      </p>
-                      <div className="text-sm text-green-600 font-medium mb-2">
-                        ✓ Inspection Confirmed
+
+                      {event.status === 'Invited' ?
+                      (<div className='mb-5 mt-10 justify-center'>
+                        <div className='text-xl font-bold'>
+                          This is an unconfirmed Private Open House. Please Accept or Reject Private Open House invitation:
+                        </div>
+                        <div className="w-full flex flex-row gap-4 mb-5 pt-5 justify-center">
+                          <button
+                          onClick={() => handleAccept(event.id, event.agentAvailabilityId)}
+                          className="w-1/4 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200 justify-center">
+                            Accept
+                          </button>
+                          <button
+                          onClick={() => handleReject(event.id, event.agentAvailabilityId)}
+                          className="w-1/4 bg-[#CDCDCD] hover:bg-[#BBBBBB] text-black font-base text-center py-2 rounded-md shadow-md transition duration-200 justify-center">
+                            Reject
+                          </button>
+                        </div>
                       </div>
-                      
+                      ) : <div> </div>}
+                    </div>
+
+
+
+                    <div className="bg-white rounded-lg m-4 p-6 w-64 h-40">
+                      <h5 className="font-semibold text-gray-600 mb-1">Agent: {event.agent}</h5>
+                      {event.is_private && event.availabilityType === "Open House" ?
+                        <p className="text-sm text-gray-500 mb-2"> Private Open House Booking </p> :
+                        !event.is_private && event.availabilityType === "Open House" ?
+                        <p className="text-sm text-gray-500 mb-2"> Open House Booking </p>:
+                        <p className="text-sm text-gray-500 mb-2"> Inspection Booking </p>
+                      }
+                      {event.status === 'Invited' ? <div className="text-sm text-green-600 font-medium mb-2">
+                        Invitation to Private Open House </div> :
+                        event.status === 'Booked' && event.is_private ?
+                        <div className="text-sm text-green-600 font-medium mb-2"> ✓ Private Open House Confirmed </div> :
+                        event.status === 'Rejected' ?
+                        <div className="text-sm text-red-600 font-medium mb-2"> Private Open House Rejected </div> :
+                        event.status === 'Booked' && !event.is_private ?
+                        <div className="text-sm text-green-600 font-medium mb-2"> ✓ Open House Confirmed </div> :
+                        <div className="text-sm text-green-600 font-medium mb-2"> ✓ Inspection Confirmed </div>
+                      }
+
                       {event.bookingDate && (
                         <p className="text-xs text-gray-400 mt-2">
                           Booked on {new Date(event.bookingDate).toLocaleDateString()}
@@ -451,6 +552,13 @@ export const PropertyListing = () => {
             ))}
           </div>
         )}
+        <div className="w-full flex flex-row gap-4 mb-8 pt-10 justify-center">
+          <Link 
+          to = "/UpcomingInspections"
+          className="w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200 justify-center">
+            View All Upcoming Inspections
+          </Link>
+        </div>
       </main> 
       <div className="h-16 bg-[#CBADD8]" />
     </div>

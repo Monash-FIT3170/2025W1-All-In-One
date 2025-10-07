@@ -1,29 +1,355 @@
-import React from 'react';
-import { BedDouble, ShowerHead, CarFront } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { BedDouble, ShowerHead, CarFront, Users, Check, Pencil, Trash2 } from 'lucide-react';
+import { Meteor } from 'meteor/meteor';
+import { useTracker } from 'meteor/react-meteor-data';
+import { TenantBookings, Tenants, Employment } from '../../../api/database/collections';
 
-
-export const EventDetailModal = ({ event, onClose }) => {
+export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
   if (!event) return null;
 
+  // Debug logging to see what data is being passed
+  console.log('EventDetailModal received event:', event);
+  console.log('Event attendanceList:', event.attendanceList);
+
+  // If event.extendedProps exists, merge it in
+  const mergedEvent = event.extendedProps
+    ? { ...event, ...event.extendedProps }
+    : event;
+
+  const isUnbookedInspection =
+    (!mergedEvent.status || mergedEvent.status === 'pending' || mergedEvent.status === 'confirmed') &&
+    (
+      (mergedEvent.type && mergedEvent.type.toLowerCase().includes('inspection')) ||
+      (mergedEvent.title && mergedEvent.title.toLowerCase().includes('inspection'))
+    ) &&
+    (!mergedEvent.tenant || !mergedEvent.tenant.name);
+
+  const isOpenHouse = mergedEvent.type === 'Open House' ||
+    (mergedEvent.title && mergedEvent.title.toLowerCase().includes('open house'));
+
+  const startDate = useMemo(() => new Date(mergedEvent.start), [mergedEvent.start]);
+  const endDate   = useMemo(() => new Date(mergedEvent.end),   [mergedEvent.end]);
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [draftStart, setDraftStart] = useState(toLocalInputValue(startDate));
+  const [draftEnd, setDraftEnd]     = useState(toLocalInputValue(endDate));
+  const [draftNotes, setDraftNotes] = useState((mergedEvent.notes ?? mergedEvent.note ?? '').toString());
+
+  const isBooked = mergedEvent.status === 'booked';
+
+  // Derive best image from possible Cloudinary photo arrays or direct fields
+  const derivedImage = (() => {
+    // Priority: mergedEvent.property.photo -> mergedEvent.photo -> mergedEvent.property.image -> mergedEvent.image
+    const chooseFromArray = (arr) => {
+      if (!Array.isArray(arr)) return null;
+      const firstNonVideoPhoto = arr.find((item) => {
+        if (typeof item === 'string') return item.trim().length > 0;
+        if (item && typeof item === 'object') {
+          const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+          const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+          return Boolean(item.url) && isNotVideo && isNotPdf;
+        }
+        return false;
+      });
+      if (typeof firstNonVideoPhoto === 'string') return firstNonVideoPhoto;
+      if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') return firstNonVideoPhoto.url;
+      return null;
+    };
+
+    return (
+      chooseFromArray(mergedEvent.property?.photo) ||
+      chooseFromArray(mergedEvent.photo) ||
+      mergedEvent.property?.image ||
+      mergedEvent.image ||
+      '/images/default.jpg'
+    );
+  })();
+
+  function toLocalInputValue(d) {
+    if (!d) return '';
+    const copy = new Date(d);
+    copy.setMinutes(copy.getMinutes() - copy.getTimezoneOffset());
+    return copy.toISOString().slice(0, 16); // 'YYYY-MM-DDTHH:mm'
+  }
+
   const formatDate = (date) => {
-    const day = date.getDate();
-    const month = date.toLocaleString('default', { month: 'long' });
-    const year = date.getFullYear();
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = d.toLocaleString('default', { month: 'long' });
+    const year = d.getFullYear();
     const suffix =
-      day === 1 || day === 21 || day === 31
-        ? 'st'
-        : day === 2 || day === 22
-        ? 'nd'
-        : day === 3 || day === 23
-        ? 'rd'
-        : 'th';
+      day === 1 || day === 21 || day === 31 ? 'st' :
+      day === 2 || day === 22 ? 'nd' :
+      day === 3 || day === 23 ? 'rd' : 'th';
     return `${day}${suffix} ${month} ${year}`;
   };
-
   const formatTime = (start, end) => {
     const opts = { hour: 'numeric', minute: '2-digit', hour12: true };
-    return `${start.toLocaleTimeString([], opts)} - ${end.toLocaleTimeString([], opts)}`;
+    return `${new Date(start).toLocaleTimeString([], opts)} - ${new Date(end).toLocaleTimeString([], opts)}`;
   };
+
+  const handleAttendanceToggle = (tenantID) => {
+    console.log('Toggling attendance for tenant:', tenantID, 'event ID:', event.id);
+
+    if (!event.id) {
+      console.error('Event ID is missing!');
+      alert('Error: Event ID is missing. Please try refreshing the page.');
+      return;
+    }
+
+    Meteor.call(
+      'openHouseAttendance.toggleAttendance',
+      event.id,
+      tenantID,
+      (err) => {
+        if (err) {
+          console.error('Failed to toggle attendance:', err);
+          alert('Failed to update attendance: ' + err.reason);
+        } else {
+          console.log('Attendance toggled successfully');
+          // Call the callback to refresh the attendance data
+          if (onAttendanceUpdate) {
+            onAttendanceUpdate();
+          }
+        }
+      }
+    );
+  };
+  const handleSave = () => {
+    Meteor.call(
+      'agentAvailabilities.update',
+      mergedEvent._id || mergedEvent.id,
+      {
+        start: new Date(draftStart).toISOString(),
+        end: new Date(draftEnd).toISOString(),
+        note: draftNotes,
+        notes: draftNotes,
+      },
+      (err) => {
+        if (err) {
+          alert('Failed to update: ' + err.reason);
+        } else {
+          setIsEditing(false);
+          if (onClose) onClose();
+        }
+      }
+    );
+  };
+
+  const handleNotesSave = (tenantID, notes) => {
+    if (!event.id) {
+      alert('Error: Event ID is missing.');
+      return;
+    }
+    Meteor.call(
+      'openHouseAttendance.updateNotes',
+      event.id,
+      tenantID,
+      notes,
+      (err) => {
+        if (err) {
+          console.error('Failed to save notes:', err);
+          alert('Failed to save notes: ' + err.reason);
+        } else if (onAttendanceUpdate) {
+          onAttendanceUpdate();
+        }
+      }
+    );
+  };
+  const handleDelete = () => {
+    if (!window.confirm('Are you sure you want to delete this availability?')) return;
+    Meteor.call(
+      'agentAvailabilities.remove',
+      mergedEvent._id || mergedEvent.id,
+      (err) => {
+        if (err) {
+          alert('Failed to delete: ' + err.reason);
+        } else {
+          if (onClose) onClose();
+        }
+      }
+    );
+  };
+
+  const handleAddAnonymous = () => {
+    const first = prompt('Enter first name');
+    if (!first) return;
+    const last = prompt('Enter last name');
+    if (!last) return;
+    if (!event.id) {
+      alert('Error: Event ID is missing.');
+      return;
+    }
+    Meteor.call(
+      'openHouseAttendance.addAnonymousAttendee',
+      event.id,
+      first,
+      last,
+      (err) => {
+        if (err) {
+          console.error('Failed to add attendee:', err);
+          alert('Failed to add attendee: ' + err.reason);
+        } else if (onAttendanceUpdate) {
+          onAttendanceUpdate();
+        }
+      }
+    );
+  };
+  // --- Render for unbooked inspection: allow edit/delete ---
+  if (isUnbookedInspection) {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-30 z-50">
+        <div
+          className="relative bg-[#D6B4E7] p-10 rounded-[40px] w-full max-w-3xl"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          {/* Close (X) button */}
+          <button
+            onClick={onClose}
+            className="absolute top-6 right-8 text-black text-2xl"
+            aria-label="Close"
+            style={{ lineHeight: 1 }}
+          >
+            ×
+          </button>
+
+          <div className="flex flex-col gap-2">
+            {/* Date and Time */}
+            {!isEditing ? (
+              <>
+                <div className="text-[2.5rem] font-bold mb-0" style={{ lineHeight: 1 }}>
+                  {formatDate(mergedEvent.start)}
+                </div>
+                <div className="text-xl mb-4" style={{ marginTop: '-0.5rem' }}>
+                  {formatTime(mergedEvent.start, mergedEvent.end)}
+                </div>
+              </>
+            ) : (
+              <div className="flex gap-4 mb-4">
+                <div className="flex flex-col flex-1">
+                  <label className="font-bold text-lg mb-1">Start</label>
+                  <input
+                    type="datetime-local"
+                    className="bg-white border rounded px-3 py-2"
+                    value={draftStart}
+                    onChange={e => setDraftStart(e.target.value)}
+                  />
+                </div>
+                <div className="flex flex-col flex-1">
+                  <label className="font-bold text-lg mb-1">End</label>
+                  <input
+                    type="datetime-local"
+                    className="bg-white border rounded px-3 py-2"
+                    value={draftEnd}
+                    onChange={e => setDraftEnd(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+            <div className="text-2xl font-bold mb-6">
+              Available for Routine Inspection
+            </div>
+            <div className="flex gap-8 mb-4">
+              <div className="flex-1">
+                <div className="font-bold text-lg mb-2">Address</div>
+                <div className="bg-[#FFF8E9] border-dashed border-2 border-[#E7E1D6] rounded-xl px-6 py-4 text-center text-gray-500 italic text-lg shadow">
+                  Awaiting Tenant Inspection Booking
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="font-bold text-lg mb-2">Tenant</div>
+                <div className="bg-[#FFF8E9] border-dashed border-2 border-[#E7E1D6] rounded-xl px-6 py-4 text-center text-gray-500 italic text-lg shadow">
+                  Awaiting Tenant Inspection Booking
+                </div>
+              </div>
+            </div>
+            <div className="font-bold text-lg mb-2">Notes</div>
+            {!isEditing ? (
+              <div className="bg-[#FFF8E9] rounded-xl px-4 py-4 min-h-[60px] text-base flex items-center">
+                <span className="flex-1">{(mergedEvent.notes ?? mergedEvent.note ?? '').toString() || <span className="italic text-gray-500">No notes yet.</span>}</span>
+              </div>
+            ) : (
+              <textarea
+                className="bg-[#FFF8E9] rounded-xl px-4 py-4 min-h-[60px] text-base w-full"
+                value={draftNotes}
+                onChange={e => setDraftNotes(e.target.value)}
+                placeholder="Add a note for this availability..."
+              />
+            )}
+
+            {/* Buttons row */}
+            <div className="mt-6 flex flex-wrap gap-2 justify-end">
+              {isEditing ? (
+                <>
+                  <button
+                    className="px-4 py-2 rounded bg-gray-300 text-black"
+                    onClick={() => {
+                      setDraftStart(toLocalInputValue(startDate));
+                      setDraftEnd(toLocalInputValue(endDate));
+                      setDraftNotes((mergedEvent.notes ?? mergedEvent.note ?? '').toString());
+                      setIsEditing(false);
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded bg-[#9747FF] text-white"
+                    onClick={handleSave}
+                  >
+                    Save
+                  </button>
+                </>
+              ) : (
+                <>
+                  <button
+                    className="px-4 py-2 rounded flex items-center gap-2 bg-red-500 text-white"
+                    onClick={handleDelete}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Delete
+                  </button>
+                  <button
+                    className="px-4 py-2 rounded flex items-center gap-2 bg-[#9747FF] text-white"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Pencil className="w-4 h-4" />
+                    Edit
+                  </button>
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Fetch tenant booking/details for this availability (private open house invite or booked)
+  const availabilityId = event.id;
+  const { booking, ready: dataReady } = useTracker(() => {
+    if (!availabilityId) return { booking: null, ready: true };
+    const h1 = Meteor.subscribe('tenantBookings.forAvailability', availabilityId);
+    const h2 = Meteor.subscribe('tenants');
+    const h3 = Meteor.subscribe('employment');
+    const ready = [h1.ready?.(), h2.ready?.(), h3.ready?.()].every((x) => x !== false);
+    const b = TenantBookings.findOne({ agentAvailabilityId: availabilityId });
+    return { booking: b, ready };
+  }, [availabilityId]);
+
+  let tenantName = null;
+  let tenantAge = null;
+  let occupation = null;
+  if (dataReady && booking) {
+    tenantName = booking.tenantName || null;
+    const tenant = Tenants.findOne({ ten_id: booking.tenantId });
+    if (tenant?.ten_dob) {
+      const dob = new Date(tenant.ten_dob);
+      const diff = Date.now() - dob.getTime();
+      tenantAge = Math.floor(diff / (365.25 * 24 * 60 * 60 * 1000));
+    }
+    const emp = Employment.findOne({ ten_id: booking.tenantId });
+    occupation = emp?.emp_job_title || null;
+  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
@@ -35,83 +361,279 @@ export const EventDetailModal = ({ event, onClose }) => {
         >
           ×
         </button>
+
         {/* Left: Property Info */}
         <div className="flex-1">
           <h2 className="text-3xl text-center font-semibold text-gray-800 mb-2 tracking-wide">
-            {event.type || ''}
+            {mergedEvent.type || ''}
           </h2>
 
           <img
-            src={event.image || '/images/default.jpg'}
+            src={derivedImage}
             alt="Property"
             className="rounded-xl mb-2 w-full h-48 object-cover"
             onError={(e) => {
-              e.target.onerror = null; // prevent infinite loop
-              e.target.src = '/images/default.jpg'; // fallback
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = '/images/default.jpg';
             }}
           />
 
           <div className="bg-[#FFF8E9] p-4 rounded-xl">
-            {event.property ? (
-              <>
+            {/* Helper function to check if a value is valid (not empty, not dash, not null) */}
+            {(() => {
+              const address = mergedEvent.property?.address || mergedEvent.address;
+              const price = mergedEvent.property?.price || mergedEvent.price;
+              const bedrooms = mergedEvent.property?.bedrooms || mergedEvent.bedrooms;
+              const bathrooms = mergedEvent.property?.bathrooms || mergedEvent.bathrooms;
+              const parking = mergedEvent.property?.parking || mergedEvent.parking;
               
-                <p className="text-center text-gray-700">
-                  {event.property?.address || 'No address available'}
-                </p>
+              const isValidValue = (val) => val && val !== '-' && val !== '' && val !== null && val !== undefined;
+              const hasPropertyInfo = isValidValue(address) || isValidValue(price) || isValidValue(bedrooms) || isValidValue(bathrooms) || isValidValue(parking);
+              
+              return hasPropertyInfo ? (
+                <>
+                  <p className="text-center text-gray-700">
+                    {address || 'No address available'}
+                  </p>
 
-                <p className="text-center text-sm text-gray-700">${event.property.price} per week</p>
+                  {isValidValue(price) && (
+                    <p className="text-center text-sm text-gray-700">
+                      ${price} per week
+                    </p>
+                  )}
 
-                <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
-                  <div className="flex items-center gap-1">
-                    <BedDouble className="w-4 h-4" />
-                    {event.property.bedrooms || '—'}
+                  <div className="flex justify-center gap-6 text-sm text-gray-600 mt-2">
+                    <div className="flex items-center gap-1">
+                      <BedDouble className="w-4 h-4" />
+                      {isValidValue(bedrooms) ? bedrooms : '—'}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <ShowerHead className="w-4 h-4" />
+                      {isValidValue(bathrooms) ? bathrooms : '—'}
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <CarFront className="w-4 h-4" />
+                      {isValidValue(parking) ? parking : '—'}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <ShowerHead className="w-4 h-4" />
-                    {event.property.bathrooms || '—'}
-                  </div>
-                  <div className="flex items-center gap-1">
-                    <CarFront className="w-4 h-4" />
-                    {event.property.parking || '—'}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <p className="text-center text-gray-700">No property information</p>
-            )}
+                </>
+              ) : (
+                <p className="text-center text-gray-700">No property information</p>
+              );
+            })()}
           </div>
-
         </div>
 
-        {/* Right: Booking Info */}
+        {/* Right: Booking Info & Attendance List */}
         <div className="flex-1">
-          <h2 className="text-2xl font-bold mb-2">
-            {formatDate(event.start)}
-          </h2>
-          <p className="text-lg font-medium text-gray-700">
-            {formatTime(event.start, event.end)}
-          </p>
+          {/* Date */}
+          <h2 className="text-2xl font-bold mb-2">{formatDate(startDate)}</h2>
+          {/* Time */}
+          {!isEditing ? (
+            <p className="text-lg font-medium text-gray-700">
+              {formatTime(startDate, endDate)}
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 gap-3">
+              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>Start</label>
+              <input
+                type="datetime-local"
+                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
+                value={draftStart}
+                onChange={(e) => setDraftStart(e.target.value)}
+                disabled={isBooked}
+              />
+              <label className={`text-sm font-semibold ${isBooked ? 'text-gray-400' : 'text-gray-800'}`}>End</label>
+              <input
+                type="datetime-local"
+                className="w-full border rounded p-2 bg-white disabled:bg-gray-100"
+                value={draftEnd}
+                onChange={(e) => setDraftEnd(e.target.value)}
+                disabled={isBooked}
+              />
+              {isBooked && (
+                <p className="text-xs text-gray-600 -mt-1">
+                  Time is locked for booked slots. You can still update the note below.
+                </p>
+              )}
+            </div>
+          )}
 
-          {event.tenant ? (
-            <>
-              <div className="bg-white p-4 rounded-xl space-y-2 mt-4">
-                <p className="font-semibold text-lg">{event.tenant}</p>
+          {/* Combined Tenant Information & Attendance List */}
+          <div className="bg-white p-4 rounded-xl space-y-4 mt-4">
+            {/* Individual Tenant Info (if exists) */}
+            {event.tenant ? (
+              <div className="space-y-2">
+                <p className="font-semibold text-lg">{event.tenant.name || event.tenant}</p>
                 <p className="text-sm text-gray-600">Age: {event.tenantAge || '—'}</p>
                 <p className="text-sm text-gray-600">Occupation: {event.occupation || '—'}</p>
               </div>
-            </>
+            ) : null}
 
+            {/* Divider if both sections exist */}
+            {event.tenant && event.attendanceList && event.attendanceList.length > 0 && (
+              <div className="border-t border-gray-200 my-3"></div>
+            )}
+
+            {/* Attendance List Section - Only show for Open Houses */}
+            {isOpenHouse && (
+              <div>
+                <div className="flex items-center gap-2 mb-3">
+                  <Users className="w-5 h-5 text-gray-600" />
+                  <h3 className="font-semibold text-lg">Tenants Subscribed to Open House</h3>
+                </div>
+
+                {event.attendanceList && event.attendanceList.length > 0 ? (
+                  <div className="space-y-2">
+                    {event.attendanceList.map((attendee, index) => (
+                      <div key={index} className="p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => handleAttendanceToggle(attendee.tenantID)}
+                              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                attendee.tenantAttendance
+                                  ? 'bg-green-500 border-green-500 text-white'
+                                  : 'border-gray-300 hover:border-green-400'
+                              }`}
+                              title={attendee.tenantAttendance ? 'Mark as not attended' : 'Mark as attended'}
+                            >
+                              {attendee.tenantAttendance && <Check className="w-3 h-3" />}
+                            </button>
+                            <button className="font-medium text-gray-800 underline" onClick={() => {
+                              const current = attendee.notes || '';
+                              const updated = prompt(`Notes for ${attendee.tenantName}:`, current) ?? current;
+                              if (updated !== current) handleNotesSave(attendee.tenantID, updated);
+                            }}>{attendee.tenantName}</button>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              attendee.tenantAttendance 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}>
+                              {attendee.tenantAttendance ? 'Attended' : 'Registered'}
+                            </span>
+                          </div>
+                        </div>
+                        {attendee.notes?.trim() ? (
+                          <div className="mt-2 text-sm text-gray-700 whitespace-pre-line">
+                            {attendee.notes}
+                          </div>
+                        ) : null}
+                      </div>
+                    ))}
+                    <p className="text-sm text-gray-600 text-center mt-2">
+                      Total: {event.attendanceList.length} tenant(s)
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center py-4">
+                    <Users className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                    <p className="text-gray-500">No tenants have subscribed yet</p>
+                  </div>
+                )}
+                <div className="mt-3 text-center">
+                  <button onClick={handleAddAnonymous} className="px-4 py-2 rounded-md bg-purple-600 text-white hover:bg-purple-700">
+                    Add Name
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+          {/*{tenantName ? (*/}
+          {/*  <div className="bg-white p-4 rounded-xl space-y-2 mt-4">*/}
+          {/*    <p className="font-semibold text-lg">{tenantName}</p>*/}
+          {/*    <p className="text-sm text-gray-600">Age: {tenantAge ?? '—'}</p>*/}
+          {/*    <p className="text-sm text-gray-600">Occupation: {occupation ?? '—'}</p>*/}
+          {/*    {booking?.status && (*/}
+          {/*      <p className="text-xs text-gray-500">Booking status: {booking.status}</p>*/}
+          {/*    )}*/}
+          {/*  </div>*/}
+          {/*) : (*/}
+          {/*  <div className="text-sm text-gray-600 mt-4 italic">*/}
+          {/*    {dataReady ? 'No tenant information.' : 'Loading tenant information...'}*/}
+          {/*  </div>*/}
+          {/*)}*/}
+
+          {/* Notes */}
+          {!isEditing ? (
+            (mergedEvent.notes?.trim() || mergedEvent.note?.trim()) ? (
+              <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
+                <p className="font-semibold mb-1">Note</p>
+                <p className="whitespace-pre-line">{mergedEvent.notes ?? mergedEvent.note}</p>
+              </div>
+            ) : (
+              <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-500 italic">
+                No notes yet.
+              </div>
+            )
           ) : (
-            <div className="text-sm text-gray-600 mt-4 italic">
-              No tenant information.
+            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
+              <label className="font-semibold mb-1 block">Note</label>
+              <textarea
+                className="w-full border rounded p-2 bg-white min-h-[90px]"
+                value={draftNotes}
+                onChange={(e) => setDraftNotes(e.target.value)}
+                placeholder="Add a note for this availability..."
+              />
             </div>
           )}
-          {/* {event.notes?.trim() && (
-            <div className="bg-white p-4 rounded-xl mt-4 text-sm text-gray-700">
-              <p className="font-semibold mb-1">Note</p>
-              <p className="whitespace-pre-line">{event.notes}</p>
-            </div>
-          )} */}
+
+          {/* Buttons row */}
+          <div className="mt-6 flex flex-wrap gap-2 justify-end">
+            {isEditing ? (
+              <>
+                <button
+                  className="px-4 py-2 rounded bg-gray-300 text-black"
+                  onClick={() => {
+                    setDraftStart(toLocalInputValue(startDate));
+                    setDraftEnd(toLocalInputValue(endDate));
+                    setDraftNotes((mergedEvent.notes ?? mergedEvent.note ?? '').toString());
+                    setIsEditing(false);
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 rounded bg-[#9747FF] text-white"
+                  onClick={handleSave}
+                >
+                  Save
+                </button>
+              </>
+            ) : (
+              <>
+                {/* Delete (blocked if booked) */}
+                <button
+                  className={`px-4 py-2 rounded flex items-center gap-2 ${
+                    isBooked ? 'bg-red-300 cursor-not-allowed' : 'bg-red-500 text-white'
+                  }`}
+                  onClick={handleDelete}
+                  disabled={isBooked}
+                  title={isBooked ? 'Booked slots cannot be deleted' : 'Delete this availability'}
+                >
+                  <Trash2 className="w-4 h-4" />
+                  Delete
+                </button>
+
+                {/* Single EDIT button */}
+                <button
+                  className="px-4 py-2 rounded flex items-center gap-2 bg-[#9747FF] text-white"
+                  onClick={() => setIsEditing(true)}
+                  title={isBooked ? 'Edit note (time locked)' : 'Edit time and note'}
+                >
+                  <Pencil className="w-4 h-4" />
+                  Edit
+                </button>
+                {isBooked && (
+                  <p className="text-xs text-gray-700 mt-3 italic">
+                    This slot is booked. Booked slots cannot be deleted but notes are still editable.
+                  </p>
+                )}
+              </>
+            )}
+          </div>
         </div>
       </div>
     </div>

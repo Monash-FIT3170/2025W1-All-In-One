@@ -24,8 +24,8 @@ export const ActivityTypeDialog = ({ isOpen, onSelect, onClose }) => {
             Availability
           </button>
           <button
-            disabled
-            className="bg-[#9747FF] text-white font-semibold py-2 px-6 rounded-full opacity-50 cursor-not-allowed"
+            onClick={() => onSelect('Ticket')}
+            className="bg-[#9747FF] text-white font-semibold py-2 px-6 rounded-full hover:bg-purple-600"
           >
             Ticket
           </button>
@@ -34,3 +34,4 @@ export const ActivityTypeDialog = ({ isOpen, onSelect, onClose }) => {
     </div>
   );
 };
+

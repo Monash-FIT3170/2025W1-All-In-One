@@ -26,3 +26,4 @@ export const BookingConfirmDialog = ({ isOpen, onConfirm, onCancel }) => {
     </div>
   );
 };
+

@@ -1,12 +1,23 @@
-import React from "react";
+import React, {useState} from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
-import { useParams } from "react-router-dom";
+import { FaFilter } from "react-icons/fa";
+import {Link, useParams} from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, RentalApplications } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, Videos, RentalApplications, Agents } from "../../api/database/collections";
+import {AddTicketDialog} from "./ticketPages/AddTicketDialog";
+import {MaintenanceTicketDialog} from "./ticketPages/MaintenanceTicketDialog";
+import {GeneralTicketDialog} from "./ticketPages/GeneralTicketDialog";
+import { ResolveTicketDialog } from "./ticketPages/ResolveTicketDialog";
+import { Tickets } from "/imports/api/database/collections";
+import { Ticket } from "./ticketPages/Ticket";
+import { FilterTicketsDialog } from "./ticketPages/FilterTicketsDialog.jsx"; // Import the FilterTicketsDialog component
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a particular property leased by a Tenant (accessed through BasicLeases) //
@@ -15,42 +26,103 @@ import { Properties, Photos, Videos, RentalApplications } from "../../api/databa
 export default function DetailedLease() {
   const { id } = useParams();
 
-  const { loading, property }= useTracker(()=>{
+  //ticket states
+  const [showAddTicketDialog, setShowAddTicketDialog] = useState(false);
+  const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
+  const [showGeneralDialog, setShowGeneralDialog] = useState(false);
+  const [showResolveTicketDialog, setShowResolveTicketDialog] = useState(false);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
+  const [showFilterTicketsDialog, setShowFilterTicketsDialog] = useState(false);
+  const [filterStatuses, setFilterStatuses] = useState([]);
+
+  // Use Meteor's useTracker hook to reactively get tickets for this property
+  const { tickets, isLoading } = useTracker(() => {
+    const handler = Meteor.subscribe('tickets.forProperty', id); // Subscribe to tickets for the current propId
+    const loading = !handler.ready(); // Check if subscription is ready
+    const ticketsData = Tickets.find({ prop_id: id }, { sort: { ticket_no: 1 } }).fetch(); // Fetch tickets
+    return { tickets: ticketsData, isLoading: loading };
+  }, [id]); // Re-run tracker if propId changes
+
+  // Store filtered tickets based on selected statuses
+  // If no filter is applied, show all tickets
+  const filteredTickets = filterStatuses.length > 0 ? tickets.filter(ticket => filterStatuses.includes(ticket.status)) : tickets;
+
+
+  const closeDialogs = () => {
+    setShowAddTicketDialog(false);
+    setShowMaintenanceDialog(false);
+    setShowGeneralDialog(false);
+    setShowResolveTicketDialog(false);
+    setShowFilterTicketsDialog(false);
+  };
+
+  const handleTicketSelect = (ticketType) => {
+    if (ticketType === 'Maintenance') {
+      setShowMaintenanceDialog(true);
+      setShowAddTicketDialog(false);
+    }
+    else {
+      setShowGeneralDialog(true);
+      setShowAddTicketDialog(false);
+    }
+  };
+
+  const { loading, property, agent }= useTracker(()=>{
     const propertyHandle= Meteor.subscribe("properties");
     const photoHandle= Meteor.subscribe("photos");
-    const videoHandle = Meteor.subscribe("videos")
-    const rentalAppHandle= Meteor.subscribe("rentalApplications")
+    const videoHandle = Meteor.subscribe("videos");
+    const rentalAppHandle= Meteor.subscribe("rentalApplications");
+    const agentHandle = Meteor.subscribe("agents");
 
-    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !videoHandle.ready()|| !rentalAppHandle.ready();
+    const isLoading= !propertyHandle.ready() || !photoHandle.ready()|| !videoHandle.ready()|| !rentalAppHandle.ready() || !agentHandle.ready();
     
     
-    if (isLoading) return {loading: true, property: null};
+    if (isLoading) return {loading: true, property: null, agent: null};
 
     // find property
     const selectedProperty= Properties.findOne({ prop_id: id });
-    if (!selectedProperty) return { loading: false, property: null};
+    if (!selectedProperty) return { loading: false, property: null, agent: null };
 
     // finf images
+    // Build image URLs prioritizing Cloudinary entries from property.photo
     const photos= Photos.find({ prop_id: id}).fetch();
-    const sortedUrls= photos
-    .sort((a,b)=> a.photo_order-b.photo_order)
-    .map((p) => p.photo_url);
+    const cloudinaryImageUrls = Array.isArray(selectedProperty.photo)
+      ? selectedProperty.photo
+          .filter((item) => {
+            if (typeof item === 'string') return item.trim().length > 0;
+            if (item && typeof item === 'object') {
+              const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+              const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+              return Boolean(item.url) && isNotVideo && isNotPdf;
+            }
+            return false;
+          })
+          .map((item) => (typeof item === 'string' ? item : item.url))
+      : [];
+
+    const sortedUrls = (cloudinaryImageUrls.length
+      ? cloudinaryImageUrls
+      : photos
+          .sort((a, b) => a.photo_order - b.photo_order)
+          .map((p) => p.photo_url)) || [];
 
     // get video of the property
     const videos = Videos.find({ prop_id: id }).fetch();
     const videoUrls = videos.map(v => v.video_url);
 
-    // find macthing rental applications to get lease start date if leased
-    //const isLeased= selectedProperty.prop_status === "Leased";
-
-    //const leaseStartDate= isLeased ? RentalApplications.findOne({ prop_id: id, status: "Approved"})?.lease_start_date||null
-    //:null;
+  
 
     // find the lease start date if tenant is approved
     const leaseStartDate = RentalApplications.findOne({ 
   prop_id: id, 
-  status: "Approved" 
+  landLordFinal: "Approved" 
 })?.lease_start_date || null;
+
+// fetch agent
+  let agent = null;
+  if (selectedProperty.agent_id) {
+    agent = Agents.findOne({ agent_id: selectedProperty.agent_id });
+  }
 
 
     
@@ -66,17 +138,19 @@ export default function DetailedLease() {
         AvailableDate: selectedProperty.prop_available_date,
         leaseStartDate: leaseStartDate,
         status: selectedProperty.prop_status,
-        Pets: selectedProperty.prop_pets?"Yes":"No",
+        Pets: selectedProperty.prop_pets,
         imageUrls: sortedUrls.length>0? sortedUrls:["/images/default.jpg"],
         videoUrls: videoUrls.length > 0 ? videoUrls : null, 
         description: selectedProperty.prop_desc,
+        agent_id: selectedProperty.agent_id,
         details:{
           baths: selectedProperty.prop_numbaths,
           beds: selectedProperty.prop_numbeds,
           carSpots: selectedProperty.prop_numcarspots,
-          furnished: selectedProperty.prop_furnish? "Yes":"No",
+          furnished: selectedProperty.prop_furnish,
         },
       },
+      agent,
     };
   })
   
@@ -100,13 +174,101 @@ export default function DetailedLease() {
 
       {/*Description and buttons*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
-        <div className="p-6 flex space-x-4 mt-4">
-          {/*Add future ticket button*/}
-        </div>
         <p className="font-semibold text-lg text-[#434343]">
           {property.description}
         </p>
       </div>
+
+      {/* Agent information */}
+      {agent && (
+        <div className="p-6 text-gray-800 text-base leading-relaxed mb-12">
+          <h3 className="text-xl font-semibold mb-4">Agent Information</h3>
+          <p>
+            <span className="text-1xl text-gray-700">Name: </span> {agent.agent_fname} {agent.agent_lname}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Email: </span> {agent.agent_email}
+          </p>
+          <p>
+            <span className="text-1xl text-gray-700">Phone: </span> {agent.agent_ph}
+          </p>
+        </div>
+      )}
+
+      {/*Tickets section with Filter button aligned right below heading*/}
+      <div className="max-w-7xl mx-auto w-full px-6 mt-8 pt-4 border-t border-gray-300">
+        <h2 className="text-4xl mt-8 mb-8 font-bold text-black">Tickets</h2>
+        <div className="flex justify-end mb-4">
+          <div className="relative">
+            <button
+              className="bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+              onClick={() => setShowFilterTicketsDialog(!showFilterTicketsDialog)}
+            >
+              <div className="flex items-center justify-center">
+                <FaFilter className="mr-2" />
+                Filter
+              </div>
+            </button>
+            <FilterTicketsDialog
+              isOpen={showFilterTicketsDialog}
+              onApply={closeDialogs}
+              filterStatuses={filterStatuses}
+              setFilterStatuses={setFilterStatuses}
+            />
+          </div>
+        </div>
+      </div>
+        {filteredTickets.length === 0 ? (
+          <p className="max-w-7xl mx-auto w-full px-6 mb-8">No tickets logged for this property yet.</p>
+        ) : (
+          <div className="max-w-7xl mx-auto w-full px-6 mb-8 grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+            {filteredTickets.map((ticket) => (
+              <Ticket
+                ticket={ticket}
+                setShowResolveTicketDialog={(ticketId) => {
+                  setSelectedTicketId(ticketId);
+                  setShowResolveTicketDialog(true);
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+      <div className="flex justify-center">
+        <button
+          onClick={() => setShowAddTicketDialog(true)}
+          className="w-1/6 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-3xl shadow-md mb-8 transition duration-200"
+        >
+          Add Ticket
+        </button>
+      </div>
+
+      <AddTicketDialog
+        isOpen={showAddTicketDialog}
+        onSelect={handleTicketSelect}
+        onClose={closeDialogs}
+      />
+      <MaintenanceTicketDialog
+        isOpen={showMaintenanceDialog}
+        onClose={closeDialogs}
+        propertyAddress={property?.address}
+        propId={property?.id}
+        agentId={property?.agent_id}
+      />
+      <GeneralTicketDialog
+        isOpen={showGeneralDialog}
+        onClose={closeDialogs}
+        propertyAddress={property?.address}
+        propId={property?.id}
+        agentId={property?.agent_id}
+      />
+      <ResolveTicketDialog
+        isOpen={showResolveTicketDialog}
+        onClose={closeDialogs}
+        ticketId={selectedTicketId}
+      />
+
+
 
       {/*Footer*/}
       <Footer />

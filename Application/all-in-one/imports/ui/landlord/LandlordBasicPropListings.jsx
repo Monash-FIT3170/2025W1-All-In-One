@@ -6,24 +6,26 @@ import Footer from "./components/Footer";
 import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, StarredProperties  } from "../../api/database/collections"; // importing mock for now
+import { Properties, Photos, StarredProperties, RentalApplications  } from "../../api/database/collections"; // importing mock for now
 
 /////////////////////////////////////////////////////////////
 // This page will display all the properties to a landlord //
 /////////////////////////////////////////////////////////////
 
 export default function LandlordBasicPropListings() {
-const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
+const { isReady, properties, photos, starredProperties, rentalApplications }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
     const subPhotos= Meteor.subscribe("photos");
     const subStarred= Meteor.subscribe("starredProperties");
+    const subApps= Meteor.subscribe("rentalApplications");
 
     const isReady= subProps.ready() && subPhotos.ready();
     const properties= isReady ? Properties.find().fetch(): [];
     const photos= isReady ? Photos.find().fetch(): [];
     const starredProperties= isReady ? StarredProperties.find({userId: Meteor.userId()}).fetch(): [];
+    const rentalApplications = isReady ? RentalApplications.find().fetch() : [];
 
-    return { isReady, properties, photos, starredProperties};
+    return { isReady, properties, photos, starredProperties, rentalApplications };
 
   });
 
@@ -34,18 +36,45 @@ const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
   
 
   const availableProperties= properties.filter(
-    (p)=> p.prop_status==="Available"
+    (p)=> {
+  // must be marked available
+  if (p.prop_status !== "Available") return false;
+
+  // check if there's any finalized rental app for this property
+  const hasFinalizedApp = rentalApplications.some(
+    (app) => app.prop_id === p.prop_id && app.landLordFinal === "Approved"
+  );
+
+  return !hasFinalizedApp;
+}
   );
 
   const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
 
   const propertyCards= availableProperties.map((p)=>{
-    const photo= photos.find((photo)=> photo.prop_id===p.prop_id);
+    // Prefer Cloudinary URLs stored in Properties.photo (objects or strings)
+    let firstPhotoUrl;
+    if (Array.isArray(p.photo)) {
+      const firstNonVideoPhoto = p.photo.find((item) => {
+        if (typeof item === 'string') return item.trim().length > 0;
+        if (item && typeof item === 'object') {
+          const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+          const isNotPdf = item.isPDF === false || item.isPDF === undefined;
+          return Boolean(item.url) && isNotVideo && isNotPdf;
+        }
+        return false;
+      });
+      if (typeof firstNonVideoPhoto === 'string') {
+        firstPhotoUrl = firstNonVideoPhoto;
+      } else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') {
+        firstPhotoUrl = firstNonVideoPhoto.url;
+      }
+    }
     return{
       id: p.prop_id,
       location: p.prop_address,
       price:`$${p.prop_pricepweek}`,
-      image:`/images/properties/${p.prop_id}/main.jpg`,
+      image: firstPhotoUrl || `/images/default.jpg`,
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
       cars:p.prop_numcarspots,
@@ -126,3 +155,4 @@ const { isReady, properties, photos, starredProperties }=  useTracker(()=>{
     </div>
   );
 }
+
