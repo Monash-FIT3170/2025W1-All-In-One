@@ -1,5 +1,5 @@
 /*import React from "react";*/
-import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter, FaMapMarkedAlt } from "react-icons/fa";
+import { FaBath, FaBed, FaCar, FaCouch , FaSearch, FaFilter, FaTimes, FaMapMarkedAlt } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import NavBar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
@@ -11,6 +11,20 @@ import { Properties, Photos, RentalApplications } from "../../api/database/colle
 import React, { useState } from "react";
 
 export default function GuestBasicPropListings() {
+
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    furnished: false,
+    pets: false,
+    rooms: "",
+    cars: "",
+    baths: "",
+    minPrice: "",
+    maxPrice: "",
+    propertyType: "",
+  });
+
   /* the map pop up restriction */ 
   const [showMap, setShowMap] = useState(false);
 
@@ -48,7 +62,7 @@ export default function GuestBasicPropListings() {
   
     const propertyCards= availableProperties.map((p)=>{
       // Prefer Cloudinary URLs stored in Properties.photo (objects or strings)
-      let firstPhotoUrl;
+      let firstPhotoUrl = "";
       if (Array.isArray(p.photo)) {
         const firstNonVideoPhoto = p.photo.find((item) => {
           if (typeof item === 'string') return item.trim().length > 0;
@@ -73,8 +87,47 @@ export default function GuestBasicPropListings() {
         beds: p.prop_numbeds,
         baths: p.prop_numbaths,
         cars:p.prop_numcarspots,
+        furnished: p.prop_furnished,
+        pets: p.prop_petsallowed,
+        type: p.prop_type,
       };
     });
+
+    const filteredProperties = propertyCards.filter((p) => {
+      // Furnished
+      if (filters.furnished && !p.furnished) return false;
+
+      // Pets
+      if (filters.pets && !p.pets) return false;
+
+      // Rooms
+      if (filters.rooms && p.beds < parseInt(filters.rooms)) return false;
+
+      // Car spots
+      if (filters.cars && p.cars < parseInt(filters.cars)) return false;
+
+      // Bathrooms
+      if (filters.baths && p.baths < parseInt(filters.baths)) return false;
+
+      // Price
+      const price = parseInt(p.price.replace("$", "").replace(",", "") || 0);
+      if (filters.minPrice && price < parseInt(filters.minPrice)) return false;
+      if (filters.maxPrice && price > parseInt(filters.maxPrice)) return false;
+
+      // Property Type
+      if (filters.propertyType && p.type && p.type !== filters.propertyType)
+        return false;
+
+      // Search by location/postcode
+      if (
+        searchQuery &&
+        !p.location.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+        return false;
+
+      return true;
+    });
+
 
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
@@ -105,6 +158,8 @@ export default function GuestBasicPropListings() {
                     type="text"
                     placeholder="Search Postcode..."
                     className="flex-1 outline-none bg-transparent"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
       
@@ -118,6 +173,7 @@ export default function GuestBasicPropListings() {
       
                 {/* Filter button with icon */}
                 <button
+                  onClick={() => setShowFilters(!showFilters)}
                   className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
                 >
                   <FaFilter className="mr-2" />
@@ -135,14 +191,180 @@ export default function GuestBasicPropListings() {
               </div>
             </div>
 
+                  {/* Filter section */}
+                  {showFilters && (
+                    <div className="mt-4 flex justify-center">
+                      <div
+                        className="bg-[#CBADD8] py-10 px-10 rounded-lg flex flex-col gap-6 w-full min-h-[400px] relative"
+                        style={{ maxWidth: "1100px" }}
+                      >
+                        {/* Close button */}
+                        <button
+                          className="absolute top-4 right-4 text-grey-700 hover:text-red-500"
+                          onClick={() => setShowFilters(false)}
+                        >
+                          <FaTimes size={20} />
+                        </button>
+
+                        {/* Checkboxes */}
+                        <div className="flex items-center gap-6">
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              className="w-5 h-5"
+                              checked={filters.furnished}
+                              onChange={(e) =>
+                                setFilters({ ...filters, furnished: e.target.checked })
+                              }
+                            />
+                            Furnished
+                          </label>
+
+                          <label className="flex items-center gap-2">
+                            <input
+                              type="checkbox"
+                              className="w-5 h-5"
+                              checked={filters.pets}
+                              onChange={(e) =>
+                                setFilters({ ...filters, pets: e.target.checked })
+                              }
+                            />
+                            Pets Allowed
+                          </label>
+                        </div>
+
+                        {/* Rooms / Baths / Car Spots */}
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <label className="block mb-1 font-semibold">Rooms</label>
+                            <input
+                              type="number"
+                              min="0"
+                              className="w-full p-2 rounded border"
+                              value={filters.rooms}
+                              onChange={(e) =>
+                                setFilters({ ...filters, rooms: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="block mb-1 font-semibold">Car Spots</label>
+                            <input
+                              type="number"
+                              min="0"
+                              className="w-full p-2 rounded border"
+                              value={filters.cars}
+                              onChange={(e) =>
+                                setFilters({ ...filters, cars: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="block mb-1 font-semibold">Bathrooms</label>
+                            <input
+                              type="number"
+                              min="0"
+                              className="w-full p-2 rounded border"
+                              value={filters.baths}
+                              onChange={(e) =>
+                                setFilters({ ...filters, baths: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        {/* Price Range */}
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block mb-1 font-semibold">Min Price</label>
+                            <input
+                              type="number"
+                              min="0"
+                              className="w-full p-2 rounded border"
+                              value={filters.minPrice}
+                              onChange={(e) =>
+                                setFilters({ ...filters, minPrice: e.target.value })
+                              }
+                            />
+                          </div>
+                          <div>
+                            <label className="block mb-1 font-semibold">Max Price</label>
+                            <input
+                              type="number"
+                              min="0"
+                              className="w-full p-2 rounded border"
+                              value={filters.maxPrice}
+                              onChange={(e) =>
+                                setFilters({ ...filters, maxPrice: e.target.value })
+                              }
+                            />
+                          </div>
+                        </div>
+
+                        {/* Property Type */}
+                        <div>
+                          <label className="block mb-1 font-semibold">Property Type</label>
+                          <select
+                            className="w-full p-2 rounded border"
+                            value={filters.propertyType}
+                            onChange={(e) =>
+                              setFilters({ ...filters, propertyType: e.target.value })
+                            }
+                          >
+                            <option value="">Select type</option>
+                            <option value="house">House</option>
+                            <option value="apartment">Apartment</option>
+                            <option value="unit">Unit</option>
+                            <option value="townhouse">Townhouse</option>
+                          </select>
+                        </div>
+
+                        {/* Available From */}
+                        <div>
+                          <label className="block mb-1 font-semibold">Available From</label>
+                          <input
+                            type="date"
+                            className="w-full p-2 rounded border"
+                            value={filters.availableFrom}
+                            onChange={(e) =>
+                              setFilters({ ...filters, availableFrom: e.target.value })
+                            }
+                          />
+                        </div>
+
+                        {/* Clear Filters */}
+                        <div className="mt-4">
+                          <button
+                            className="bg-[#9747FF] text-white px-6 py-2 rounded hover:bg-[#7d3dd1]"
+                            onClick={() =>
+                              setFilters({
+                                furnished: false,
+                                pets: false,
+                                rooms: "",
+                                baths: "",
+                                cars: "",
+                                minPrice: "",
+                                maxPrice: "",
+                                propertyType: "",
+                                availableFrom: "",
+                              })
+                            }
+                          >
+                            Clear Filters
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+
+
+
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
-          {propertyCards.map((property) => (
-            <Link
-              key={property.id}
-              to={`/GuestDetailedPropListing/${property.id}`}
-            >
+          {filteredProperties.map((property) => (
+            <Link key={property.id} to={`/GuestDetailedPropListing/${property.id}`}>
               <BasicPropertyCard property={property} />
             </Link>
           ))}
@@ -177,6 +399,7 @@ export default function GuestBasicPropListings() {
       
       
       {/*Footer*/}
+      <div className="h-40" />
       <Footer />
     </div>
   );
