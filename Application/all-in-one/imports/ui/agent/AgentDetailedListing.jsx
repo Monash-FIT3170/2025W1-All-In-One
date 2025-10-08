@@ -7,8 +7,10 @@ import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, RentalApplications, Landlord,Tenants } from "../../api/database/collections"; // importing mock for now
-import EditPropertyModal from "./components/EditPropertyModal";
+import {EditPropertyModal} from "./components/EditPropertyModal";
+import {ConfirmDeleteDialog} from "./components/ConfirmDeleteDialog";
 // import EditMediaModal from "./components/EditMediaModal";
+import { useNavigate } from "react-router-dom";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a the agent's own assigned property listing to the agent (accessed through AgentListings) //
@@ -18,6 +20,31 @@ export default function AgentDetailedListing() {
   const { id } = useParams();
   const[openEditDetails, setOpenEditDetails] = useState(false);
   // const[openEditMedia, setOpenEditMedia] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
+
+  const navigate = useNavigate();
+
+  const handleConfirmDelete = (propID) => {
+
+    Meteor.call(
+      "DeleteProperty",
+      {
+        propID
+      },
+      (err) => {
+        if (err) {
+          alert("Deleting Property Failed: " + err.reason);
+        }
+        else {
+          alert("Property Details Deleted Successfully!");
+          setShowDialog(false);
+          navigate(`/AgentListings`)
+        }
+      }
+    );
+    setShowDialog(false);
+
+  }
 
 const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
@@ -156,6 +183,14 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
             onClick={() => setOpenEditMedia(true)}>
               Edit Photos/Videos
             </button> */}
+            <button className={`${propertyData.status != "Available" ? 
+              'w-1/2 bg-gray-400 cursor-not-allowed text-white font-base text-center py-2 rounded-md shadow-md transition duration-200' : 
+              "w-1/2 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 rounded-md shadow-md transition duration-200"}`}
+            onClick={() => setShowDialog(true)}
+            disabled={propertyData.status != "Available"}
+            title={propertyData.status != "Available" ? "Property is currently being occupied" : ""}>
+              Delete Property
+            </button>
           </div>
         </div>
 
@@ -206,6 +241,11 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
       onClose={() => setOpenEditMedia(false)}
       propertyData={propertyData}/>} */}
 
+      {showDialog && <ConfirmDeleteDialog
+      isOpen={() => setShowDialog(true)}
+      onCancel={() => setShowDialog(false)}
+      onConfirm={() => handleConfirmDelete(propertyData.id)}
+      />}
     </div>
   );
 }

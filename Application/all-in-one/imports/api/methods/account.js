@@ -1,6 +1,6 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
-import { Tenants, Properties, Photos, Landlord } from '../database/collections.js'; // adjust path if needed
+import { Tenants, Properties, Photos, Landlord, RentalApplications } from '../database/collections.js'; // adjust path if needed
 
 Meteor.methods({
   async registerUser({ email, password, firstName, lastName, role }) {
@@ -131,6 +131,13 @@ Meteor.methods({
       });
 
   },
+
+  async 'DeleteProperty' ({propID}) {
+
+    await RentalApplications.removeAsync({prop_id: propID})
+    await Properties.removeAsync({prop_id: propID});
+
+  }
 
   // async 'EditPropertyMedia' ({propId, photo}) {
   //   await Properties.updateAsync(
