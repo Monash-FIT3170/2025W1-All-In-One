@@ -10,6 +10,7 @@ import { ExpressionOfInterest, Properties } from '/imports/api/database/collecti
 import { Tickets } from '/imports/api/database/collections.js';
 import { AgentAvailabilities } from '/imports/api/database/collections.js';
 import EOIList from './components/EOIList.jsx';
+import TicketList from './components/TicketList.jsx';
 
 /**
  * AgentDashboard Component
@@ -46,6 +47,8 @@ const AgentDashboard = () => {
   };
 
   const [openEOIModal, setOpenEOIModal] = useState(false);
+  const [openTicketsModal, setOpenTicketsModal] = useState(false);
+
 
   /**
    * Creates a combined dataset of tenants and their associated properties
@@ -126,7 +129,7 @@ const AgentDashboard = () => {
     { label: 'Pending EOIs', value: pendingEOICount, actionLabel: 'View EOIs', onAction: () => setOpenEOIModal(true) },
     { label: 'Unscheduled Inspections', value: '7' },
     { label: 'Unbooked Availabilities', value: unbookedAvailabilitiesCount },
-    { label: 'Unresolved Tickets', value: unresolvedTicketsCount, actionLabel: 'View Tickets', onAction: () => console.log('View Tickets clicked') },
+    { label: 'Unresolved Tickets', value: unresolvedTicketsCount, actionLabel: 'View Tickets', onAction: () => setOpenTicketsModal(true) },
   ];
 
   return (
@@ -140,6 +143,11 @@ const AgentDashboard = () => {
         isOpen={openEOIModal}
         onClose={() => setOpenEOIModal(false)}
         eois={[]} 
+      />
+
+      <TicketList
+        isOpen={openTicketsModal}
+        onClose={() => setOpenTicketsModal(false)}
       />
 
       {/* Calendar Section - Displays scheduling and appointment information */}

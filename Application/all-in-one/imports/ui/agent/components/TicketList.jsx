@@ -1,23 +1,21 @@
+// /imports/ui/components/TicketList.jsx
 import React, { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
+import { useTracker } from "meteor/react-meteor-data";
 
-// collections stay local to this file
-import { ExpressionOfInterest, Properties, Tenants } from "/imports/api/database/collections.js";
+// ⬇️ collections imported here (dashboard stays unchanged)
+import { Tickets, Tenants, Properties } from "/imports/api/database/collections.js";
 
-// UI bits to match TicketList expand/collapse style
 import Collapse from "@mui/material/Collapse";
 import IconButton from "@mui/material/IconButton";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import ExpandLessIcon from "@mui/icons-material/ExpandLess";
-import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 
-export default function EOIList({ isOpen, onClose }) {
+export default function TicketList({ isOpen, onClose }) {
   const [query, setQuery] = useState("");
   const [expandedId, setExpandedId] = useState(null);
-  const [loadingId, setLoadingId] = useState(null);
 
-  // --- lock scroll + close on ESC + backdrop ---
+  // lock scroll + close on ESC
   useEffect(() => {
     if (!isOpen) return;
     const prev = document.body.style.overflow;
@@ -30,53 +28,54 @@ export default function EOIList({ isOpen, onClose }) {
     };
   }, [isOpen, onClose]);
 
-  // --- Fetch + join (same logic you had) ---
+  // subscribe + join (Active tickets for this agent)
   const { ready, rows } = useTracker(() => {
     if (!isOpen) return { ready: true, rows: [] };
 
-    const subEOI = Meteor.subscribe("expressionOfInterest");
-    const subProps = Meteor.subscribe("properties");
-    const subTen = Meteor.subscribe("tenants");
-    const allReady = subEOI.ready() && subProps.ready() && subTen.ready();
+    const sT = Meteor.subscribe("tickets");
+    const sTen = Meteor.subscribe("tenants");
+    const sP = Meteor.subscribe("properties");
+    const allReady = sT.ready() && sTen.ready() && sP.ready();
+    const uid = Meteor.userId();
 
-    const agentId = Meteor.userId();
+    if (!allReady || !uid) return { ready: allReady, rows: [] };
 
-    // agent’s properties
-    const props = Properties.find(
-      { agent_id: agentId },
-      { fields: { prop_id: 1, prop_address: 1 } }
+    // status could be 'Active' or 'active' depending on seed — accept both
+    const activeTickets = Tickets.find(
+      { agent_id: uid, status: { $in: ["Active", "active"] } },
+      { sort: { date_logged: -1 } }
     ).fetch();
-    const propIds = props.map((p) => p.prop_id);
-    const propMap = Object.fromEntries(props.map((p) => [p.prop_id, p.prop_address]));
 
-    // pending EOIs (inviteSent=false)
-    const eois = ExpressionOfInterest.find({
-      propertyID: { $in: propIds },
-      inviteSent: false,
-    }).fetch();
+    // quick lookups
+    const tenMap = {};
+    Tenants.find({}).forEach((t) => {
+      tenMap[t.ten_id] = {
+        fullName: [t.ten_fn, t.ten_ln].filter(Boolean).join(" ").trim() || "—",
+      };
+    });
 
-    // tenants
-    const tenantIds = [...new Set(eois.map((e) => e.tenantID).filter(Boolean))];
-    const tenants = Tenants.find(
-      { ten_id: { $in: tenantIds } },
-      { fields: { ten_id: 1, ten_fn: 1, ten_ln: 1 } }
-    ).fetch();
-    const tenantMap = Object.fromEntries(
-      tenants.map((t) => [t.ten_id, `${t.ten_fn ?? ""} ${t.ten_ln ?? ""}`.trim()])
-    );
+    const propMap = {};
+    Properties.find({}).forEach((p) => {
+      propMap[p.prop_id] = { address: p.prop_address || "—" };
+    });
 
-    // decorate for UI (align to TicketList card style)
-    const rows = eois.map((e) => ({
-      _idKey: e._id,
-      tenantName: tenantMap[e.tenantID] || "Unknown applicant",
-      propertyAddress: propMap[e.propertyID] || e.propertyID,
-      message: e.EOI || "—",
+    const decorated = activeTickets.map((t) => ({
+      ...t,
+      _tenantName: tenMap[t.ten_id]?.fullName || "—",
+      _propertyAddress: propMap[t.prop_id]?.address || "—",
+      _ticketNumber: t.ticket_no ?? "—",
+      _issueStartDate: t.issue_start_date ? new Date(t.issue_start_date) : null,
+      _dateLogged: t.date_logged || "",
+      _title: t.title || "Untitled Ticket",
+      _type: t.type || "",
+      _description: t.description || "",
+      _idKey: t.ticket_id || t._id, // prefer your numeric/string ticket_id; fallback to _id
     }));
 
-    return { ready: allReady, rows };
+    return { ready: allReady, rows: decorated };
   }, [isOpen]);
 
-  // --- reset on open ---
+  // reset when opened
   useEffect(() => {
     if (isOpen) {
       setQuery("");
@@ -84,16 +83,27 @@ export default function EOIList({ isOpen, onClose }) {
     }
   }, [isOpen]);
 
-  // --- search (tenant, property, message) ---
+  // search: title, tenant, ticket number, property, type, description
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return rows;
-    return rows.filter((d) =>
-      [d.tenantName, d.propertyAddress, d.message].join(" ").toLowerCase().includes(q)
+    return rows.filter((t) =>
+      [
+        t._title,
+        t._tenantName,
+        String(t._ticketNumber),
+        t._propertyAddress,
+        t._type,
+        t._description,
+      ]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase()
+        .includes(q)
     );
   }, [rows, query]);
 
-  // --- measure yellow box height (same vibe as TicketList) ---
+  // measure yellow box once (like your calendar dialog)
   const listRef = useRef(null);
   const [maxListHeightPx, setMaxListHeightPx] = useState(null);
   const HEIGHT_BUFFER = 96;
@@ -111,37 +121,20 @@ export default function EOIList({ isOpen, onClose }) {
     return () => cancelAnimationFrame(rAF);
   }, [isOpen, expandedId, maxListHeightPx]);
 
-  // --- delete handler (kept your flow; moved button into expanded area) ---
-  const handleDelete = (id) => {
-    const confirmed = window.confirm(
-      "Are you sure you want to delete this EOI? The tenant will be notified by email."
-    );
-    if (!confirmed) return;
-
-    setLoadingId(id);
-    Meteor.call("eoi.reject", id, (err) => {
-      setLoadingId(null);
-      if (err) {
-        alert(`Failed to delete EOI: ${err.reason || err.message}`);
-      } else {
-        alert("EOI deleted and tenant notified.");
-      }
-    });
-  };
-
   if (!isOpen) return null;
 
-  const noEOIs = ready && rows.length === 0;
+  const noTickets = ready && Meteor.userId() && rows.length === 0;
   const noMatches = ready && rows.length > 0 && filtered.length === 0;
 
+  // backdrop click to close
   const onBackdrop = (e) => {
     if (e.target === e.currentTarget) onClose?.();
   };
 
   return (
-    <div className="fixed inset-0 z-[1000] bg-black/30" onMouseDown={onBackdrop} role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-50 bg-black/30" onMouseDown={onBackdrop}>
       <div className="min-h-full flex items-center justify-center p-6">
-        {/* dialog shell — matches TicketList */}
+        {/* dialog */}
         <div className="relative w-[920px] max-w-[92vw] rounded-[28px] bg-[#CBADD8] p-6 shadow-xl">
           {/* close */}
           <button
@@ -154,16 +147,16 @@ export default function EOIList({ isOpen, onClose }) {
 
           {/* header */}
           <div className="mt-1 mb-5 text-center">
-            <h2 id="eoi-modal-title" className="text-2xl font-bold text-black">Pending EOIs</h2>
+            <h2 className="text-2xl font-bold text-black">Unresolved Tickets</h2>
           </div>
 
-          {/* search pill (same shape/colors) */}
+          {/* search pill */}
           <div className="mx-auto mb-5 flex max-w-[640px] items-center gap-3">
             <div className="relative flex-1">
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search tenant, property, or message..."
+                placeholder="Search title, tenant, property, or ticket #..."
                 className="w-full rounded-full border border-purple-300 bg-[#FFF8E9] px-5 py-3 pr-12 outline-none"
               />
               <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
@@ -185,7 +178,7 @@ export default function EOIList({ isOpen, onClose }) {
             </button>
           </div>
 
-          {/* yellow list area */}
+          {/* yellow list */}
           <div
             ref={listRef}
             className="rounded-2xl bg-[#FAEEDA] p-5 overflow-y-auto overscroll-contain"
@@ -196,30 +189,38 @@ export default function EOIList({ isOpen, onClose }) {
             }
           >
             {!ready ? (
-              <div className="py-10 text-center text-sm text-black/70">Loading EOIs…</div>
-            ) : noEOIs ? (
-              <div className="py-10 text-center text-sm text-black/70">You currently have no pending EOIs.</div>
+              <div className="py-10 text-center text-sm text-black/70">Loading tickets…</div>
+            ) : !Meteor.userId() ? (
+              <div className="py-10 text-center text-sm text-black/70">
+                Please sign in as an agent to view your tickets.
+              </div>
+            ) : noTickets ? (
+              <div className="py-10 text-center text-sm text-black/70">
+                You currently have no unresolved tickets.
+              </div>
             ) : noMatches ? (
-              <div className="py-10 text-center text-sm text-black/70">No EOIs match “{query}”.</div>
+              <div className="py-10 text-center text-sm text-black/70">
+                No tickets match “{query}”.
+              </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2 items-start">
-                {filtered.map((item) => {
-                  const expanded = expandedId === item._idKey;
+                {filtered.map((t) => {
+                  const expanded = expandedId === t._idKey;
                   return (
                     <div
-                      key={item._idKey}
+                      key={t._idKey}
                       className={`relative rounded-2xl border px-5 pt-4 pb-4 transition hover:shadow cursor-pointer self-start ${
                         expanded ? "bg-[#CBADD8] border-black/30" : "bg-white border-black/20"
                       }`}
-                      onClick={() => setExpandedId(expanded ? null : item._idKey)}
+                      onClick={() => setExpandedId(expanded ? null : t._idKey)}
                     >
-                      {/* expand toggle (top-right) */}
+                      {/* toggle icon */}
                       <div className="absolute top-3 right-3 z-10">
                         <IconButton
                           size="small"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setExpandedId(expanded ? null : item._idKey);
+                            setExpandedId(expanded ? null : t._idKey);
                           }}
                           aria-label="toggle expand"
                           className="text-2xl font-bold text-black hover:text-gray-700"
@@ -230,50 +231,62 @@ export default function EOIList({ isOpen, onClose }) {
 
                       {/* summary */}
                       <div className="space-y-1 pr-10">
-                        <div className="text-sm">
-                          <span className="font-semibold">Prospective Tenant:</span> {item.tenantName}
+                        <div className="text-sm font-bold">
+                          <span className="font-semibold">Title:</span> {t._title}
                         </div>
                         <div className="text-sm">
-                          <span className="font-semibold">Property:</span> {item.propertyAddress}
+                          <span className="font-semibold">Property:</span> {t._propertyAddress}
+                        </div>
+                        <div className="text-sm">
+                          <span className="font-semibold">Tenant:</span> {t._tenantName}
+                        </div>
+                        <div className="text-sm">
+                          <span className="font-semibold">Ticket #:</span> {t._ticketNumber}
                         </div>
                       </div>
 
                       {/* expanded details */}
                       <Collapse in={expanded}>
-                        <div className="mt-4 rounded-2xl bg-white/40 p-4">
+                        <div className="mt-4 rounded-2xl bg-[#B997C6]/40 p-4">
                           <div className="mb-3">
-                            <label className="mb-1 block text-xs font-semibold">Expression of Interest</label>
+                            <label className="mb-1 block text-xs font-semibold">Ticket Type</label>
+                            <input
+                              readOnly
+                              value={t._type}
+                              className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-3">
+                            <label className="mb-1 block text-xs font-semibold">What is the issue?</label>
                             <textarea
                               readOnly
-                              value={item.message || ""}
-                              rows={4}
+                              value={t._description}
+                              rows={3}
                               className="w-full resize-none rounded-lg border bg-white px-3 py-2 text-sm"
                             />
                           </div>
 
-                          <div className="mt-4 flex items-center justify-end gap-3">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDelete(item._idKey);
-                              }}
-                              disabled={loadingId === item._idKey}
-                              className={`inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
-                                loadingId === item._idKey
-                                  ? "bg-[#C9C9C9] text-white cursor-not-allowed"
-                                  : "bg-[#7F7F7F] text-white hover:opacity-90"
-                              }`}
-                              title="Delete EOI"
-                            >
-                              {loadingId === item._idKey ? (
-                                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                                  <path d="M12 3a9 9 0 1 0 9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                                </svg>
-                              ) : (
-                                <DeleteOutlineIcon fontSize="small" />
-                              )}
-                              Delete
-                            </button>
+                          {t._type === "Maintenance" && (
+                            <div className="mb-3">
+                              <label className="mb-1 block text-xs font-semibold">
+                                When did the issue commence?
+                              </label>
+                              <input
+                                readOnly
+                                value={t._issueStartDate ? t._issueStartDate.toLocaleDateString() : ""}
+                                className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                              />
+                            </div>
+                          )}
+
+                          <div className="mb-1">
+                            <label className="mb-1 block text-xs font-semibold">Date logged</label>
+                            <input
+                              readOnly
+                              value={t._dateLogged || ""}
+                              className="w-full rounded-lg border bg-white px-3 py-2 text-sm"
+                            />
                           </div>
                         </div>
                       </Collapse>
