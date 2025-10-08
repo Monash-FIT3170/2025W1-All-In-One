@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { Calendar } from './components/Calendar.jsx';
 import { Mail, BedDouble, ShowerHead, CarFront } from 'lucide-react';
@@ -9,6 +9,7 @@ import { useTracker } from 'meteor/react-meteor-data';
 import { ExpressionOfInterest, Properties } from '/imports/api/database/collections.js';
 import { Tickets } from '/imports/api/database/collections.js';
 import { AgentAvailabilities } from '/imports/api/database/collections.js';
+import EOIList from './components/EOIList.jsx';
 
 /**
  * AgentDashboard Component
@@ -43,6 +44,8 @@ const AgentDashboard = () => {
     }
     return age;
   };
+
+  const [openEOIModal, setOpenEOIModal] = useState(false);
 
   /**
    * Creates a combined dataset of tenants and their associated properties
@@ -120,7 +123,7 @@ const AgentDashboard = () => {
 
   // KPI
   const kpis = [
-    { label: 'Pending EOIs', value: pendingEOICount, actionLabel: 'View EOIs', onAction: () => console.log('View EOIs clicked') },
+    { label: 'Pending EOIs', value: pendingEOICount, actionLabel: 'View EOIs', onAction: () => setOpenEOIModal(true) },
     { label: 'Unscheduled Inspections', value: '7' },
     { label: 'Unbooked Availabilities', value: unbookedAvailabilitiesCount },
     { label: 'Unresolved Tickets', value: unresolvedTicketsCount, actionLabel: 'View Tickets', onAction: () => console.log('View Tickets clicked') },
@@ -133,6 +136,11 @@ const AgentDashboard = () => {
 
       {/* KPI Section */}
       <KPISection kpis={kpis} />
+      <EOIList
+        isOpen={openEOIModal}
+        onClose={() => setOpenEOIModal(false)}
+        eois={[]} 
+      />
 
       {/* Calendar Section - Displays scheduling and appointment information */}
       <div className="mt-10">
