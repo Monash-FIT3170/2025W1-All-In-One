@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState} from "react";
 import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter } from "react-icons/fa";
 import { Properties } from "../../api/database/collections";
 import { Link } from "react-router-dom";
@@ -9,6 +9,20 @@ import Footer from "./components/Footer";
 import PropertyCard from "../globalComponents/BasicPropertyCard";
 
 export default function AgentListings() {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    furnished: false,
+    pets: false,
+    rooms: "",
+    cars: "",
+    baths: "",
+    minPrice: "",
+    maxPrice: "",
+    propertyType: "",
+  });
+
+
   const { isReady, properties } = useTracker(() => {
     const subProps = Meteor.subscribe("properties");
 
@@ -56,6 +70,27 @@ export default function AgentListings() {
     };
   });
 
+  const filteredProperties = propertyCards.filter((p) => {
+    if (filters.furnished && !p.furnished) return false;
+    if (filters.pets && !p.pets) return false;
+    if (filters.rooms && p.beds < parseInt(filters.rooms)) return false;
+    if (filters.cars && p.cars < parseInt(filters.cars)) return false;
+    if (filters.baths && p.baths < parseInt(filters.baths)) return false;
+
+    const price = parseInt(p.price.replace("$", "").replace(",", "") || 0);
+    if (filters.minPrice && price < parseInt(filters.minPrice)) return false;
+    if (filters.maxPrice && price > parseInt(filters.maxPrice)) return false;
+
+    if (filters.propertyType && p.type && p.type !== filters.propertyType)
+      return false;
+
+    if (searchQuery && !p.location.toLowerCase().includes(searchQuery.toLowerCase()))
+      return false;
+
+    return true;
+  });
+
+
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
       {/*Header*/}
@@ -79,6 +114,8 @@ export default function AgentListings() {
               type="text"
               placeholder="Search Postcode..."
               className="flex-1 outline-none bg-transparent"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
@@ -87,12 +124,126 @@ export default function AgentListings() {
             Search
           </button>
 
-          <button className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md">
+          <button 
+            className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+            onClick={() => setShowFilters(!showFilters)}
+          >
             <FaFilter className="mr-2" />
             Filter
           </button>
         </div>
       </div>
+    
+    {/* Filter section */}
+    {showFilters && (
+    <div className="mt-4 flex justify-center">
+      <div
+        className="bg-[#CBADD8] py-10 px-10 rounded-lg flex flex-col gap-6 w-full min-h-[400px] relative"
+        style={{ maxWidth: "1100px" }}
+      >
+        {/* Furnished & Pets checkboxes */}
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={filters.furnished}
+              onChange={(e) =>
+                setFilters({ ...filters, furnished: e.target.checked })
+              }
+            />
+            Furnished
+          </label>
+
+          <label className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={filters.pets}
+              onChange={(e) =>
+                setFilters({ ...filters, pets: e.target.checked })
+              }
+            />
+            Pets Allowed
+          </label>
+        </div>
+
+        {/* Number inputs */}
+        <div className="grid grid-cols-3 gap-4">
+          <div>
+            <label className="block mb-1 font-semibold">Rooms</label>
+            <input
+              type="number"
+              min="0"
+              className="w-full p-2 rounded border"
+              value={filters.rooms}
+              onChange={(e) => setFilters({ ...filters, rooms: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-semibold">Car Spots</label>
+            <input
+              type="number"
+              min="0"
+              className="w-full p-2 rounded border"
+              value={filters.cars}
+              onChange={(e) => setFilters({ ...filters, cars: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-semibold">Bathrooms</label>
+            <input
+              type="number"
+              min="0"
+              className="w-full p-2 rounded border"
+              value={filters.baths}
+              onChange={(e) => setFilters({ ...filters, baths: e.target.value })}
+            />
+          </div>
+        </div>
+
+        {/* Price range */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block mb-1 font-semibold">Min Price</label>
+            <input
+              type="number"
+              min="0"
+              className="w-full p-2 rounded border"
+              value={filters.minPrice}
+              onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block mb-1 font-semibold">Max Price</label>
+            <input
+              type="number"
+              min="0"
+              className="w-full p-2 rounded border"
+              value={filters.maxPrice}
+              onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
+            />
+          </div>
+        </div>
+
+        {/* Property type dropdown */}
+        <div>
+          <label className="block mb-1 font-semibold">Property Type</label>
+          <select
+            className="w-full p-2 rounded border"
+            value={filters.propertyType}
+            onChange={(e) =>
+              setFilters({ ...filters, propertyType: e.target.value })
+            }
+          >
+            <option value="">Select type</option>
+            <option value="house">House</option>
+            <option value="apartment">Apartment</option>
+            <option value="unit">Unit</option>
+            <option value="townhouse">Townhouse</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  )}
 
       {/* Add Listing Button */}
       <div className="mt-4 w-full flex justify-center">
@@ -119,17 +270,21 @@ export default function AgentListings() {
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
-          {propertyCards.map((property) => (
-
-            <PropertyCard
-              key={property.id}
-              property={property}
-              showFav={false}
-              onStarToggle={(p) => console.log("Favourited:", p)}
-              linkTo={`/AgentDetailedListing/${property.id}`}
-            />
-
-          ))}
+          {filteredProperties.length === 0 ? (
+            <p className="text-gray-700 text-center col-span-2">
+              No properties match your filters.
+            </p>
+          ) : (
+            filteredProperties.map((property) => (
+              <PropertyCard
+                key={property.id}
+                property={property}
+                showFav={false}
+                onStarToggle={(p) => console.log("Favourited:", p)}
+                linkTo={`/AgentDetailedListing/${property.id}`}
+              />
+            ))
+          )}
         </div>
       </div>
 
