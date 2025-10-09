@@ -88,7 +88,7 @@ import '/imports/api/methods/eoi.js';
 import '/imports/api/agent/ticketActivities/methods.js';
 import '/imports/api/agent/ticketActivities/publications.js';
 
-
+import '/imports/api/methods/properties.js';
 import '/imports/api/methods/profileSettings.js';
 
 import 'dotenv/config';
