@@ -28,6 +28,7 @@ import { ClearDialog } from './ClearDialog.jsx';
 import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx';
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx';
 import { EventDetailModal } from './EventDetailModal.jsx';
+import { OtherDetailModal } from './OtherDetailModal.jsx';
 import { TicketTypeDialog } from './TicketTypeDialog.jsx';
 import { TicketActivityDialog } from './TicketActivityDialog.jsx';
 import { OtherActivityDialog } from './OtherActivityDialog.jsx';
@@ -537,24 +538,33 @@ export const Calendar = () => {
 
 
       {selectedEvent && (
-        <EventDetailModal
-          event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-          // 🩹 FIX: delete uses robust kind/sourceId from selectedEvent
-          onDelete={() => handleDeleteEvent(selectedEvent)}
-          onAttendanceUpdate={() => {
-            if (
-              selectedEvent.type === 'Open House' ||
-              selectedEvent.availability_type === 'Open House'
-            ) {
-              const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: selectedEvent.id });
-              setSelectedEvent((prev) => ({
-                ...prev,
-                attendanceList: attendanceRecord?.attendanceList || [],
-              }));
-            }
-          }}
-        />
+        <>
+          {selectedEvent.kind === 'otherActivity' ? (
+            <OtherDetailModal
+              event={selectedEvent}
+              onClose={() => setSelectedEvent(null)}
+            />
+          ) : (
+            <EventDetailModal
+              event={selectedEvent}
+              onClose={() => setSelectedEvent(null)}
+              // 🩹 FIX: delete uses robust kind/sourceId from selectedEvent
+              onDelete={() => handleDeleteEvent(selectedEvent)}
+              onAttendanceUpdate={() => {
+                if (
+                  selectedEvent.type === 'Open House' ||
+                  selectedEvent.availability_type === 'Open House'
+                ) {
+                  const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: selectedEvent.id });
+                  setSelectedEvent((prev) => ({
+                    ...prev,
+                    attendanceList: attendanceRecord?.attendanceList || [],
+                  }));
+                }
+              }}
+            />
+          )}
+        </>
       )}
 
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
@@ -565,7 +575,7 @@ export const Calendar = () => {
           Clear All
         </button>
         <p className="text-sm text-gray-800 mb-4">
-          Clears all availabilities and ticket activities from the calendar.
+          Clears all activities from the calendar.
         </p>
       </div>
     </div>
