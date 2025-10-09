@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GoogleMap, LoadScript, MarkerF, InfoWindowF } from "@react-google-maps/api";
 import { Meteor } from "meteor/meteor";
+import { useNavigate } from "react-router-dom";
 
 const containerStyle = {
   width: "100%",
@@ -21,6 +22,7 @@ export default function MapView({ properties = [] }) {
   const [hoveredMarkerId, setHoveredMarkerId] = useState(null);
   const geocodeCacheRef = useRef(new Map());
   const markerHoverTimeoutRef = useRef(null);
+  const navigate = useNavigate();
 
   const propertiesWithAddresses = useMemo(
     () =>
@@ -175,6 +177,24 @@ export default function MapView({ properties = [] }) {
     }, 150);
   }, []);
 
+  const handleInfoWindowClick = useCallback(
+    (markerId) => {
+      setHoveredMarkerId(null);
+      navigate(`/GuestDetailedPropListing/${markerId}`);
+    },
+    [navigate]
+  );
+
+  const handleInfoWindowKeyDown = useCallback(
+    (event, markerId) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        handleInfoWindowClick(markerId);
+      }
+    },
+    [handleInfoWindowClick]
+  );
+
   if (!apiKey) {
     return (
       <div className="flex h-full w-full items-center justify-center text-gray-600">
@@ -217,6 +237,11 @@ export default function MapView({ properties = [] }) {
                   className="rounded bg-white px-2 py-1 text-sm text-gray-800 shadow"
                   onMouseEnter={handleInfoWindowMouseEnter}
                   onMouseLeave={handleInfoWindowMouseLeave}
+                  role="button"
+                  tabIndex={0}
+                  onClick={() => handleInfoWindowClick(marker.id)}
+                  onKeyDown={(event) => handleInfoWindowKeyDown(event, marker.id)}
+                  style={{ cursor: "pointer" }}
                 >
                   {marker.label}
                 </div>
