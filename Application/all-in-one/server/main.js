@@ -1,7 +1,10 @@
 process.env.MAIL_URL = "smtps://allinone3170%40gmail.com:llqwcpiqphurfowj@smtp.gmail.com:465";
 
+import { Messages } from '/imports/api/database/collections.js';
+
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
+import { check } from 'meteor/check';
 function maskMongoUrl(uri) {
   if (!uri) return '(not set)';
   try {
@@ -323,3 +326,35 @@ Meteor.publish("userById", function (userId) {
   );
 });
 
+Meteor.publish('messages', function (ticketId) {
+  return Messages.find({ ticketId });
+});
+
+Meteor.methods({
+  'messages.insert'(agentId, tenantId, text) {
+    if (!this.userId) throw new Meteor.Error('not-authorized');
+    if (!agentId || !tenantId || !text) {
+      throw new Meteor.Error('invalid-args', 'Missing chat identifiers');
+    }
+
+    Messages.insert({
+      agent_id: agentId,
+      tenant_id: tenantId,
+      sender_id: this.userId,
+      text,
+      createdAt: new Date(),
+    });
+  },
+});
+
+Meteor.publish('messages.byAgentTenant', function (agentId, tenantId) {
+  check(agentId, String);
+  check(tenantId, String);
+  if (!this.userId) return this.ready();
+
+  const isAgentParticipant = Agents.findOne({ agent_id: { $in: [agentId, this.userId] } });
+  const isTenantParticipant = this.userId === tenantId;
+  if (!isAgentParticipant && !isTenantParticipant) return this.ready();
+
+  return Messages.find({ agent_id: agentId, tenant_id: tenantId });
+});

@@ -329,3 +329,13 @@ TicketActivities.schema = new SimpleSchema({
   },
   createdAt: { type: Date, defaultValue: new Date() },
 });
+
+export const Messages = new Mongo.Collection('messages');
+Messages.schema = new SimpleSchema({
+  message_id: { type: String, optional: true },
+  agent_id: { type: String },
+  tenant_id: { type: String },
+  sender_id: { type: String },  // who sent the message (could be agent or tenant)
+  text: { type: String },
+  createdAt: { type: Date, defaultValue: new Date() },
+});

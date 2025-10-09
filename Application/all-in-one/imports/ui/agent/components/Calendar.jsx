@@ -5,6 +5,7 @@
  * - 🩹 FIX: Robust `kind` detection in eventClick (even if tag missing)
  * - 🩹 FIX: Always carry `kind` and `sourceId` into selectedEvent
  * - 🩹 FIX: Central delete handler branches on kind
+ * 
  *
  * Also keeps ticket→property hydration from earlier.
  */
@@ -14,6 +15,7 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
+import { ChatBox } from './ChatBox.jsx';
 
 import {
   AgentAvailabilities,
@@ -65,6 +67,7 @@ export const Calendar = () => {
 
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
+  const agentId = useTracker(() => Meteor.userId());
 
   const closeDialogs = () => {
     setShowClearDialog(false);
@@ -511,6 +514,9 @@ export const Calendar = () => {
           Clears all availabilities and ticket activities from the calendar.
         </p>
       </div>
+      {/* 💬 Chat Section */}
+      <ChatBox agentId={agentId} />
+
     </div>
   );
 };
