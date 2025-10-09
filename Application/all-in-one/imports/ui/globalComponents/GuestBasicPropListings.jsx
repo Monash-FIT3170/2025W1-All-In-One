@@ -386,7 +386,7 @@ export default function GuestBasicPropListings() {
 
           {/* Map content */}
           <div className="flex-1">
-            <MapView />
+            <MapView properties={filteredProperties} />
           </div>
         </div>
       </div>
