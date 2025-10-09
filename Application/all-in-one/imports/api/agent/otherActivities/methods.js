@@ -18,4 +18,21 @@ Meteor.methods({
       notes,
     });
   },
+
+  async 'otherActivities.remove'(id) {
+    check(id, String);
+    const doc = await OtherActivities.findOneAsync({ _id: id });
+    if (!doc) throw new Meteor.Error('not-found', 'Availability not found');
+    return OtherActivities.removeAsync({ _id: id });
+  },
+
+  async 'otherActivities.updateNotes'(id, newNote) {
+    check(id, String);
+    check(newNote, String);
+    const doc = await OtherActivities.findOneAsync({ _id: id });
+    if (!doc) throw new Meteor.Error('not-found', 'Availability not found');
+
+    return OtherActivities.updateAsync({ _id: id }, { $set: {notes: newNote} });
+  },
+
 });
