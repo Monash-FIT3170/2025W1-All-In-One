@@ -39,20 +39,20 @@ tailwindcss
 
 
 ## Running the Application Locally
-meteor run or    meteor (without maps and API) 
-meteor --settings settings.json (once map has been added) 
-npx dotenv -e .env -- meteor run --settings settings.json (final run command with database) 
+meteor run or meteor (without maps and API)  
+meteor --settings settings.json (once map has been added)  
+npx dotenv -e .env -- meteor run --settings settings.json (final run command with database)  
 
-Visit http://localhost:3000 in your browser.  Use the link generated in the terminal of your VScode
-Additional Notes: A private key needs to be created locally in the main folder all-in-one- settings.json. Add the API key to this file and add it to gitignore. This ensures privacy of the API key.
+Visit http://localhost:3000 in your browser.  Use the link generated in the terminal of your VScode  
+Additional Notes: A private key needs to be created locally in the main folder all-in-one- settings.json. Add the API key to this file and add it to gitignore. This ensures privacy of the API key.  
 
 ## Project Structure (High-Level)
 
-/client          →  React UI components
-/server          →  Meteor server methods
-/imports/api     →  Database collections & methods
-/imports/ui      →  React dialogs, forms, views
-/config          →  Environment & app configuration
-/tests           →  Unit and integration tests
+/client          →  React UI components  
+/server          →  Meteor server methods  
+/imports/api     →  Database collections & methods  
+/imports/ui      →  React dialogs, forms, views  
+/config          →  Environment & app configuration  
+/tests           →  Unit and integration tests  
 
 
