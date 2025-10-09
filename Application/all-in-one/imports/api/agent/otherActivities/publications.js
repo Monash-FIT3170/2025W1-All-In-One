@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { OtherActivities } from '/imports/api/database/collections';
 
 if (Meteor.isServer) {
-  Meteor.publish('agentOtherActivities', function () {
+  Meteor.publish('otherActivities', function () {
     // Only return other activities for the current agent
     if (!this.userId) {
       return this.ready();
