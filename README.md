@@ -54,7 +54,7 @@ postcss
 tailwindcss
 
 
-##Running the Application Locally
+## Running the Application Locally
 meteor run or    meteor (without maps and API) 
 meteor --settings settings.json (once map has been added) 
 npx dotenv -e .env -- meteor run --settings settings.json (final run command with database) 
