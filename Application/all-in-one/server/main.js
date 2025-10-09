@@ -331,19 +331,68 @@ Meteor.publish('messages', function (ticketId) {
 });
 
 Meteor.methods({
-  'messages.insert'(agentId, tenantId, text) {
-    if (!this.userId) throw new Meteor.Error('not-authorized');
-    if (!agentId || !tenantId || !text) {
-      throw new Meteor.Error('invalid-args', 'Missing chat identifiers');
-    }
+  async 'messages.insert'(agentId, tenantId, text) {
+    try {
+      check(agentId, String);
+      check(tenantId, String);
+      check(text, String);
 
-    Messages.insert({
-      agent_id: agentId,
-      tenant_id: tenantId,
-      sender_id: this.userId,
-      text,
-      createdAt: new Date(),
-    });
+      if (!this.userId) {
+        throw new Meteor.Error('not-authorized', 'You must be signed in to send messages.');
+      }
+
+      const trimmedText = text.trim();
+      if (!trimmedText) {
+        throw new Meteor.Error('invalid-message', 'Message cannot be empty.');
+      }
+
+      const callerId = this.userId;
+      const callerUser = Meteor.users.findOne(callerId);
+      const callerEmails = (callerUser?.emails || [])
+        .map((entry) => entry?.address?.toLowerCase())
+        .filter(Boolean);
+
+      let agentDoc = Agents.findOne({ agent_id: agentId });
+      if (!agentDoc && callerEmails.length > 0) {
+        agentDoc = Agents.findOne({ agent_email: { $in: callerEmails } });
+      }
+
+      let tenantDoc = Tenants.findOne({ ten_id: tenantId });
+      if (!tenantDoc && callerEmails.length > 0) {
+        tenantDoc = Tenants.findOne({ ten_email: { $in: callerEmails } });
+      }
+
+      if (!agentDoc) console.warn('[messages.insert] missing agent doc', { agentId });
+      if (!tenantDoc) console.warn('[messages.insert] missing tenant doc', { tenantId });
+
+      const messageId = await Messages.insertAsync({
+        agent_id: agentId,
+        tenant_id: tenantId,
+        sender_id: callerId,
+        text: trimmedText,
+        createdAt: new Date(),
+      });
+
+      return { ok: true, messageId };
+    } catch (err) {
+      console.error('[messages.insert] error', {
+        agentId,
+        tenantId,
+        callerId: this.userId,
+        reason: err?.reason,
+        message: err?.message,
+        stack: err?.stack,
+      });
+
+      if (err instanceof Meteor.Error) {
+        throw err;
+      }
+
+      throw new Meteor.Error(
+        'message-insert-failed',
+        err?.reason || err?.message || 'Unable to send message right now.'
+      );
+    }
   },
 });
 
