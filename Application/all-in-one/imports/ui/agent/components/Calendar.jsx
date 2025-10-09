@@ -101,6 +101,14 @@ export const Calendar = () => {
     };
   });
 
+  const { otherActivities } = useTracker(() => {
+    const h = Meteor.subscribe('otherActivities');
+    return {
+      otherActivities: OtherActivities.find().fetch(),
+      isLoading: !h.ready(),
+    };
+  })
+
   const { ticketsById, propertiesByPropId } = useTracker(() => {
     const tSub = Meteor.subscribe('tickets');
     const pSub = Meteor.subscribe('properties');
@@ -322,7 +330,7 @@ export const Calendar = () => {
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
         <p className="text-gray-500 mt-2">
-          Click empty timeslot to schedule an activity - an availability (inspection or open house) or ticket activity.
+          Click empty timeslot to schedule an activity - an availability (inspection or open house), ticket or other activity.
         </p>
       </div>
 
@@ -426,6 +434,23 @@ export const Calendar = () => {
                 borderColor: '#FF9900',
                 ticket: ticketDoc || undefined,
                 property: toPropertyPayload(propDoc) || undefined,
+              };
+            }),
+
+            // Other
+            ...otherActivities.map((slot) => {
+
+              return {
+                ...slot,
+                id: slot._id,
+                kind: 'otherActivity',
+                sourceId: slot._id,
+                start: new Date(slot.start),
+                end: new Date(slot.end),
+                title: slot.title,
+                backgroundColor: '#ffc9f3',
+                textColor: '#000000',
+                borderColor: '#a6005e',
               };
             }),
 
