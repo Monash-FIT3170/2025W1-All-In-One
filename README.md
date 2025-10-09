@@ -16,26 +16,26 @@ Thytus Benjamin - tben0015@student.monash.edu
 
 ## Installing Dependencies
 The application uses the following dependencies, these can be installed by running npm install in the command prompt, followed by the name of the dependency.  
-@babel/runtime
-@fullcalendar/interaction
-@fullcalendar/react
-@fullcalendar/timegrid
-heroicons/react
-clone
-dayjs
-lucide-react
-meteor-node-stubs
-react
-react-dom
-react-icons
-react-router
-react-router-dom,
-react-slick
-simpl-schema
-slick-carousel
-autoprefixer
-postcss
-tailwindcss
+@babel/runtime  
+@fullcalendar/interaction  
+@fullcalendar/react  
+@fullcalendar/timegrid  
+heroicons/react  
+clone  
+dayjs  
+lucide-react  
+meteor-node-stubs  
+react  
+react-dom  
+react-icons  
+react-router  
+react-router-dom,  
+react-slick  
+simpl-schema  
+slick-carousel  
+autoprefixer  
+postcss  
+tailwindcss  
 
 
 ## Running the Application Locally
