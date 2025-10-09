@@ -55,4 +55,9 @@ Additional Notes: A private key needs to be created locally in the main folder a
 /config          →  Environment & app configuration  
 /tests           →  Unit and integration tests  
 
+## Hardware Requirements
+CPU: Dual-core processor (Intel i5 or AMD equivalent  
+RAM: 8GB (16GB recommended)  
+Disk: ~20GB free space  
+OS: Windows 10+, macOS 12+, or Ubuntu 20.04+  
 
