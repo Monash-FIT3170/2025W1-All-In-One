@@ -23,4 +23,16 @@ Meteor.methods({
       createdAt: new Date(),
     });
   },
+
+  async 'ticketActivities.remove'(activityId) {
+    check(activityId, String);
+
+    const existing = await TicketActivities.findOneAsync({ _id: activityId });
+    if (!existing) {
+      throw new Meteor.Error('not-found', 'Ticket activity not found');
+    }
+
+    await TicketActivities.removeAsync({ _id: activityId });
+    return activityId;
+  },
 });

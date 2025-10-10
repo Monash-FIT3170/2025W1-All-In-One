@@ -548,8 +548,7 @@ export const Calendar = () => {
             <EventDetailModal
               event={selectedEvent}
               onClose={() => setSelectedEvent(null)}
-              // 🩹 FIX: delete uses robust kind/sourceId from selectedEvent
-              onDelete={() => handleDeleteEvent(selectedEvent)}
+              onDelete={handleDeleteEvent}
               onAttendanceUpdate={() => {
                 if (
                   selectedEvent.type === 'Open House' ||
