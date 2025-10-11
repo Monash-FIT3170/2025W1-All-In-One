@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
-import { HiOutlineInformationCircle } from "react-icons/hi"; 
+import { HiOutlineInformationCircle } from "react-icons/hi";
 import { useParams, Link } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
 import Footer from "./components/Footer";
@@ -18,6 +18,9 @@ export default function TenDetailedPropListing() {
 
   const [openModal, setOpenModal] = useState(false);
   const [showEstimateHelp, setShowEstimateHelp] = useState(false);
+  const [priceEstimate, setPriceEstimate] = useState(null);
+  const [estimateLoading, setEstimateLoading] = useState(true);
+  const [estimateError, setEstimateError] = useState(null);
   const { id } = useParams();
   console.log("propId received:", id);
   
@@ -55,6 +58,41 @@ export default function TenDetailedPropListing() {
     return {isReady, property, photos, videos, openHouses, starredProperties, agent};
   }, [id]);
 
+  // Fetch price estimate when property is loaded
+  // IMPORTANT: This useEffect must be before any early returns to follow Rules of Hooks
+  useEffect(() => {
+    if (property && property.prop_address) {
+      setEstimateLoading(true);
+      setEstimateError(null);
+
+      console.log('Fetching price estimate for:', property.prop_address);
+
+      Meteor.call(
+        'property.estimatePrice',
+        property.prop_address,
+        property.prop_numbeds,
+        property.prop_numbaths,
+        property.prop_type,
+        (error, result) => {
+          setEstimateLoading(false);
+
+          if (error) {
+            console.error('Price estimate error:', error);
+            setEstimateError(error.message || 'Unable to fetch estimate');
+            setPriceEstimate(null);
+          } else {
+            console.log('Price estimate result:', result);
+            setPriceEstimate(result);
+
+            if (result.error) {
+              setEstimateError(result.error);
+            }
+          }
+        }
+      );
+    }
+  }, [property]);
+
   if (!isReady){
     return (<div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Loading Properties...</div>);
   }
@@ -64,7 +102,7 @@ export default function TenDetailedPropListing() {
   }
 
   const isStarred = starredProperties.length>0;
-    
+
   // Build image URLs from property.photo (Cloudinary) with fallback to Photos
   const imageUrlsFromProperty = Array.isArray(property.photo)
     ? property.photo
@@ -115,14 +153,22 @@ export default function TenDetailedPropListing() {
       {/*Main content and buttons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
 
-        {/* Price Estimate badge */} 
+        {/* Price Estimate badge */}
         <div className="pt-6">
           <div className="inline-flex items-center gap-2 rounded-full bg-[#DCC9E4] px-4 py-2 shadow-sm ring-1 ring-black/5">
             <span className="text-sm font-semibold text-gray-800">Price Estimate:</span>
-            <span className="text-sm font-bold text-[#2E2E2E]">Unavailable</span>
+            <span className="text-sm font-bold text-[#2E2E2E]">
+              {estimateLoading ? (
+                'Loading...'
+              ) : priceEstimate && priceEstimate.estimatedPrice ? (
+                `$${priceEstimate.estimatedPrice}/week`
+              ) : (
+                'Unavailable'
+              )}
+            </span>
             <button
               type="button"
-              aria-label="Price estimate unavailable"
+              aria-label="Price estimate information"
               onMouseEnter={() => setShowEstimateHelp(true)}
               onMouseLeave={() => setShowEstimateHelp(false)}
               onFocus={() => setShowEstimateHelp(true)}
@@ -136,7 +182,28 @@ export default function TenDetailedPropListing() {
           {showEstimateHelp && (
             <div className="relative">
               <div className="absolute z-10 mt-2 w-72 rounded-lg bg-white p-3 text-xs text-gray-700 shadow-lg ring-1 ring-black/10">
-                Price estimation is currently unavailable for this property.
+                {estimateLoading ? (
+                  <p>Fetching price estimate from market data...</p>
+                ) : priceEstimate && priceEstimate.estimatedPrice ? (
+                  <>
+                    <p className="font-semibold mb-2">Estimated rental price based on comparable properties.</p>
+                    <p className="mb-1">
+                      <span className="font-medium">Confidence:</span> {priceEstimate.confidence}
+                    </p>
+                    <p className="mb-1">
+                      <span className="font-medium">Comparables:</span> {priceEstimate.comparableCount} properties
+                    </p>
+                    {priceEstimate.priceRange && (
+                      <p>
+                        <span className="font-medium">Range:</span> ${priceEstimate.priceRange.min} - ${priceEstimate.priceRange.max}/week
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p>
+                    {estimateError || 'Price estimation is currently unavailable for this property. This may be due to limited comparable properties in the area.'}
+                  </p>
+                )}
               </div>
             </div>
           )}
