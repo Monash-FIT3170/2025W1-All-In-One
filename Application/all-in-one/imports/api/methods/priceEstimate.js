@@ -67,13 +67,7 @@ Meteor.methods({
       if (response.status === 200) {
         // Parse HTML with Cheerio only if request succeeded
         const $ = cheerio.load(response.data);
-        console.log(`HTML length: ${response.data.length} characters`);
-
-        // DEBUG: Log a snippet of HTML to see structure
-        console.log('=== HTML SNIPPET (first 1000 chars) ===');
-        console.log(response.data.substring(0, 1000));
-        console.log('=== END SNIPPET ===');
-
+        
         // Extract prices from listings
         const priceSelectors = [
           '.property-price',
@@ -111,7 +105,7 @@ Meteor.methods({
       if (prices.length === 0) {
         console.log('No prices found from scraping, using estimation algorithm');
 
-        const seasonalMultiplier = 1.05; // Q4 2025 peak season
+        const seasonalMultiplier = 1.05; 
 
         const stateRates = {
           'NSW': 250, 'VIC': 220, 'QLD': 200, 'SA': 180,
