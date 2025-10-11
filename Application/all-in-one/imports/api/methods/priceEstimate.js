@@ -111,12 +111,36 @@ Meteor.methods({
       if (prices.length === 0) {
         console.log('No prices found from scraping, using estimation algorithm');
 
+        const seasonalMultiplier = 1.05; // Q4 2025 peak season
+
         const stateRates = {
           'NSW': 250, 'VIC': 220, 'QLD': 200, 'SA': 180,
           'WA': 210, 'TAS': 160, 'NT': 200, 'ACT': 240,
         };
 
-        const baseRatePerBed = stateRates[state?.toUpperCase()] || 200;
+        const suburbMultipliers = {
+          'sydney-nsw': 1.4, 'bondi-nsw': 1.6, 'parramatta-nsw': 1.1, 'penrith-nsw': 0.85,
+          'newcastle-nsw': 0.9, 'wollongong-nsw': 0.85,
+          'melbourne-vic': 1.3, 'southbank-vic': 1.5, 'carlton-vic': 1.4, 'richmond-vic': 1.35,
+          'footscray-vic': 0.95, 'dandenong-vic': 0.8, 'geelong-vic': 0.85,
+          'brisbane-qld': 1.2, 'southbank-qld': 1.4, 'fortitude-qld': 1.3,
+          'gold-qld': 1.15, 'sunshine-qld': 1.1, 'toowoomba-qld': 0.75,
+          'adelaide-sa': 1.1, 'north-sa': 0.85,
+          'perth-wa': 1.2, 'fremantle-wa': 1.15,
+          'hobart-tas': 1.1,
+          'canberra-act': 1.15,
+        };
+
+        let baseRatePerBed = (stateRates[state?.toUpperCase()] || 200) * seasonalMultiplier;
+
+        const suburbKey = `${suburb.toLowerCase()}-${state?.toLowerCase()}`;
+        const suburbMultiplier = suburbMultipliers[suburbKey] || 1.0;
+
+        if (suburbMultiplier !== 1.0) {
+          console.log(`Applying suburb multiplier for ${suburb}: ${suburbMultiplier}x`);
+        }
+
+        baseRatePerBed *= suburbMultiplier;
 
         let estimate = baseRatePerBed * (beds || 2);
 
@@ -139,11 +163,13 @@ Meteor.methods({
 
         return {
           estimatedPrice: Math.round(estimate),
-          confidence: 'medium',
+          confidence: suburbMultiplier !== 1.0 ? 'medium-high' : 'medium',
           comparableCount: 0,
           error: null,
           estimationMethod: 'algorithm',
-          note: 'Estimate based on market data for this area'
+          note: suburbMultiplier !== 1.0
+            ? `Estimate for ${suburb}, ${state} (Q4 2025)`
+            : `Estimate based on ${state} averages (Q4 2025)`
         };
       }
 
@@ -181,7 +207,6 @@ Meteor.methods({
     } catch (error) {
       console.error('Price estimation error:', error);
 
-      // Provide more specific error messages
       let errorMessage = 'Unable to fetch price estimate';
 
       if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
@@ -198,7 +223,6 @@ Meteor.methods({
         stack: error.stack?.split('\n')[0]
       });
 
-      // Return graceful error response
       return {
         estimatedPrice: null,
         confidence: 'low',
