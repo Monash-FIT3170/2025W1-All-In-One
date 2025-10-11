@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useTracker } from 'meteor/react-meteor-data';
-import { Identities, RentalApplications } from '/imports/api/database/collections';
+import { Identities, RentalApplications, Ten_SettingsIdentities } from '/imports/api/database/collections';
 import { Meteor } from 'meteor/meteor';
 import { Random } from 'meteor/random';
 import IdentityModal from '../components/IdentityModal';
@@ -27,6 +27,59 @@ function Identity({ propId, tenId }) {
     if (!rentalAppId) return [];
     return Identities.find({ rental_app_id: rentalAppId }).fetch();
   }, [rentalAppId]);
+
+  // Subscribe to settings identity data
+  const settingsIdentities = useTracker(() => {
+    const handle = Meteor.subscribe('tenSettingsIdentities');
+    if (!handle.ready()) return [];
+    return Ten_SettingsIdentities.find({ ten_id: tenId }).fetch();
+  }, [tenId]);
+
+  // Handler to load identities from profile
+  const handleLoadFromProfile = () => {
+    if (!rentalAppId) {
+      setStatusMessage('Please complete the general section first.');
+      return;
+    }
+
+    if (settingsIdentities.length === 0) {
+      setStatusMessage('No identity documents found in your profile.');
+      return;
+    }
+
+    let successCount = 0;
+    let errorCount = 0;
+
+    settingsIdentities.forEach((settingsIdentity) => {
+      const newIdentity = {
+        identity_id: Random.id(),
+        rental_app_id: rentalAppId,
+        identity_type: settingsIdentity.identity_type || '',
+        identity_scan: settingsIdentity.identity_scan || '',
+        identity_desc: settingsIdentity.identity_desc || '',
+        identity_public_id: settingsIdentity.identity_public_id || '',
+      };
+
+      Meteor.call('identities.insert', newIdentity, (err) => {
+        if (err) {
+          errorCount++;
+          console.error('Error loading identity from profile:', err);
+        } else {
+          successCount++;
+        }
+
+        // Show status message after all calls complete
+        if (successCount + errorCount === settingsIdentities.length) {
+          if (errorCount > 0) {
+            setStatusMessage(`Loaded ${successCount} document(s) from profile. ${errorCount} failed.`);
+          } else {
+            setStatusMessage(`Successfully loaded ${successCount} identity document(s) from profile! You can now edit them here.`);
+          }
+        }
+      });
+    });
+  };
+
 
   const handleAddIdentity = (newIdentity) => {
     if (!rentalAppId) {
@@ -130,21 +183,52 @@ function Identity({ propId, tenId }) {
     }
   };
 
+  // Check if profile identities are available and can be loaded
+  const hasProfileIdentities = settingsIdentities.length > 0;
+  const hasExistingIdentities = identities.length > 0;
+  const canLoadFromProfile = hasProfileIdentities && rentalAppId && !hasExistingIdentities;
+
+
   return (
     <div>
       <h3 className="text-xl font-semibold mb-2">Identity Documents</h3>
       <p className="text-gray-600 text-sm mb-6">Please upload supporting identity documents (image/video/file link).</p>
 
       <div className="mb-4">
-        <button
-          onClick={() => {
-            setEditingIdentity(null);
-            setOpenModal(true);
-          }}
-          className="bg-[#CBADD8] px-6 py-2 rounded-full font-semibold hover:bg-[#9747FF] hover:text-white transition"
-        >
-          Add Document
-        </button>
+        {/* Added flex container with gap for both buttons */}
+        <div className="flex gap-3 flex-wrap">
+          <button
+            onClick={() => {
+              setEditingIdentity(null);
+              setOpenModal(true);
+            }}
+            className="bg-[#CBADD8] px-6 py-2 rounded-full font-semibold hover:bg-[#9747FF] hover:text-white transition"
+          >
+            Add Document
+          </button>
+
+          {/* Load from Profile button - only show if no existing identities */}
+          {!hasExistingIdentities && (
+            <button
+              onClick={handleLoadFromProfile}
+              disabled={!canLoadFromProfile}
+              className={`px-6 py-2 rounded-full font-semibold transition ${
+                canLoadFromProfile
+                  ? 'bg-[#CBADD8] hover:bg-[#9747FF] hover:text-white transition'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+              title={!rentalAppId ? 'Please complete the general section first' : !hasProfileIdentities ? 'No identity documents in profile' : 'Load identity documents from your profile'}
+            >
+              Load from Profile
+            </button>
+          )}
+        </div>
+        {/* Disclaimer text */}
+        {canLoadFromProfile && (
+          <p className="text-xs text-gray-500 mt-2 italic">
+            You can edit the details in this application once loaded from profile
+          </p>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
