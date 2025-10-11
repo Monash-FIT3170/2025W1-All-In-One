@@ -120,9 +120,6 @@ export const SignUpPage = () => {
           <span>Log In</span> 
         </Link>
         
-        {/* Forgot password link */}
-        <p className="text-sm text-gray-600 mb-6">Forgot Password?</p>
-        
         {/* Decorative house image */}
         <img src="/images/house.png" alt="All In One Logo" className="mt-[40px] mb-8 w-80" />
       </div>
