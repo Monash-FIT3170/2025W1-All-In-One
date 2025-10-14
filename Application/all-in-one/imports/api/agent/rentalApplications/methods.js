@@ -548,4 +548,56 @@ async "rentalApplications.clearLandlordFinal"(appId) {
     return true;
   },
 
+'properties.getAllWithTenants'() {
+  if (!this.userId) {
+    throw new Meteor.Error('not-authorized', 'You must be logged in to perform this action');
+  }
+
+  const properties = Properties.find({ tenant_id: { $exists: true, $ne: null } }).fetch();
+
+  const result = properties.map((prop) => {
+    // Convert prop to plain object
+    const propObj = {
+      prop_id: prop.prop_id,
+      landlord_id: prop.landlord_id,
+      tenant_id: prop.tenant_id,
+      inspected_date: prop.inspected_date,
+      address: prop.address || null,
+      ...prop // include other fields safely
+    };
+
+    const tenant = Tenants.findOne({ ten_id: prop.tenant_id });
+    const employment = tenant ? Employment.findOne({ ten_id: tenant.ten_id }) : null;
+
+    // Calculate inspection status label
+    let inspectionLabel = null;
+    if (prop.inspected_date) {
+      const today = new Date();
+      const inspectedDate = new Date(prop.inspected_date);
+      const monthsDiff = (today.getFullYear() - inspectedDate.getFullYear()) * 12
+                       + (today.getMonth() - inspectedDate.getMonth());
+
+      if (monthsDiff >= 5 && monthsDiff < 6) inspectionLabel = 'upcoming';
+      else if (monthsDiff >= 6) inspectionLabel = 'overdue';
+    }
+
+    return {
+      ...propObj,
+      tenantInfo: tenant
+        ? {
+            ten_id: tenant.ten_id,
+            ten_fn: tenant.ten_fn,
+            ten_ln: tenant.ten_ln,
+            ten_pn: tenant.ten_pn,
+            ten_dob: tenant.ten_dob,
+            emp_job_title: employment ? employment.emp_job_title : '—',
+          }
+        : null,
+      inspectionLabel,
+    };
+  });
+
+  return result.filter(Boolean);
+}
+
 });
