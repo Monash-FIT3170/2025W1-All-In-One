@@ -7,7 +7,8 @@ import {
   Addresses,
   Tenants,
   Employment,
-  SharedLeaseGroups // <-- add this collection import, define below if needed
+  SharedLeaseGroups,
+  Properties // <-- added Properties import
 } from '/imports/api/database/collections';
 import cloudinary from 'cloudinary'; // FIX: Added cloudinary import
 
@@ -504,5 +505,47 @@ async "rentalApplications.clearLandlordFinal"(appId) {
 
     return leaseId;
   },
-});
 
+  // ----- NEW METHOD: set tenant_id and optionally inspected_date on Properties -----
+  async 'properties.setTenantId'(propId, tenantId, inspectedDate) {
+    check(propId, String);
+    // tenantId can be String or null (for clearing)
+    check(tenantId, Match.OneOf(String, null));
+    // inspectedDate is optional; if provided it must be a Date or null
+    if (inspectedDate !== undefined) check(inspectedDate, Match.OneOf(Date, null));
+
+    if (!this.userId) {
+      throw new Meteor.Error('not-authorized', 'You must be logged in to perform this action');
+    }
+
+    // ensure property exists
+    const property = await Properties.findOneAsync({ prop_id: propId });
+    if (!property) {
+      throw new Meteor.Error('not-found', 'Property not found');
+    }
+
+    // optional: ensure the current user owns the property (if landlord_id field exists)
+    if (property.landlord_id && property.landlord_id !== this.userId) {
+      throw new Meteor.Error('not-authorized', 'You do not own this property');
+    }
+
+    // Prepare the fields to set
+    const fieldsToSet = { tenant_id: tenantId };
+    // Only set inspected_date if the argument was explicitly provided (so clearing decision won't null it)
+    if (inspectedDate !== undefined) {
+      fieldsToSet.inspected_date = inspectedDate;
+    }
+
+    const result = await Properties.updateAsync(
+      { prop_id: propId },
+      { $set: fieldsToSet }
+    );
+
+    if (result === 0) {
+      throw new Meteor.Error('update-failed', 'Failed to set tenant on property');
+    }
+
+    return true;
+  },
+
+});

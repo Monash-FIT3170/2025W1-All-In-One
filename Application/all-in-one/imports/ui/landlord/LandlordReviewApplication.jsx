@@ -88,22 +88,95 @@ export default function ReviewApplication() {
   const handleLandlordClick = (appId, label) => {
     setLoadingIds((prev) => ({ ...prev, [appId]: true }));
 
+    // Find the application locally so we can get prop_id, ten_id and lease_start_date when needed
+    const application = applications.find((a) => a._id === appId);
+
     if (label === "Clear") {
       Meteor.call("rentalApplications.clearLandlordFinal", appId, (err) => {
         setLoadingIds((prev) => ({ ...prev, [appId]: false }));
+
         if (err) {
           alert("Error clearing landlord decision: " + err.reason);
+          return;
+        }
+
+        // Only clear tenant_id on the property — DO NOT clear inspected_date
+        if (application && application.prop_id) {
+          Meteor.call(
+            "properties.setTenantId",
+            application.prop_id,
+            null, // tenantId -> null to clear only tenant
+            (propErr) => {
+              if (propErr) {
+                console.warn("Error clearing tenant on property:", propErr);
+              } else {
+                console.log("Property tenant_id cleared for prop:", application.prop_id);
+              }
+            }
+          );
+        } else {
+          console.warn("No application/prop_id found locally for appId:", appId);
         }
       });
     } else {
       Meteor.call("rentalApplications.setLandlordFinal", appId, label, (err) => {
+        // after rentalApplications update completes, clear loading state
         setLoadingIds((prev) => ({ ...prev, [appId]: false }));
+
         if (err) {
           alert("Error saving landlord decision: " + err.reason);
+          return;
+        }
+
+        // If approved, also assign the tenant id and inspected_date to the property
+        if (label === "Approved") {
+          if (!application) {
+            console.warn(
+              "Could not find application locally to determine prop_id/ten_id",
+              appId
+            );
+            return;
+          }
+
+          const { prop_id: propId, ten_id: tenantId, lease_start_date } = application;
+          if (!propId || !tenantId) {
+            console.warn(
+              "Missing prop_id or ten_id on application; skipping property update.",
+              application
+            );
+            return;
+          }
+
+          // Determine inspectedDate:
+          // - If lease_start_date exists, use it (coerce to Date).
+          // - Otherwise set to 7 days from now.
+          let inspectedDate = null;
+          if (lease_start_date) {
+            // handle both Date objects and ISO strings
+            try {
+              inspectedDate = new Date(lease_start_date);
+              if (Number.isNaN(inspectedDate.getTime())) inspectedDate = null;
+            } catch (e) {
+              inspectedDate = null;
+            }
+          }
+          if (!inspectedDate) {
+            inspectedDate = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+          }
+
+          // Call server method to set tenant_id and inspected_date (pass inspectedDate)
+          Meteor.call("properties.setTenantId", propId, tenantId, inspectedDate, (propErr) => {
+            if (propErr) {
+              alert("Error assigning tenant/inspected date to property: " + propErr.reason);
+            } else {
+              console.log("Property tenant_id and inspected_date set for prop:", propId);
+            }
+          });
         }
       });
     }
   };
+
 
   const filteredApplications = applications.filter((app) => {
     const tenant = tenants.find((t) => t.ten_id === app.ten_id);

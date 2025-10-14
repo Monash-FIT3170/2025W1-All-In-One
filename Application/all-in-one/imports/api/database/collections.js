@@ -23,6 +23,8 @@ Properties.schema = new SimpleSchema({
 
   video: { type: Array, optional: true },
   "video.$": { type: String },
+  tenant_id: { type: String , optional: true },
+  inspected_date: { type: Date , optional: true },
 });
 
 export const Photos = new Mongo.Collection('photos');
