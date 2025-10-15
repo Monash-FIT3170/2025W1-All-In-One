@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
 import { Tenants, Properties, Photos, Landlord } from '../database/collections.js'; // adjust path if needed
+import { Random } from 'meteor/random';
 
 Meteor.methods({
   async registerUser({ email, password, firstName, lastName, role }) {
@@ -59,8 +60,8 @@ Meteor.methods({
 
       {/* Creating Property Id */}
       const collectionSize = await Properties.find({}, {fields: {prop_id: 1}}).countAsync() + 1;  // Counts the number of items in the collection, then adds 1 
-      const idNum = String(collectionSize).padStart(3, '0');  // Pads out the number with leading zeros to make sure the ID has 3 digits. Can be changed to have more or less.
-      const propID = "P" + idNum;   // Concatenates the number with a leading P for Properties. 
+      const idNum = Random.id();  // Generate a random id string
+      const propID = idNum;   // Concatenates the number with a leading P for Properties. 
       
 
       const date = new Date(dateAvailable);
