@@ -69,6 +69,9 @@ export default function ReviewApplication() {
     return <div className="p-8 text-gray-600">Loading applications...</div>;
   }
 
+  console.log(landlordId);
+  console.log(applications);
+
   const formatFlagLabel = (flag) => {
     if (!flag) return "";
     const f = String(flag).toLowerCase();
