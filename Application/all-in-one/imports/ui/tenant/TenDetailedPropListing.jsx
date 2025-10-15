@@ -183,25 +183,23 @@ export default function TenDetailedPropListing() {
             <div className="relative">
               <div className="absolute z-10 mt-2 w-72 rounded-lg bg-white p-3 text-xs text-gray-700 shadow-lg ring-1 ring-black/10">
                 {estimateLoading ? (
-                  <p>Fetching price estimate from market data...</p>
+                  <p>Fetching price estimate...</p>
                 ) : priceEstimate && priceEstimate.estimatedPrice ? (
                   <>
-                    <p className="font-semibold mb-2">Estimated rental price based on comparable properties.</p>
-                    <p className="mb-1">
-                      <span className="font-medium">Confidence:</span> {priceEstimate.confidence}
+                    <p className="font-semibold mb-2">
+                      {priceEstimate.estimationMethod === 'ai'
+                        ? 'AI-powered price estimate'
+                        : 'Algorithm-based price estimate'}
                     </p>
-                    <p className="mb-1">
-                      <span className="font-medium">Comparables:</span> {priceEstimate.comparableCount} properties
-                    </p>
-                    {priceEstimate.priceRange && (
-                      <p>
-                        <span className="font-medium">Range:</span> ${priceEstimate.priceRange.min} - ${priceEstimate.priceRange.max}/week
+                    {priceEstimate.note && (
+                      <p className="text-gray-600 mt-1">
+                        {priceEstimate.note}
                       </p>
                     )}
                   </>
                 ) : (
                   <p>
-                    {estimateError || 'Price estimation is currently unavailable for this property. This may be due to limited comparable properties in the area.'}
+                    {estimateError || 'Price estimation is currently unavailable for this property.'}
                   </p>
                 )}
               </div>

@@ -1,6 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import axios from 'axios';
-import cheerio from 'cheerio';
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 Meteor.methods({
   async 'property.estimatePrice'(address, beds, baths, propertyType) {
@@ -10,218 +9,166 @@ Meteor.methods({
     }
 
     try {
-      // Extract suburb from address
+      // Extract suburb and state from address
       const addressParts = address.split(',').map(part => part.trim());
 
       let suburb = '';
       let state = '';
 
       if (addressParts.length >= 2) {
-        // Get suburb from second part 
         const suburbPart = addressParts[1].split(' ');
         suburb = suburbPart[0];
 
-        // Try to extract state if present
         if (suburbPart.length > 1) {
-          state = suburbPart[1].replace(/[0-9]/g, '').trim(); 
+          state = suburbPart[1].replace(/[0-9]/g, '').trim();
         }
       } else {
         suburb = addressParts[0].split(' ')[0];
       }
 
-      console.log(`Estimating price for: ${suburb}${state ? ', ' + state : ''}, ${beds} beds`);
+      console.log(`Estimating price for: ${suburb}${state ? ', ' + state : ''}, ${beds} beds, ${baths} baths, ${propertyType}`);
 
-      const suburbSlug = suburb.toLowerCase().replace(/\s+/g, '-');
-      const stateSlug = state ? `-${state.toLowerCase()}` : '';
+      // Try Gemini API first
+      try {
+        const apiKey = Meteor.settings.private?.geminiApiKey;
 
-      const searchUrl = `https://www.rent.com.au/properties/${suburbSlug}${stateSlug}`;
+        if (!apiKey) {
+          console.log('Gemini API key not found, using algorithm fallback');
+          throw new Error('API key not configured');
+        }
 
-      console.log(`Fetching from Rent.com.au: ${searchUrl}`);
+        const genAI = new GoogleGenerativeAI(apiKey);
+        const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      // Fetch the page with headers to mimic a browser
-      const response = await axios.get(searchUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Accept-Encoding': 'gzip, deflate, br',
-          'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1',
-          'Sec-Fetch-Dest': 'document',
-          'Sec-Fetch-Mode': 'navigate',
-          'Sec-Fetch-Site': 'none',
-          'Cache-Control': 'max-age=0',
-        },
-        timeout: 30000, 
-        maxRedirects: 5,
-        validateStatus: function (status) {
-          return status >= 200 && status < 500; 
-        },
-      });
+        // Create detailed prompt with property context
+        const currentDate = new Date();
+        const currentMonth = currentDate.toLocaleString('default', { month: 'long' });
+        const currentYear = currentDate.getFullYear();
 
-      // Check if request was successful
-      console.log(`Response status: ${response.status}`);
+        const prompt = `You are a real estate pricing expert for the Australian rental market. Estimate the weekly rent (in AUD) for the following property:
 
-      const prices = [];
+Property Details:
+- Location: ${suburb}${state ? ', ' + state : ''}, Australia
+- Bedrooms: ${beds}
+- Bathrooms: ${baths || 'Not specified'}
+- Property Type: ${propertyType || 'Not specified'}
+- Current Date: ${currentMonth} ${currentYear}
 
-      if (response.status === 200) {
-        // Parse HTML with Cheerio only if request succeeded
-        const $ = cheerio.load(response.data);
-        
-        // Extract prices from listings
-        const priceSelectors = [
-          '.property-price',
-          '.listing-card-price',
-          '[data-testid="property-price"]',
-          '.price',
-          '.rent-price',
-          '[class*="price"]',
-          '[class*="Price"]',
-        ];
+Consider:
+- Current Australian rental market conditions for ${state || 'the area'}
+- Seasonal factors (current month: ${currentMonth})
+- Location characteristics and desirability of ${suburb}
+- Property type and size
+- Recent rental trends in the area
 
-        priceSelectors.forEach(selector => {
-          $(selector).each((_i, element) => {
-            const priceText = $(element).text().trim();
+Provide ONLY a single number representing the estimated weekly rent in AUD. Do not include any explanation, currency symbols, or additional text - just the number.`;
 
-            // Extract numericx price from various formats:
-            const priceMatch = priceText.match(/\$?\s?([\d,]+)/);
-            if (priceMatch) {
-              const price = parseInt(priceMatch[1].replace(/,/g, ''));
+        console.log('Calling Gemini API for price estimation...');
 
-              // Validate price is reasonable
-              if (price >= 100 && price <= 5000) {
-                prices.push(price);
-                console.log(`Found price: $${price} from selector "${selector}"`);
-              }
-            }
-          });
-        });
-      } else {
-        console.error(`Rent.com.au returned status ${response.status}`);
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text().trim();
+
+        // Extract numeric value from response
+        const priceMatch = text.match(/(\d+)/);
+
+        if (priceMatch) {
+          const estimatedPrice = parseInt(priceMatch[1]);
+
+          // Validate price is reasonable
+          if (estimatedPrice >= 100 && estimatedPrice <= 5000) {
+            console.log(`Gemini API returned estimate: $${estimatedPrice}/week`);
+
+            return {
+              estimatedPrice: Math.round(estimatedPrice),
+              comparableCount: 0,
+              error: null,
+              estimationMethod: 'ai',
+              note: `AI-powered estimate for ${suburb}${state ? ', ' + state : ''} (${currentMonth} ${currentYear})`
+            };
+          } else {
+            console.log(`Gemini returned unrealistic price: ${estimatedPrice}, falling back to algorithm`);
+            throw new Error('Unrealistic price from AI');
+          }
+        } else {
+          console.log('Could not parse price from Gemini response, falling back to algorithm');
+          throw new Error('Invalid AI response format');
+        }
+
+      } catch (geminiError) {
+        console.log('Gemini API failed, using algorithm fallback:', geminiError.message);
       }
 
-      console.log(`Found ${prices.length} prices:`, prices);
+      // Algorithm fallback
+      console.log('Using estimation algorithm');
 
-      if (prices.length === 0) {
-        console.log('No prices found from scraping, using estimation algorithm');
+      const seasonalMultiplier = 1.05;
 
-        const seasonalMultiplier = 1.05; 
+      const stateRates = {
+        'NSW': 250, 'VIC': 220, 'QLD': 200, 'SA': 180,
+        'WA': 210, 'TAS': 160, 'NT': 200, 'ACT': 240,
+      };
 
-        const stateRates = {
-          'NSW': 250, 'VIC': 220, 'QLD': 200, 'SA': 180,
-          'WA': 210, 'TAS': 160, 'NT': 200, 'ACT': 240,
-        };
+      const suburbMultipliers = {
+        'sydney-nsw': 1.4, 'bondi-nsw': 1.6, 'parramatta-nsw': 1.1, 'penrith-nsw': 0.85,
+        'newcastle-nsw': 0.9, 'wollongong-nsw': 0.85,
+        'melbourne-vic': 1.3, 'southbank-vic': 1.5, 'carlton-vic': 1.4, 'richmond-vic': 1.35,
+        'footscray-vic': 0.95, 'dandenong-vic': 0.8, 'geelong-vic': 0.85,
+        'brisbane-qld': 1.2, 'southbank-qld': 1.4, 'fortitude-qld': 1.3,
+        'gold-qld': 1.15, 'sunshine-qld': 1.1, 'toowoomba-qld': 0.75,
+        'adelaide-sa': 1.1, 'north-sa': 0.85,
+        'perth-wa': 1.2, 'fremantle-wa': 1.15,
+        'hobart-tas': 1.1,
+        'canberra-act': 1.15,
+      };
 
-        const suburbMultipliers = {
-          'sydney-nsw': 1.4, 'bondi-nsw': 1.6, 'parramatta-nsw': 1.1, 'penrith-nsw': 0.85,
-          'newcastle-nsw': 0.9, 'wollongong-nsw': 0.85,
-          'melbourne-vic': 1.3, 'southbank-vic': 1.5, 'carlton-vic': 1.4, 'richmond-vic': 1.35,
-          'footscray-vic': 0.95, 'dandenong-vic': 0.8, 'geelong-vic': 0.85,
-          'brisbane-qld': 1.2, 'southbank-qld': 1.4, 'fortitude-qld': 1.3,
-          'gold-qld': 1.15, 'sunshine-qld': 1.1, 'toowoomba-qld': 0.75,
-          'adelaide-sa': 1.1, 'north-sa': 0.85,
-          'perth-wa': 1.2, 'fremantle-wa': 1.15,
-          'hobart-tas': 1.1,
-          'canberra-act': 1.15,
-        };
+      let baseRatePerBed = (stateRates[state?.toUpperCase()] || 200) * seasonalMultiplier;
 
-        let baseRatePerBed = (stateRates[state?.toUpperCase()] || 200) * seasonalMultiplier;
+      const suburbKey = `${suburb.toLowerCase()}-${state?.toLowerCase()}`;
+      const suburbMultiplier = suburbMultipliers[suburbKey] || 1.0;
 
-        const suburbKey = `${suburb.toLowerCase()}-${state?.toLowerCase()}`;
-        const suburbMultiplier = suburbMultipliers[suburbKey] || 1.0;
-
-        if (suburbMultiplier !== 1.0) {
-          console.log(`Applying suburb multiplier for ${suburb}: ${suburbMultiplier}x`);
-        }
-
-        baseRatePerBed *= suburbMultiplier;
-
-        let estimate = baseRatePerBed * (beds || 2);
-
-        if (baths && baths > 1) {
-          estimate *= (1 + (baths - 1) * 0.08);
-        }
-
-        const typeMultipliers = {
-          'house': 1.2, 'apartment': 0.9, 'unit': 0.9,
-          'townhouse': 1.0, 'villa': 1.1, 'studio': 0.7,
-        };
-
-        const typeKey = propertyType?.toLowerCase();
-        if (typeKey && typeMultipliers[typeKey]) {
-          estimate *= typeMultipliers[typeKey];
-        }
-
-        const variance = (Math.random() - 0.5) * 0.1;
-        estimate *= (1 + variance);
-
-        return {
-          estimatedPrice: Math.round(estimate),
-          confidence: suburbMultiplier !== 1.0 ? 'medium-high' : 'medium',
-          comparableCount: 0,
-          error: null,
-          estimationMethod: 'algorithm',
-          note: suburbMultiplier !== 1.0
-            ? `Estimate for ${suburb}, ${state} (Q4 2025)`
-            : `Estimate based on ${state} averages (Q4 2025)`
-        };
+      if (suburbMultiplier !== 1.0) {
+        console.log(`Applying suburb multiplier for ${suburb}: ${suburbMultiplier}x`);
       }
 
-      // Remove outliers (prices more than 2 standard deviations from mean)
-      const mean = prices.reduce((sum, p) => sum + p, 0) / prices.length;
-      const stdDev = Math.sqrt(
-        prices.reduce((sum, p) => sum + Math.pow(p - mean, 2), 0) / prices.length
-      );
+      baseRatePerBed *= suburbMultiplier;
 
-      const filteredPrices = prices.filter(p =>
-        Math.abs(p - mean) <= 2 * stdDev
-      );
+      let estimate = baseRatePerBed * (beds || 2);
 
-      // Calculate final estimate 
-      const sortedPrices = filteredPrices.sort((a, b) => a - b);
-      const median = sortedPrices.length % 2 === 0
-        ? (sortedPrices[sortedPrices.length / 2 - 1] + sortedPrices[sortedPrices.length / 2]) / 2
-        : sortedPrices[Math.floor(sortedPrices.length / 2)];
+      if (baths && baths > 1) {
+        estimate *= (1 + (baths - 1) * 0.08);
+      }
 
-      // Determine confidence level based on number of comparables
-      let confidence = 'low';
-      if (filteredPrices.length >= 10) confidence = 'high';
-      else if (filteredPrices.length >= 5) confidence = 'medium';
+      const typeMultipliers = {
+        'house': 1.2, 'apartment': 0.9, 'unit': 0.9,
+        'townhouse': 1.0, 'villa': 1.1, 'studio': 0.7,
+      };
+
+      const typeKey = propertyType?.toLowerCase();
+      if (typeKey && typeMultipliers[typeKey]) {
+        estimate *= typeMultipliers[typeKey];
+      }
+
+      const variance = (Math.random() - 0.5) * 0.1;
+      estimate *= (1 + variance);
 
       return {
-        estimatedPrice: Math.round(median),
-        confidence,
-        comparableCount: filteredPrices.length,
-        priceRange: {
-          min: Math.min(...filteredPrices),
-          max: Math.max(...filteredPrices)
-        }
+        estimatedPrice: Math.round(estimate),
+        comparableCount: 0,
+        error: null,
+        estimationMethod: 'algorithm',
+        note: suburbMultiplier !== 1.0
+          ? `Algorithm-based estimate for ${suburb}, ${state} (Q4 2025)`
+          : `Algorithm-based estimate using ${state} averages (Q4 2025)`
       };
 
     } catch (error) {
       console.error('Price estimation error:', error);
 
-      let errorMessage = 'Unable to fetch price estimate';
-
-      if (error.code === 'ECONNABORTED' || error.message.includes('timeout')) {
-        errorMessage = 'Request timed out - Domain may be blocking automated requests';
-      } else if (error.code === 'ENOTFOUND') {
-        errorMessage = 'Could not connect to Domain.com.au';
-      } else if (error.response) {
-        errorMessage = `Domain returned error ${error.response.status}`;
-      }
-
-      console.error('Detailed error:', {
-        code: error.code,
-        message: error.message,
-        stack: error.stack?.split('\n')[0]
-      });
-
       return {
         estimatedPrice: null,
-        confidence: 'low',
         comparableCount: 0,
-        error: errorMessage
+        error: 'Unable to generate price estimate'
       };
     }
   }
