@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { useParams } from "react-router-dom";
 import { useTracker } from "meteor/react-meteor-data";
-import { RentalApplications } from "/imports/api/database/collections";
+import { RentalApplications, Properties } from "/imports/api/database/collections";
 
 import GeneralSection from "../tenant/applyPages/GeneralSection";
 import PersonalDetails from "../tenant/applyPages/PersonalDetails";
@@ -17,10 +17,40 @@ function ViewApplication() {
   const { appId } = useParams();
   const containerRef = useRef(null);
 
+  console.log("App ID:", appId);
+
   const rentalApplication = useTracker(() => {
-    Meteor.subscribe("rentalApplications");
-    return RentalApplications.findOne({ _id: appId });
+    if (!appId) {
+      return null;
+    }
+
+    const handle = Meteor.subscribe("rentalApplications");
+    if (!handle.ready()) {
+      return null;
+    }
+
+    return (
+      RentalApplications.findOne({ _id: appId }) ||
+      RentalApplications.findOne({ rental_app_id: appId }) ||
+      null
+    );
   }, [appId]);
+
+  console.log("Rental application:", rentalApplication);
+
+  const property = useTracker(() => {
+    const propId = rentalApplication?.prop_id;
+    if (!propId) {
+      return null;
+    }
+
+    const handle = Meteor.subscribe("properties");
+    if (!handle.ready()) {
+      return null;
+    }
+
+    return Properties.findOne({ prop_id: propId });
+  }, [rentalApplication?.prop_id]);
 
   // 🔒 After render, disable all inputs/textareas/selects inside the container
   useEffect(() => {
@@ -86,7 +116,7 @@ function ViewApplication() {
       <div className="p-8 bg-[#FFF8E9] min-h-screen" ref={containerRef}>
         <h1 className="text-2xl font-bold mb-4">Agent View - Application</h1>
         <p className="mb-6 text-gray-600">
-          Viewing application for Property: {rentalApplication.prop_id}
+          Viewing application for Property: {property?.prop_address}
         </p>
 
         {sectionList.map((section, idx) => (
@@ -101,4 +131,3 @@ function ViewApplication() {
 }
 
 export default ViewApplication;
-

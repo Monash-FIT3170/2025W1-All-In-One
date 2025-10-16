@@ -3,6 +3,26 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Properties, RentalApplications } from '/imports/api/database/collections';
 
+const normalizeDateValue = (value) => {
+  if (!value) return '';
+
+  if (value instanceof Date) {
+    return value.toISOString().slice(0, 10);
+  }
+
+  if (typeof value === 'object' && value.$date) {
+    const normalized = new Date(value.$date);
+    return Number.isNaN(normalized.getTime())
+      ? ''
+      : normalized.toISOString().slice(0, 10);
+  }
+
+  const normalized = new Date(value);
+  return Number.isNaN(normalized.getTime())
+    ? ''
+    : normalized.toISOString().slice(0, 10);
+};
+
 const GeneralSection = ({ propId, tenId }) => {
   console.log("propId received:", propId);
 
@@ -25,12 +45,14 @@ const GeneralSection = ({ propId, tenId }) => {
     return Properties.findOne({ prop_id: propId });
   }, [propId]);
 
+  const propertyAvailableDate = normalizeDateValue(property?.prop_available_date);
+
   // Prefill form fields if rentalApplication exists
   useEffect(() => {
     if (rentalApplication) {
       setLeaseStart(
-        rentalApplication.lease_start_date 
-          ? new Date(rentalApplication.lease_start_date).toISOString().slice(0, 10) 
+        rentalApplication.lease_start_date
+          ? normalizeDateValue(rentalApplication.lease_start_date)
           : ''
       );
       setLeaseTerm(rentalApplication.lease_term || '');
@@ -45,6 +67,15 @@ const GeneralSection = ({ propId, tenId }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (propertyAvailableDate && leaseStart) {
+      const selectedDate = new Date(leaseStart);
+      const availableDate = new Date(propertyAvailableDate);
+      if (selectedDate < availableDate) {
+        setStatusMessage('Error: Lease start date cannot be before the property available date.');
+        return;
+      }
+    }
 
     const data = {
       prop_id: propId,
@@ -85,6 +116,7 @@ const GeneralSection = ({ propId, tenId }) => {
         <input
           type="date"
           value={leaseStart}
+          min={propertyAvailableDate}
           onChange={(e) => setLeaseStart(e.target.value)}
           className="border px-3 py-2 rounded w-full focus:ring-[#9747FF]"
         />
@@ -140,4 +172,3 @@ const GeneralSection = ({ propId, tenId }) => {
 };
 
 export default GeneralSection;
-
