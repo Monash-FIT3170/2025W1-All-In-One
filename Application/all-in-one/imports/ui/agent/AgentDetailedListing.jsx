@@ -7,7 +7,7 @@ import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, RentalApplications, Landlord,Tenants } from "../../api/database/collections"; // importing mock for now
-import {EditPropertyModal} from "./components/EditPropertyModal";
+import { EditPropertyModal } from "./components/EditPropertyModal";
 import {ConfirmDeleteDialog} from "./components/ConfirmDeleteDialog";
 // import EditMediaModal from "./components/EditMediaModal";
 import { useNavigate } from "react-router-dom";
@@ -53,7 +53,7 @@ export default function AgentDetailedListing() {
   const handleConfirmRemove = (propID, tenID) => {
 
     Meteor.call(
-      "removeTenant",
+      "rentalApplications.removeTenant",
       {
         propID,
         tenID
