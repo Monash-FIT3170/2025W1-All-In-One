@@ -1,5 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
+import { Random } from 'meteor/random'; // ✅ Add this line
+
 import {
   RentalApplications,
   Incomes,
@@ -272,37 +274,69 @@ Meteor.methods({
     );
   },
 
-  // Shared Lease Group Methods
   async 'sharedLease.createGroup'(tenantId, propId) {
-    check(tenantId, String);
-    check(propId, String);
+  check(tenantId, String);
+  check(propId, String);
 
-    const groupId = await SharedLeaseGroups.insertAsync({
-      createdAt: new Date(),
-      propId,
-      members: [tenantId],
-    });
+  console.log('[METHOD] sharedLease.createGroup called with:', { tenantId, propId, caller: this.userId });
 
-    console.log(`[METHOD] sharedLease.createGroup created group ${groupId} for tenant ${tenantId}`);
-    return await groupId;
-  },
+  try {
+    // create a short unique id for the shared lease
+    const groupId = `SL-${Random.id(8)}`;
 
-  async 'sharedLease.joinGroup'(groupId, tenantId) {
-    check(groupId, String);
-    check(tenantId, String);
+    // Update rental application(s) for this prop and tenant to reference groupId
+    const selector = {
+      prop_id: propId,
+      $or: [
+        { ten_id: tenantId },
+        { tenants: { $elemMatch: { ten_id: tenantId } } },
+      ],
+    };
 
-    const group = await SharedLeaseGroups.findOneAsync(groupId);
-    if (!group) {
-      throw new Meteor.Error('Group not found');
-    }
+    const update = { $set: { shared_lease_id: groupId } };
 
-    if (!group.members.includes(tenantId)) {
-      await SharedLeaseGroups.updateAsync(groupId, { $push: { members: tenantId } });
-      console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} joined group ${groupId}`);
-    } else {
-      console.log(`[METHOD] sharedLease.joinGroup tenant ${tenantId} already in group ${groupId}`);
-    }
-  },
+    const result = await RentalApplications.updateAsync(selector, update, { multi: true });
+
+    console.log('[METHOD] sharedLease.createGroup created groupId:', groupId, 'updatedCount:', result);
+
+    // If no application was updated, still return the id so client can decide next steps
+    return groupId;
+  } catch (err) {
+    console.error('Error in sharedLease.createGroup:', err && err.stack ? err.stack : err);
+    if (err instanceof Meteor.Error) throw err;
+    throw new Meteor.Error('sharedLease.createGroup-failed', err && err.message ? err.message : 'Unknown server error');
+  }
+},
+
+// Join an existing shared-lease id: attach it to any application(s) for the tenant
+async 'sharedLease.joinGroup'(groupId, tenantId) {
+  check(groupId, String);
+  check(tenantId, String);
+
+  console.log('[METHOD] sharedLease.joinGroup called with:', { groupId, tenantId, caller: this.userId });
+
+  try {
+    const selector = {
+      $or: [
+        { ten_id: tenantId },
+        { tenants: { $elemMatch: { ten_id: tenantId } } },
+      ],
+    };
+
+    const update = { $set: { shared_lease_id: groupId } };
+
+    const result = await RentalApplications.updateAsync(selector, update, { multi: true });
+
+    console.log('[METHOD] sharedLease.joinGroup attached group to applications:', result);
+
+    // If you'd like, return the number of documents updated:
+    return { groupId, updatedCount: result };
+  } catch (err) {
+    console.error('Error in sharedLease.joinGroup:', err && err.stack ? err.stack : err);
+    if (err instanceof Meteor.Error) throw err;
+    throw new Meteor.Error('sharedLease.joinGroup-failed', err && err.message ? err.message : 'Unknown server error');
+  }
+},
 
   async 'rentalApplications.updateSharedLease'(rentalAppId, leaseId) {
     check(rentalAppId, String);
@@ -314,26 +348,71 @@ Meteor.methods({
     );
   },
 
-    async 'sharedLease.create'(rentalAppId) {
+ async 'sharedLease.create'(rentalAppId) {
     check(rentalAppId, String);
+    console.log('[METHOD] sharedLease.create called for rentalAppId:', rentalAppId);
 
-    // create a shared lease
-    const leaseId = await SharedLease.insertAsync({
-      createdAt: new Date(),
-      applications: [rentalAppId],
-    });
+    try {
+      // ensure rental application exists
+      const app = await RentalApplications.findOneAsync({ _id: rentalAppId });
+      if (!app) throw new Meteor.Error('not-found', 'Rental application not found');
 
-    // update the rental application with this shared lease id
-    await RentalApplications.updateAsync(rentalAppId, {
-      $set: { shared_lease_id: leaseId },
-    });
+      const groupDoc = {
+        createdAt: new Date(),
+        propId: app.prop_id || null,
+        applications: [rentalAppId],
+        members: (app.ten_id ? [app.ten_id] : []),
+      };
 
-    return leaseId;
+      const groupId = await SharedLeaseGroups.insertAsync(groupDoc);
+      console.log('[METHOD] sharedLease.create created groupId:', groupId);
+
+      await RentalApplications.updateAsync({ _id: rentalAppId }, { $set: { shared_lease_id: groupId } });
+
+      return groupId;
+    } catch (err) {
+      console.error('Error in sharedLease.create:', err && err.stack ? err.stack : err);
+      if (err instanceof Meteor.Error) throw err;
+      throw new Meteor.Error('sharedLease.create-failed', err && err.message ? err.message : 'Unknown error');
+    }
   },
 
-  
+  // join an existing shared lease group (client calls "sharedLease.join")
+  async 'sharedLease.join'(groupId, tenantId, rentalAppId) {
+    // Accept either (groupId, tenantId) or (groupId, tenantId, rentalAppId)
+    check(groupId, String);
+    check(tenantId, String);
+    if (rentalAppId !== undefined) check(rentalAppId, String);
 
-//Set agent flag (Shortlisted, Flagged, To be Reviewed)
+    console.log('[METHOD] sharedLease.join called', { groupId, tenantId, rentalAppId });
+
+    try {
+      const group = await SharedLeaseGroups.findOneAsync({ _id: groupId });
+      if (!group) throw new Meteor.Error('group-not-found', 'Shared lease group not found');
+
+      // add tenant to members array if not present
+      if (!Array.isArray(group.members) || !group.members.includes(tenantId)) {
+        await SharedLeaseGroups.updateAsync({ _id: groupId }, { $addToSet: { members: tenantId } });
+        console.log(`[METHOD] sharedLease.join added tenant ${tenantId} to group ${groupId}`);
+      } else {
+        console.log(`[METHOD] sharedLease.join tenant ${tenantId} already member of ${groupId}`);
+      }
+
+      // optionally add rental application id to group's applications and set rentalApplications.shared_lease_id
+      if (rentalAppId) {
+        await SharedLeaseGroups.updateAsync({ _id: groupId }, { $addToSet: { applications: rentalAppId } });
+        await RentalApplications.updateAsync({ _id: rentalAppId }, { $set: { shared_lease_id: groupId } });
+      }
+
+      return groupId;
+    } catch (err) {
+      console.error('Error in sharedLease.join:', err && err.stack ? err.stack : err);
+      if (err instanceof Meteor.Error) throw err;
+      throw new Meteor.Error('sharedLease.join-failed', err && err.message ? err.message : 'Unknown error');
+    }
+  },
+
+  //Set agent flag (Shortlisted, Flagged, To be Reviewed)
  async "rentalApplications.setAgentFlag"(id, flag) {
    check(id, String);
    check(flag, String);
@@ -485,25 +564,6 @@ async "rentalApplications.clearLandlordFinal"(appId) {
     });
 
     return true;
-  },
-
-
-
-  async 'sharedLease.join'(leaseId, rentalAppId) {
-    check(leaseId, String);
-    check(rentalAppId, String);
-
-    // add this rental application to the shared lease
-    await SharedLease.updateAsync(leaseId, {
-      $addToSet: { applications: rentalAppId },
-    });
-
-    // update the rental application with this shared lease id
-    await RentalApplications.updateAsync(rentalAppId, {
-      $set: { shared_lease_id: leaseId },
-    });
-
-    return leaseId;
   },
 
   // ----- NEW METHOD: set tenant_id and optionally inspected_date on Properties -----

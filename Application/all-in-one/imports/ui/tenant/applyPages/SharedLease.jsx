@@ -7,84 +7,96 @@ const SharedLease = ({ propId, tenId }) => {
   const [groupId, setGroupId] = useState(null);
   const [joinGroupId, setJoinGroupId] = useState("");
   const [statusMessage, setStatusMessage] = useState("");
+  const [statusType, setStatusType] = useState("info"); // 'info' | 'success' | 'error'
   const [rentalAppId, setRentalAppId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-const rentalApp = useTracker(() => {
-  const handle = Meteor.subscribe("rentalApplications");
-  if (!handle.ready()) return null;
+  // Track the rental application for this tenant/property
+  const rentalApp = useTracker(() => {
+    const handle = Meteor.subscribe("rentalApplications");
+    if (!handle.ready()) return null;
 
-  return RentalApplications.findOne({
-    prop_id: propId,
-    $or: [
-      { ten_id: tenId }, // case 1: tenant stored directly
-      { tenants: { $elemMatch: { ten_id: tenId } } }, // case 2: tenant stored in array
-    ],
-  });
-}, [propId, tenId]);
+    return RentalApplications.findOne({
+      prop_id: propId,
+      $or: [
+        { ten_id: tenId },
+        { tenants: { $elemMatch: { ten_id: tenId } } },
+      ],
+    });
+  }, [propId, tenId]);
 
-
-useEffect(() => {
-  console.log("Rental application doc:", rentalApp);
-  if (rentalApp) {
-    setRentalAppId(rentalApp._id);
-    if (rentalApp.shared_lease_id) {
-      setGroupId(rentalApp.shared_lease_id);
+  useEffect(() => {
+    if (rentalApp) {
+      setRentalAppId(rentalApp._id);
+      setGroupId(rentalApp.shared_lease_id || null);
+    } else {
+      setRentalAppId(null);
+      setGroupId(null);
     }
-  }
-}, [rentalApp]);
+  }, [rentalApp]);
 
+  // centralised status display
+  const showStatus = (message, type = "info") => {
+    setStatusMessage(message);
+    setStatusType(type);
+  };
 
-  // Create a new shared lease group
+  // Create a new shared lease group (just sets shared_lease_id on rental application)
   const handleCreateGroup = () => {
     if (!rentalAppId) {
-      setStatusMessage("Rental application not found.");
+      showStatus("Rental application not found.", "error");
       return;
     }
 
+    setLoading(true);
     Meteor.call("sharedLease.createGroup", tenId, propId, (err, result) => {
+      setLoading(false);
       if (err) {
-        setStatusMessage(`Error creating lease group: ${err.message}`);
-      } else {
-        const newGroupId = String(result);
-        setGroupId(newGroupId);
-        setStatusMessage("New shared lease group created!");
-
-        Meteor.call("rentalApplications.update", rentalAppId, { shared_lease_id: newGroupId }, (err2) => {
-          if (err2) console.error("Error updating rental application:", err2);
-        });
+        console.error("sharedLease.createGroup error:", err);
+        const msg = err.reason || err.message || "Failed to create group";
+        showStatus(`Error: ${msg}`, "error");
+        return;
       }
+
+      const newGroupId = String(result);
+      setGroupId(newGroupId);
+      showStatus("Shared lease group created!", "success");
     });
   };
 
-  // Join an existing shared lease group using input
+  // Join an existing shared lease group
   const handleJoinGroup = () => {
-    console.log("Joining group:", joinGroupId);
-    console.log("rental id:", rentalAppId);
-
+    const trimmedId = (joinGroupId || "").trim();
     if (!rentalAppId) {
-      setStatusMessage("Rental application not found.");
+      showStatus("Rental application not found.", "error");
       return;
     }
-    if (!joinGroupId) {
-      setStatusMessage("Please enter a group ID to join.");
+    if (!trimmedId) {
+      showStatus("Please enter a group ID to join.", "error");
       return;
     }
 
-    Meteor.call("sharedLease.joinGroup", joinGroupId, tenId, (err) => {
+    setLoading(true);
+    Meteor.call("sharedLease.joinGroup", trimmedId, tenId, (err) => {
+      setLoading(false);
       if (err) {
-        setStatusMessage(`Error joining lease group: ${err.message}`);
+        console.error("sharedLease.joinGroup error:", err);
+        const msg = err.reason || err.message || "Failed to join group";
+        showStatus(`Error: ${msg}`, "error");
       } else {
-        setGroupId(joinGroupId);
-        setStatusMessage("You successfully joined the shared lease group!");
-
-        // always update rental application
-        Meteor.call("rentalApplications.update", rentalAppId, { shared_lease_id: joinGroupId }, (err2) => {
-          if (err2) console.error("Error updating rental application:", err2);
-        });
+        setGroupId(trimmedId);
+        setJoinGroupId("");
+        showStatus("You successfully joined the shared lease group!", "success");
       }
     });
   };
 
+  const statusColorClass =
+    statusType === "success"
+      ? "text-green-600"
+      : statusType === "error"
+      ? "text-red-600"
+      : "text-gray-600";
 
   return (
     <div className="p-4 border rounded-lg shadow-md">
@@ -107,9 +119,10 @@ useEffect(() => {
         <button
           type="button"
           onClick={handleCreateGroup}
-          className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 transition"
+          disabled={loading}
+          className="bg-[#9747FF] text-white px-6 py-2 rounded-full font-semibold hover:bg-violet-900 transition disabled:opacity-60"
         >
-          Create Group
+          {loading ? "Working..." : "Create Group"}
         </button>
 
         <div className="flex gap-2 items-center">
@@ -118,24 +131,25 @@ useEffect(() => {
             placeholder="Enter Group ID to Join"
             value={joinGroupId}
             onChange={(e) => setJoinGroupId(e.target.value)}
+            disabled={loading}
             className="p-2 border border-gray-300 rounded-md flex-1 focus:outline-none focus:ring-2 focus:ring-[#9747FF]"
           />
           <button
             type="button"
             onClick={handleJoinGroup}
-            className={`px-6 py-2 rounded-full font-semibold transition bg-green-600 text-white hover:bg-green-800`}
+            disabled={loading}
+            className="px-6 py-2 rounded-full font-semibold transition bg-green-600 text-white hover:bg-green-800 disabled:opacity-60"
           >
-            Join Group
+            {loading ? "Working..." : "Join Group"}
           </button>
         </div>
       </div>
 
       {statusMessage && (
-        <p className="mt-4 text-sm text-green-600">{statusMessage}</p>
+        <p className={`mt-4 text-sm ${statusColorClass}`}>{statusMessage}</p>
       )}
     </div>
   );
 };
 
 export default SharedLease;
-
