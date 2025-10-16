@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useState}  from "react";
 import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./components/LandlordNavbar";
@@ -13,6 +13,23 @@ import { Properties, Photos, StarredProperties, RentalApplications  } from "../.
 /////////////////////////////////////////////////////////////
 
 export default function LandlordBasicPropListings() {
+
+const [searchQuery, setSearchQuery] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [filters, setFilters] = useState({
+    furnished: false,
+    pets: false,
+    rooms: "",
+    cars: "",
+    baths: "",
+    minPrice: "",
+    maxPrice: "",
+    propertyType: "",
+  });
+
+
+
+
 const { isReady, properties, photos, starredProperties, rentalApplications }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
     const subPhotos= Meteor.subscribe("photos");
@@ -51,7 +68,7 @@ const { isReady, properties, photos, starredProperties, rentalApplications }=  u
 
   const starredSet= new Set(starredProperties.map(sp => sp.prop_id));
 
-  const propertyCards= availableProperties.map((p)=>{
+  const BasicpropertyCards= availableProperties.map((p)=>{
     // Prefer Cloudinary URLs stored in Properties.photo (objects or strings)
     let firstPhotoUrl;
     if (Array.isArray(p.photo)) {
@@ -73,14 +90,43 @@ const { isReady, properties, photos, starredProperties, rentalApplications }=  u
     return{
       id: p.prop_id,
       location: p.prop_address,
-      price:`$${p.prop_pricepweek}`,
+      price: `$${p.prop_pricepweek}`,
       image: firstPhotoUrl || `/images/default.jpg`,
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
-      cars:p.prop_numcarspots,
-      starred: starredSet.has(p.prop_id)
+      cars: p.prop_numcarspots,
+      furnished: p.prop_furnish,
+      pets: p.prop_pets,
+      type: p.prop_type,
+      starred: starredSet.has(p.prop_id),
     };
   });
+
+  const filteredProperties = BasicpropertyCards.filter((p) => {
+    if (filters.furnished && !p.furnished) return false;
+    if (filters.pets && !p.pets) return false;
+    if (filters.rooms && p.beds < parseInt(filters.rooms)) return false;
+    if (filters.cars && p.cars < parseInt(filters.cars)) return false;
+    if (filters.baths && p.baths < parseInt(filters.baths)) return false;
+
+    const price = parseInt(p.price.replace("$", "").replace(",", "") || 0);
+    if (filters.minPrice && price < parseInt(filters.minPrice)) return false;
+    if (filters.maxPrice && price > parseInt(filters.maxPrice)) return false;
+
+    if (
+      filters.propertyType &&
+      p.type &&
+      p.type.trim().toLowerCase() !== filters.propertyType.trim().toLowerCase()
+    )
+      return false;
+
+    if (searchQuery && !p.location.toLowerCase().includes(searchQuery.toLowerCase()))
+      return false;
+
+    return true;
+  });
+
+
 
   return (
     <div className="min-h-screen bg-[#FFF8E9] flex flex-col">
@@ -104,27 +150,31 @@ const { isReady, properties, photos, starredProperties, rentalApplications }=  u
             <div className="mt-4 flex justify-center">
               <div className="bg-[#CBADD8] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
       
-                {/* Search field */}
-                <div className="flex items-center bg-white px-3 py-2 rounded-md w-full">
-                  <FaSearch className="text-gray-500 mr-2" />
-                  <input
-                    type="text"
-                    placeholder="Search Postcode..."
-                    className="flex-1 outline-none bg-transparent"
-                  />
-                </div>
-      
-                {/* Search button with icon */}
-                <button
-                  className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
-                >
-                  <FaSearch className="mr-2" />
-                  Search
-                </button>
+            {/* Search field */}
+            <div className="flex items-center bg-white px-3 py-2 rounded-md w-full">
+              <FaSearch className="text-gray-500 mr-2" />
+              <input
+                type="text"
+                placeholder="Search Postcode..."
+                className="flex-1 outline-none bg-transparent"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+
+            {/* Search button with icon */}
+            <button
+              className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+              onClick={() => setSearchQuery(searchQuery.trim())}
+            >
+              <FaSearch className="mr-2" />
+              Search
+            </button>
       
                 {/* Filter button with icon */}
                 <button
                   className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
+                  onClick={() => setShowFilters(!showFilters)}
                 >
                   <FaFilter className="mr-2" />
                   Filter
@@ -132,21 +182,131 @@ const { isReady, properties, photos, starredProperties, rentalApplications }=  u
               </div>
             </div>
 
+
+            {/* Filter Section */}
+            {showFilters && (
+              <div className="mt-4 flex justify-center">
+                <div
+                  className="bg-[#CBADD8] py-10 px-10 rounded-lg flex flex-col gap-6 w-full min-h-[400px]"
+                  style={{ maxWidth: "1100px" }}
+                >
+                  {/* Furnished & Pets */}
+                  <div className="flex items-center gap-6">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={filters.furnished}
+                        onChange={(e) => setFilters({ ...filters, furnished: e.target.checked })}
+                      />
+                      Furnished
+                    </label>
+
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={filters.pets}
+                        onChange={(e) => setFilters({ ...filters, pets: e.target.checked })}
+                      />
+                      Pets Allowed
+                    </label>
+                  </div>
+
+                  {/* Numbers */}
+                  <div className="grid grid-cols-3 gap-4">
+                    <div>
+                      <label className="block mb-1 font-semibold">Rooms</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="w-full p-2 rounded border"
+                        value={filters.rooms}
+                        onChange={(e) => setFilters({ ...filters, rooms: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1 font-semibold">Car Spots</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="w-full p-2 rounded border"
+                        value={filters.cars}
+                        onChange={(e) => setFilters({ ...filters, cars: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1 font-semibold">Bathrooms</label>
+                      <input
+                        type="number"
+                        min="0"
+                        className="w-full p-2 rounded border"
+                        value={filters.baths}
+                        onChange={(e) => setFilters({ ...filters, baths: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Price */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block mb-1 font-semibold">Min Price</label>
+                      <input
+                        type="number"
+                        className="w-full p-2 rounded border"
+                        value={filters.minPrice}
+                        onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <label className="block mb-1 font-semibold">Max Price</label>
+                      <input
+                        type="number"
+                        className="w-full p-2 rounded border"
+                        value={filters.maxPrice}
+                        onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Property Type */}
+                  <div>
+                    <label className="block mb-1 font-semibold">Property Type</label>
+                    <select
+                      className="w-full p-2 rounded border bg-white text-black"
+                      value={filters.propertyType}
+                      onChange={(e) => setFilters({ ...filters, propertyType: e.target.value })}
+                    >
+                      <option value="">Select type</option>
+                      <option value="House">House</option>
+                      <option value="Apartment">Apartment</option>
+                      <option value="Unit">Unit</option>
+                      <option value="Townhouse">Townhouse</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
       {/* Property Grid */}
       <div className="mt-8 w-full flex justify-center">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-20 w-full max-w-[1230px] px-6">
-          {propertyCards.map((property) => (
-                      
-                        <BasicPropertyCard 
+          {filteredProperties.length === 0 ? (
+                    <p className="text-gray-700 text-center col-span-2">
+                      No properties match your filters.
+                    </p>
+                  ) : (
+                    filteredProperties.map((property) => (
+                      <BasicPropertyCard
                         key={property.id}
-                        property={property} 
-                        showFav={false}  
-                        linkTo={`/LandlordDetailedPropListing/${property.id}`}
-                        />
-              
-                    ))}
-        </div>
-      </div>
+                        property={property}
+                        showFav={false}
+                        onStarToggle={(p) => console.log("Favourited:", p)}
+                        linkTo={`/AgentDetailedListing/${property.id}`}
+                      />
+                    ))
+                  )}
+                </div>
+              </div>
       {/* Blank space before footer */}
       <div className="h-40" />
 
