@@ -1,6 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { check } from "meteor/check";
-import { RentalApplications } from "../database/collections.js";
+import { Properties, RentalApplications } from "../database/collections.js";
 
 Meteor.methods({
   async updateFeedback({ propId, feedback, status }) {
@@ -50,8 +50,10 @@ Meteor.methods({
         { _id: selectedAppId },
         { $set: { finalDecision: "Approved" } }
       );
+
     } catch (error) {
       console.log(error);
     }
   },
+
 });

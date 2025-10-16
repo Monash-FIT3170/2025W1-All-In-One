@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 
 
 function EditPropertyModal({isOpen, onClose, propertyData}) {
+  if(!isOpen) return null;
 
   const subUsers = Meteor.subscribe("userById", propertyData.landlord);
   const currLandlordEmail = (Meteor.users.findOne(propertyData.landlord)).emails[0].address;

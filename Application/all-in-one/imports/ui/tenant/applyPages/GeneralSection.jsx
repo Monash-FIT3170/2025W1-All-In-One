@@ -54,7 +54,7 @@ const GeneralSection = ({ propId, tenId }) => {
       rental_app_prop_inspected: propertyInspected, // use checkbox state here
       ten_id: tenId,
       leaseholder_id: 'L001',      // keep your defaults or logic here
-      employment_id: null,
+      // employment_id: null,
       household_pets: false,
       status: 'Pending',
     };

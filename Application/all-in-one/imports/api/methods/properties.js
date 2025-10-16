@@ -1,0 +1,131 @@
+import { Meteor } from 'meteor/meteor';
+import { Accounts } from 'meteor/accounts-base';
+import { AgentAvailabilities, Properties, RentalApplications } from '../database/collections.js'; // adjust path if needed
+
+Meteor.methods({
+async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordEmail, status, agentId,photo, }) {
+    try {
+      //The following 3 lines can be used to make IDs for any collection, given you replace the following aspects:
+        // Properties --> {name of collection}
+        // prop_id --> {name of id attribute in collection}
+        // 3 (in padStart) --> {number of digits you want excluding the letter}
+        // "P" --> {letter to represent the collection's data}
+
+      
+      // First, find the landlord by email
+      const landlord = await Accounts.findUserByEmail(landlordEmail);
+      
+      if (!landlord) {
+        throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
+      }
+
+      {/* Creating Property Id */}
+      const collectionSize = await Properties.find({}, {fields: {prop_id: 1}}).countAsync() + 1;  // Counts the number of items in the collection, then adds 1 
+      const idNum = String(collectionSize).padStart(3, '0');  // Pads out the number with leading zeros to make sure the ID has 3 digits. Can be changed to have more or less.
+      const propID = "P" + idNum;   // Concatenates the number with a leading P for Properties. 
+      
+
+      const date = new Date(dateAvailable);
+
+      {/* Adding Property to 'Properties' Database */}
+      await Properties.insertAsync({
+        prop_id: propID,
+        prop_address: propAddress,
+        prop_pricepweek: pricePerWeek,
+        prop_numbeds: numBeds,
+        prop_numbaths: numBaths,
+        prop_numcarspots: numParkSpots,
+        prop_type: propType,
+        prop_desc: description,
+        prop_available_date: date,
+        prop_furnish: isFurnished,
+        prop_pets: petsAllowed,
+        prop_bond: bond,
+        prop_status: status,
+        agent_id: agentId,   // to be changed
+        landlord_id: landlord._id,
+        photo: photo || [],
+      });
+      
+      // await Photos.insertAsync({
+      //   prop_id: propID,
+      //   photo_id: 'PH099',
+      //   photo_url: '/images/properties/P006/P006_1.jpg',
+      //   photo_order: 1
+      // });
+
+      return propID;
+    } catch (error) {
+      console.error("addProperty error:", error);
+      throw new Meteor.Error("add-property-failed", error.message || "Something went wrong.");
+    }
+  },
+
+  async "EditPropertyListing" ({propId, propAddress, pricePerWeek, numBeds, numBaths, numParkSpots, propType, description, dateAvailable, isFurnished, petsAllowed, bond, landlordEmail, status, agentId}) {
+      
+    const landlord = await Accounts.findUserByEmail(landlordEmail);
+      
+    if (!landlord) {
+      throw new Meteor.Error("landlord-not-found", "No landlord found with that email");
+    };
+    
+    const date = new Date(dateAvailable);
+
+    await Properties.updateAsync(
+      {prop_id: propId,},
+      {$set:
+        {
+          prop_address: propAddress,
+          prop_pricepweek: pricePerWeek,
+          prop_numbeds: numBeds,
+          prop_numbaths: numBaths,
+          prop_numcarspots: numParkSpots,
+          prop_type: propType,
+          prop_desc: description,
+          prop_available_date: date,
+          prop_furnish: isFurnished,
+          prop_pets: petsAllowed,
+          prop_bond: bond,
+          prop_status: status,
+          agent_id: agentId,   // to be changed
+          landlord_id: landlord._id
+        }
+      });
+
+  },
+
+  async 'DeleteProperty' ({propID}) {
+
+    const address = await Properties.findOneAsync({prop_id: propID}).prop_address;
+
+    await RentalApplications.removeAsync({prop_id: propID});
+    await AgentAvailabilities.removeAsync({'$property.address': address});
+    await Properties.removeAsync({prop_id: propID});
+    
+
+  },
+
+  async 'RelistProperty' ({propID}) {
+    try {
+
+      await Properties.updateAsync(
+        {prop_id: propID},
+        {$set: {prop_status: "Available" } }
+      )
+
+    } catch(error) {
+      console.log(error);
+    }
+  },
+
+  // async 'EditPropertyMedia' ({propId, photo}) {
+  //   await Properties.updateAsync(
+  //     {prop_id: propId},
+  //     {$set: {
+  //       photo: photo
+  //     }}
+  //   )
+
+
+  // },
+});

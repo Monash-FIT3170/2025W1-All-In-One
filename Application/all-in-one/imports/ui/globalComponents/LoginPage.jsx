@@ -90,8 +90,12 @@ export const LoginPage = () => {
           <span>Sign Up</span>
         </Link>
         
-        {/* Forgot password link */}
-        <p className="text-sm text-gray-600 mb-6">Forgot Password?</p>
+        <p className="text-sm text-gray-600 mb-6">
+  <Link to="/forgot-password" className="text-[#9747FF] hover:underline">
+    Forgot Password?
+  </Link>
+</p>
+
         
         {/* Decorative house image */}
         <img src="/images/house.png" alt="All In One House" className="mt-[40px] mb-8 w-80" />

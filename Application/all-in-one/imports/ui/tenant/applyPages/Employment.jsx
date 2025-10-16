@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
-import { RentalApplications, Employment } from '/imports/api/database/collections';
+import { RentalApplications, Employment, Ten_SettingsEmployment } from '/imports/api/database/collections';
 
 function EmploymentSection({ propId, tenId }) {
   const [notEmployed, setNotEmployed] = useState(false);
@@ -18,12 +18,18 @@ function EmploymentSection({ propId, tenId }) {
   }, [propId, tenId]);
 
   const employment = useTracker(() => {
-    if (rentalApp?.employment_id) {
+    if (rentalApp && rentalApp.employment_id !== null && rentalApp.employment_id !== undefined) {
       Meteor.subscribe('employment');
       return Employment.findOne({ employment_id: rentalApp.employment_id });
     }
     return null;
   }, [rentalApp]);
+
+  // get employment datafrom settings
+  const defaultEmployment = useTracker(() => {
+    Meteor.subscribe('tenSettingsEmployment');
+    return Ten_SettingsEmployment.findOne({ ten_id: tenId });
+  }, [tenId]);
 
   useEffect(() => {
     if (rentalApp) {
@@ -35,15 +41,30 @@ function EmploymentSection({ propId, tenId }) {
 
   useEffect(() => {
     if (employment) {
+      // employment record exists
       setEmpType(employment.emp_type || '');
       setCompanyName(employment.emp_comp || '');
       setJobTitle(employment.emp_job_title || '');
       setStartDate(employment.emp_start_date?.toISOString().slice(0, 10) || '');
       setNotEmployed(false);
-    } else if (rentalApp && rentalApp.employment_id === null) {
+    } else if (rentalApp && rentalApp.employment_id === null){
+      setNotEmployed(true);
+      setEmpType('');
+      setCompanyName('');
+      setJobTitle('');
+      setStartDate('');
+    }
+     else if (defaultEmployment && rentalApp && rentalApp.employment_id === undefined){
+      setEmpType(defaultEmployment.emp_type || '');
+      setCompanyName(defaultEmployment.emp_comp || '');
+      setJobTitle(defaultEmployment.emp_job_title || '');
+      setStartDate(defaultEmployment.emp_start_date ? defaultEmployment.emp_start_date.toISOString().slice(0, 10) : '');
+      setNotEmployed(false);
+    }
+    else if (rentalApp && rentalApp.employment_id === null) {
       setNotEmployed(true);
     }
-  }, [employment, rentalApp]);
+  }, [employment, defaultEmployment, rentalApp]);
 
   const handleSubmit = () => {
     if (!rentalAppId) {

@@ -4,6 +4,8 @@ import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import { LoginPage } from './globalComponents/LoginPage.jsx';
 import { HomePage } from './globalComponents/HomePage.jsx';
 import { SignUpPage } from './globalComponents/SignUpPage.jsx';
+import { ForgotPasswordPage } from './globalComponents/ForgotPasswordPage.jsx';
+import { ResetPasswordPage } from './globalComponents/ResetPassword.jsx';
 
 
 import ProtectedAgentRoutes from './utils/ProtectedAgentRoutes.jsx';
@@ -64,6 +66,9 @@ const App = () => (
 
         {/* Sign Up Page */}
         <Route path="/signup" element={<SignUpPage />} />
+
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+  <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
         {/*Guest basic leases and detailed listing page*/}
         <Route

@@ -91,10 +91,15 @@ function SettingsAddresses () {
       <h3 className="text-xl font-semibold mb-2">Address History</h3>
       <p className="text-gray-600 text-sm mb-6">Please provide 2 years of address history.</p>
 
-      {['Current', 'Past'].map((status) => (
+      {['Current', 'Past'].map((status) => {
+        // Calculate if we can add more addresses for this status
+        const existingAddressesForStatus = addresses.filter((a) => a.address_status === status);
+        const canAddMore = status === 'Past' || (status === 'Current' && existingAddressesForStatus.length === 0);
+        return (
         <div key={status} className="mb-6">
           <div className="flex justify-between items-center mb-2">
             <h4 className="text-lg font-medium">{status} Address</h4>
+            {canAddMore && (
             <button
               onClick={() => {
                 setSelectedStatus(status);
@@ -105,6 +110,7 @@ function SettingsAddresses () {
             >
               Enter Address
             </button>
+            )}
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -152,7 +158,8 @@ function SettingsAddresses () {
                           ))}
                       </div>
                     </div>
-      ))}
+        );
+})}
 
       <AddressModal
         open={openModal}
