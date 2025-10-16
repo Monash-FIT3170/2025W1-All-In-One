@@ -17,37 +17,118 @@ export default function AddPropertyListing() {
   {/* ^^ Saving Photos and Videos to Database has not been implemented yet (Milestone 3 issue heh) */}
 
   const [propAddress, setPropAddress] = useState("");
-  const [pricePerWeek, setPricePerWeek] = useState(0);
-  const [numBeds, setNumBeds] = useState(0);
-  const [numBaths, setNumBaths] = useState(0);
-  const [numParkSpots, setNumParkSpots] = useState(0);
+  const [pricePerWeek, setPricePerWeek] = useState("");
+  const [numBeds, setNumBeds] = useState("");
+  const [numBaths, setNumBaths] = useState("");
+  const [numParkSpots, setNumParkSpots] = useState("");
   const [propType, setPropType] = useState("Townhouse");
   const [description, setDescription] = useState("");
   const [isFurnished, setIsFurnished] = useState(true);
   const [petsAllowed, setPetsAllowed] = useState(true);
-  const [bond, setBond] = useState(0);
+  const [bond, setBond] = useState("");
   const [landlordEmail, setLandlordEmail] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const MAX_COUNT = 20;
 
   const navigate = useNavigate();
 
+  const clearFieldError = (field) => {
+    setErrors((prev) => {
+      if (!prev[field]) {
+        return prev;
+      }
+      const updated = { ...prev };
+      delete updated[field];
+      return updated;
+    });
+  };
+
+  const handleCountChange = (setter, fieldName) => (event) => {
+    const { value } = event.target;
+
+    if (value === "") {
+      setter("");
+      clearFieldError(fieldName);
+      return;
+    }
+
+    const numericValue = Number(value);
+
+    if (
+      Number.isNaN(numericValue) ||
+      !Number.isInteger(numericValue) ||
+      numericValue < 0 ||
+      numericValue > MAX_COUNT
+    ) {
+      setter(value);
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: `Please enter a whole number between 0 and ${MAX_COUNT}.`,
+      }));
+      return;
+    }
+
+    setter(value);
+    clearFieldError(fieldName);
+  };
+
+  const validateForm = () => {
+    const validationErrors = {};
+
+    const counts = [
+      { value: numBeds, field: "numBeds", label: "bedrooms" },
+      { value: numBaths, field: "numBaths", label: "bathrooms" },
+      { value: numParkSpots, field: "numParkSpots", label: "parking spots" },
+    ];
+
+    counts.forEach(({ value, field, label }) => {
+      const numericValue = Number(value);
+      if (
+        value === "" ||
+        Number.isNaN(numericValue) ||
+        !Number.isInteger(numericValue) ||
+        numericValue < 0 ||
+        numericValue > MAX_COUNT
+      ) {
+        validationErrors[field] = `Number of ${label} must be a whole number between 0 and ${MAX_COUNT}.`;
+      }
+    });
+
+    return validationErrors;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setErrors({});
     console.log("Files being submitted:", uploadedFiles); // <-- DEBUG LOG
     const agentId= Meteor.userId();
+    const pricePerWeekValue = Number(pricePerWeek);
+    const numBedsValue = Number(numBeds);
+    const numBathsValue = Number(numBaths);
+    const numParkSpotsValue = Number(numParkSpots);
+    const bondValue = Number(bond);
 
     Meteor.call(
       "addProperty",    // See 'imports/api/methods/account.js' for method
       {
         propAddress,
-        pricePerWeek,
-        numBeds,
-        numBaths,
-        numParkSpots,
+        pricePerWeek: pricePerWeekValue,
+        numBeds: numBedsValue,
+        numBaths: numBathsValue,
+        numParkSpots: numParkSpotsValue,
         propType,
         description,
         isFurnished,
         petsAllowed,
-        bond,
+        bond: bondValue,
         landlordEmail,
         status: "Available",  // I assume if you are putting a new property, it would be available right??
         agentId,
@@ -211,11 +292,12 @@ const handleUpload = async (event) => {
             {/*Price per Week Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Price per Week </label>
             <input 
-              type="decimal" 
+              type="number" 
               required
               placeholder="$/week"
-              min={0}
-              onChange={(e) => setPricePerWeek(Number(e.target.value))} 
+              step="0.01"
+              value={pricePerWeek}
+              onChange={(e) => setPricePerWeek(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
@@ -226,9 +308,15 @@ const handleUpload = async (event) => {
               required
               placeholder="No. of Bedrooms"
               min={0}
-              onChange={(e) => setNumBeds(Number(e.target.value))} 
+              max={MAX_COUNT}
+              step={1}
+              value={numBeds}
+              onChange={handleCountChange(setNumBeds, "numBeds")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
+            {errors.numBeds && (
+              <p className="text-sm text-red-600 -mt-4 mb-5">{errors.numBeds}</p>
+            )}
 
             {/*Bathrooms Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bathrooms </label>
@@ -237,9 +325,15 @@ const handleUpload = async (event) => {
               required
               placeholder="No. of Bathrooms"
               min={0}
-              onChange={(e) => setNumBaths(Number(e.target.value))} 
+              max={MAX_COUNT}
+              step={1}
+              value={numBaths}
+              onChange={handleCountChange(setNumBaths, "numBaths")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
+            {errors.numBaths && (
+              <p className="text-sm text-red-600 -mt-4 mb-5">{errors.numBaths}</p>
+            )}
 
             {/*Parking Spot Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Parking Spots </label>
@@ -248,9 +342,15 @@ const handleUpload = async (event) => {
               required
               placeholder="No. of Parking Spots"
               min={0}
-              onChange={(e) => setNumParkSpots(Number(e.target.value))} 
+              max={MAX_COUNT}
+              step={1}
+              value={numParkSpots}
+              onChange={handleCountChange(setNumParkSpots, "numParkSpots")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
+            {errors.numParkSpots && (
+              <p className="text-sm text-red-600 -mt-4 mb-5">{errors.numParkSpots}</p>
+            )}
 
             {/*Property Type Dropdown*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Property Type </label>
@@ -300,11 +400,13 @@ const handleUpload = async (event) => {
             {/*Bond Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Bond </label>
             <input 
-              type="decimal"
+              type="number"
               required
               placeholder="$0.00"
               min={0}
-              onChange={(e) => setBond(Number(e.target.value))} 
+              step="0.01"
+              value={bond}
+              onChange={(e) => setBond(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
