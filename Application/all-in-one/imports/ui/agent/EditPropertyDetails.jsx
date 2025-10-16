@@ -49,41 +49,137 @@ const {isReady, property, photos, videos} = useTracker(() => {
   const [video, setVideo] = useState("");   // Same for video ??
   {/* ^^ Saving Photos and Videos to Database has not been implemented yet (Milestone 3 issue heh) */}
 
-  const [propAddress, setPropAddress] = useState("");
-  const [pricePerWeek, setPricePerWeek] = useState(0);
-  const [numBeds, setNumBeds] = useState(0);
-  const [numBaths, setNumBaths] = useState(0);
-  const [numParkSpots, setNumParkSpots] = useState(0);
-  const [propType, setPropType] = useState("Townhouse");
-  const [description, setDescription] = useState("");
-  const [dateAvailable, setDateAvailable] = useState("");
-  const [isFurnished, setIsFurnished] = useState(true);
-  const [petsAllowed, setPetsAllowed] = useState(true);
-  const [bond, setBond] = useState(0);
+  const propId = property.prop_id;
+  const initialDateAvailable = property.prop_available_date
+    ? new Date(property.prop_available_date).toISOString().split("T")[0]
+    : "";
+
+  const [propAddress, setPropAddress] = useState(property.prop_address || "");
+  const [pricePerWeek, setPricePerWeek] = useState(
+    property.prop_pricepweek !== undefined ? String(property.prop_pricepweek) : ""
+  );
+  const [numBeds, setNumBeds] = useState(
+    property.prop_numbeds !== undefined ? String(property.prop_numbeds) : ""
+  );
+  const [numBaths, setNumBaths] = useState(
+    property.prop_numbaths !== undefined ? String(property.prop_numbaths) : ""
+  );
+  const [numParkSpots, setNumParkSpots] = useState(
+    property.prop_numcarspots !== undefined ? String(property.prop_numcarspots) : ""
+  );
+  const [propType, setPropType] = useState(property.prop_type || "Townhouse");
+  const [description, setDescription] = useState(property.prop_desc || "");
+  const [dateAvailable, setDateAvailable] = useState(initialDateAvailable);
+  const [isFurnished, setIsFurnished] = useState(Boolean(property.prop_furnish));
+  const [petsAllowed, setPetsAllowed] = useState(Boolean(property.prop_pets));
+  const [bond, setBond] = useState(
+    property.prop_bond !== undefined ? String(property.prop_bond) : ""
+  );
   const [landlordEmail, setLandlordEmail] = useState("");
+  const [errors, setErrors] = useState({});
+
+  const MAX_COUNT = 20;
 
   const navigate = useNavigate();
 
+  const clearFieldError = (field) => {
+    setErrors((prev) => {
+      if (!prev[field]) {
+        return prev;
+      }
+      const updated = { ...prev };
+      delete updated[field];
+      return updated;
+    });
+  };
+
+  const handleCountChange = (setter, fieldName) => (event) => {
+    const { value } = event.target;
+
+    if (value === "") {
+      setter("");
+      clearFieldError(fieldName);
+      return;
+    }
+
+    const numericValue = Number(value);
+
+    if (
+      Number.isNaN(numericValue) ||
+      !Number.isInteger(numericValue) ||
+      numericValue < 0 ||
+      numericValue > MAX_COUNT
+    ) {
+      setter(value);
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: `Please enter a whole number between 0 and ${MAX_COUNT}.`,
+      }));
+      return;
+    }
+
+    setter(value);
+    clearFieldError(fieldName);
+  };
+
+  const validateForm = () => {
+    const validationErrors = {};
+
+    const counts = [
+      { value: numBeds, field: "numBeds", label: "bedrooms" },
+      { value: numBaths, field: "numBaths", label: "bathrooms" },
+      { value: numParkSpots, field: "numParkSpots", label: "parking spots" },
+    ];
+
+    counts.forEach(({ value, field, label }) => {
+      const numericValue = Number(value);
+      if (
+        value === "" ||
+        Number.isNaN(numericValue) ||
+        !Number.isInteger(numericValue) ||
+        numericValue < 0 ||
+        numericValue > MAX_COUNT
+      ) {
+        validationErrors[field] = `Number of ${label} must be a whole number between 0 and ${MAX_COUNT}.`;
+      }
+    });
+
+    return validationErrors;
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+    const validationErrors = validateForm();
+
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    setErrors({});
 
     const agentId = Meteor.userId();
+    const pricePerWeekValue = Number(pricePerWeek);
+    const numBedsValue = Number(numBeds);
+    const numBathsValue = Number(numBaths);
+    const numParkSpotsValue = Number(numParkSpots);
+    const bondValue = Number(bond);
     
     Meteor.call(
       "editPropertyListing",    // See 'imports/api/methods/account.js' for method
       {
         propId,
         propAddress,
-        pricePerWeek,
-        numBeds,
-        numBaths,
-        numParkSpots,
+        pricePerWeek: pricePerWeekValue,
+        numBeds: numBedsValue,
+        numBaths: numBathsValue,
+        numParkSpots: numParkSpotsValue,
         propType,
         description,
         dateAvailable,
         isFurnished,
         petsAllowed,
-        bond,
+        bond: bondValue,
         landlordEmail,
         status: "Available",  // I assume if you are putting a new property, it would be available right??
         agentId,
@@ -161,6 +257,7 @@ const {isReady, property, photos, videos} = useTracker(() => {
               type="text" 
               required
               placeholder="Enter property address" 
+              value={propAddress}
               onChange={(e) => setPropAddress(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:placeholder-gray-400 mb-5"
             />
@@ -168,11 +265,13 @@ const {isReady, property, photos, videos} = useTracker(() => {
             {/*Price per Week Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Price per Week </label>
             <input 
-              type="decimal" 
+              type="number" 
               required
               placeholder="$/week"
               min={0}
-              onChange={(e) => setPricePerWeek(Number(e.target.value))} 
+              step="0.01"
+              value={pricePerWeek}
+              onChange={(e) => setPricePerWeek(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
@@ -183,9 +282,15 @@ const {isReady, property, photos, videos} = useTracker(() => {
               required
               placeholder="No. of Bedrooms"
               min={0}
-              onChange={(e) => setNumBeds(Number(e.target.value))} 
+              max={MAX_COUNT}
+              step={1}
+              value={numBeds}
+              onChange={handleCountChange(setNumBeds, "numBeds")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
+            {errors.numBeds && (
+              <p className="text-sm text-red-600 -mt-4 mb-5">{errors.numBeds}</p>
+            )}
 
             {/*Bathrooms Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bathrooms </label>
@@ -194,9 +299,15 @@ const {isReady, property, photos, videos} = useTracker(() => {
               required
               placeholder="No. of Bathrooms"
               min={0}
-              onChange={(e) => setNumBaths(Number(e.target.value))} 
+              max={MAX_COUNT}
+              step={1}
+              value={numBaths}
+              onChange={handleCountChange(setNumBaths, "numBaths")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
+            {errors.numBaths && (
+              <p className="text-sm text-red-600 -mt-4 mb-5">{errors.numBaths}</p>
+            )}
 
             {/*Parking Spot Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Parking Spots </label>
@@ -205,13 +316,20 @@ const {isReady, property, photos, videos} = useTracker(() => {
               required
               placeholder="No. of Parking Spots"
               min={0}
-              onChange={(e) => setNumParkSpots(Number(e.target.value))} 
+              max={MAX_COUNT}
+              step={1}
+              value={numParkSpots}
+              onChange={handleCountChange(setNumParkSpots, "numParkSpots")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
+            {errors.numParkSpots && (
+              <p className="text-sm text-red-600 -mt-4 mb-5">{errors.numParkSpots}</p>
+            )}
 
             {/*Property Type Dropdown*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Property Type </label>
             <select 
+              value={propType}
               onChange={(e) => setPropType(e.target.value)}
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-10">
                 <option>Townhouse</option>
@@ -231,6 +349,7 @@ const {isReady, property, photos, videos} = useTracker(() => {
               type="text"
               required
               placeholder="Enter a brief description of the property" 
+              value={description}
               onChange={(e) => setDescription(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"
             />
@@ -241,6 +360,7 @@ const {isReady, property, photos, videos} = useTracker(() => {
                 type="date" 
                 required
                 placeholder="DD/MM/YYYY"
+                value={dateAvailable}
                 onChange={(e) => setDateAvailable(e.target.value)} 
                 class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-2.5 mb-5 w-lg"
               />
@@ -248,6 +368,7 @@ const {isReady, property, photos, videos} = useTracker(() => {
             {/*Furnished Dropdown*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Furnished? </label>
             <select 
+              value={isFurnished ? "Yes" : "No"}
               onChange={(e) => setIsFurnished(e.target.value == "Yes")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-5">
                 <option>Yes</option>
@@ -257,6 +378,7 @@ const {isReady, property, photos, videos} = useTracker(() => {
             {/*Pets Allowed Dropdown*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Pets Allowed? </label>
             <select 
+              value={petsAllowed ? "Yes" : "No"}
               onChange={(e) => setPetsAllowed(e.target.value == "Yes")} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-lg p-2.5 dark:placeholder-gray-400 mb-5">
                 <option>Yes</option>
@@ -266,11 +388,13 @@ const {isReady, property, photos, videos} = useTracker(() => {
             {/*Bond Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Bond </label>
             <input 
-              type="decimal"
+              type="number"
               required
               placeholder="$0.00"
               min={0}
-              onChange={(e) => setBond(Number(e.target.value))} 
+              step="0.01"
+              value={bond}
+              onChange={(e) => setBond(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
@@ -279,6 +403,7 @@ const {isReady, property, photos, videos} = useTracker(() => {
             <input 
               type="text" 
               placeholder="example@example.com" 
+              value={landlordEmail}
               onChange={(e) => setLandlordEmail(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-10"
             />
