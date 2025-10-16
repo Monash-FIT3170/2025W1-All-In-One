@@ -155,7 +155,7 @@ export default function TenantApplications() {
                                         status={app.status || "Pending"}
                                         statusIcon={app.status === "Approved"
                                             ? "✅"
-                                            : app.status === "Rejected"
+                                            : app.status === "Rejected" || "Removed"
                                             ? "❌"
                                             : "⏳"}
                                         editButton={

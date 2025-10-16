@@ -41,6 +41,8 @@ export const ApplicantCard = ({ appId, name, desc, status, statusIcon, editButto
                                 ? "bg-green-200 text-green-800"
                                 : displayStatus === "Rejected"
                                 ? "bg-red-200 text-red-800"
+                                : displayStatus === "Removed"
+                                ? "bg-red-200 text-red-800"
                                 : displayStatus === "Withdrawn"
                                 ? "bg-gray-200 text-gray-800"
                                 : "bg-yellow-200 text-yellow-800"

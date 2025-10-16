@@ -1,6 +1,6 @@
 import { Meteor } from "meteor/meteor";
 import { check } from "meteor/check";
-import { RentalApplications } from "../database/collections.js";
+import { Properties, RentalApplications } from "../database/collections.js";
 
 Meteor.methods({
   async updateFeedback({ propId, feedback, status }) {
@@ -50,7 +50,29 @@ Meteor.methods({
         { _id: selectedAppId },
         { $set: { finalDecision: "Approved" } }
       );
+
+      // Change Property Status from Available to Occupied
+      Properties.update(
+        {prop_id: propId},
+        {$set: {prop_status: "Occupied"} }
+      );
+
     } catch (error) {
+      console.log(error);
+    }
+  },
+
+  //Remove Tenant Application
+  async removeTenant({ propID, tenID }) {
+    try{
+      check(propID, String);
+      check(tenID, String);
+
+      await RentalApplications.updateAsync(
+        {prop_id: propID, ten_id: tenID},
+        {$set: {status: "Removed", landLordFinal: "Removed", agentFinal: "Removed"}}
+      )
+    } catch (error){
       console.log(error);
     }
   },
