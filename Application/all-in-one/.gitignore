@@ -28,4 +28,6 @@ yarn-error.log
 # Local files
 local
 
-# API files
+
+# API files 
+settings.json
