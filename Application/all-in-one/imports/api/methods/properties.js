@@ -103,7 +103,20 @@ async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots
     await Properties.removeAsync({prop_id: propID});
     
 
-  }
+  },
+
+  async 'RelistProperty' ({propID}) {
+    try {
+
+      await Properties.updateAsync(
+        {prop_id: propID},
+        {$set: {prop_status: "Available" } }
+      )
+
+    } catch(error) {
+      console.log(error);
+    }
+  },
 
   // async 'EditPropertyMedia' ({propId, photo}) {
   //   await Properties.updateAsync(

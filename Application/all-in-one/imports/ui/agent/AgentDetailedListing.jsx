@@ -7,10 +7,12 @@ import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, RentalApplications, Landlord,Tenants } from "../../api/database/collections"; // importing mock for now
-import EditPropertyModal from "./components/EditPropertyModal";
+import {EditPropertyModal} from "./components/EditPropertyModal";
 import {ConfirmDeleteDialog} from "./components/ConfirmDeleteDialog";
 // import EditMediaModal from "./components/EditMediaModal";
 import { useNavigate } from "react-router-dom";
+import { ConfirmRemoveTenant } from "./components/ConfirmRemoveTenant";
+import { ConfirmRelistDialog } from "./components/ConfirmRelistDialog";
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // This page will display the details of a the agent's own assigned property listing to the agent (accessed through AgentListings) //
@@ -21,6 +23,8 @@ export default function AgentDetailedListing() {
   const[openEditDetails, setOpenEditDetails] = useState(false);
   // const[openEditMedia, setOpenEditMedia] = useState(false);
   const [showDialog, setShowDialog] = useState(false);
+  const [showRemoveDialog, setShowRemoveDialog] = useState(false);
+  const [showRelistDialog, setShowRelistDialog] = useState(false);
 
   const navigate = useNavigate();
 
@@ -44,7 +48,50 @@ export default function AgentDetailedListing() {
     );
     setShowDialog(false);
 
-  }
+  };
+
+  const handleConfirmRemove = (propID, tenID) => {
+
+    Meteor.call(
+      "removeTenant",
+      {
+        propID,
+        tenID
+      },
+      (err) => {
+        if (err) {
+          alert("Removing Tenant from Property Failed: " + err.reason);
+        }
+        else {
+          alert("Tenant has been Removed Successfully!");
+          setShowDialog(false);
+          setShowRelistDialog(true);
+        }
+      }
+    );
+    setShowDialog(false);
+  };
+
+  const handleRelist = (propID) => {
+
+    Meteor.call(
+      "RelistProperty",
+      {
+        propID
+      },
+      (err) => {
+        if (err) {
+          alert("Relisting Property Failed: " + err.reason);
+        }
+        else {
+          alert("Property Listing has been Relisted Successfully!");
+          setShowRelistDialog(false);
+          navigate(`/AgentListings`)
+        }
+      }
+    );
+    setShowRelistDialog(false);
+  };
 
 const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant }=  useTracker(()=>{
         const subProps= Meteor.subscribe("properties");
@@ -75,6 +122,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
           const approvedApp= RentalApplications.findOne({
             prop_id: id,
             landLordFinal: "Approved",
+            agentFinal: {$ne: "Removed"}
           });
 
           if (approvedApp && approvedApp.lease_start_date){
@@ -225,6 +273,12 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
     <p>
       <span className="font-medium">Phone: </span> {tenant.ten_pn}
     </p>
+    <p>
+      <button className="bg-red-500 hover:bg-red-400 text-white font-bold py-2 px-4 rounded-md mt-5"
+      onClick={() => setShowRemoveDialog(true)}>
+        Remove Tenant
+      </button>
+    </p>
   </div>
 )}
 
@@ -245,6 +299,18 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
       isOpen={() => setShowDialog(true)}
       onCancel={() => setShowDialog(false)}
       onConfirm={() => handleConfirmDelete(propertyData.id)}
+      />}
+
+      {showRemoveDialog && <ConfirmRemoveTenant
+      isOpen={() => setShowRemoveDialog(true)}
+      onCancel={() => setShowRemoveDialog(false)}
+      onConfirm={() => handleConfirmRemove(propertyData.id, tenant.ten_id)}
+      />}
+
+      {showRelistDialog && <ConfirmRelistDialog
+      isOpen={() => setShowRemoveDialog(true)}
+      onRelist={() => handleRelist(propertyData.id)}
+      onDelete={() => handleConfirmDelete(propertyData.id)}
       />}
     </div>
   );
