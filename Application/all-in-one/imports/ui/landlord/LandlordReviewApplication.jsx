@@ -82,7 +82,6 @@ export default function ReviewApplication() {
   const landlordFlags = [
     { src: "/images/GreenTick.png", label: "Approved" },
     { src: "/images/red.png", label: "Rejected"},
-    { src: "/images/red.png", label: "Removed"}
   ];
 
   // Handle landlord clicking a decision flag

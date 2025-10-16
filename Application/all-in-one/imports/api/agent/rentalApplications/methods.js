@@ -10,6 +10,7 @@ import {
   SharedLeaseGroups // <-- add this collection import, define below if needed
 } from '/imports/api/database/collections';
 import cloudinary from 'cloudinary'; // FIX: Added cloudinary import
+import { Properties } from '../../database/collections';
 
 Meteor.methods({
   // Rental Applications
@@ -405,6 +406,13 @@ async "rentalApplications.setLandlordFinal"(id, decision) {
         { multi: true }
       );
     }
+
+    // Set Property Status to Occupied
+    await Properties.updateAsync(
+      { prop_id: propId },
+      {$set: {prop_status: "Occupied"}}
+    );
+
   } else if (decision === "Rejected") {
     if (sharedLeaseId) {
       // Reject all apps in the shared lease group
@@ -485,6 +493,19 @@ async "rentalApplications.clearLandlordFinal"(appId) {
 
     return true;
   },
+
+    //Remove Tenant Application
+  async "rentalApplications.removeTenant"({ propID, tenID }) {
+      
+    check(propID, String);
+    check(tenID, String);
+  
+    await RentalApplications.updateAsync(
+      {prop_id: propID, ten_id: tenID},
+      {$set: {status: "Removed", agentFinal: "Removed"}}
+    )
+
+    },
 
 
 
