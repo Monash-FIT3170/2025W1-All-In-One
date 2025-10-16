@@ -66,6 +66,9 @@ export default function AgentListings() {
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
       cars: p.prop_numcarspots,
+      furnished: p.prop_furnish,
+      pets: p.prop_pets,
+      type: p.prop_type,
       starred: false // Agents don't need starred functionality for their own listings
     };
   });
@@ -228,19 +231,20 @@ export default function AgentListings() {
         <div>
           <label className="block mb-1 font-semibold">Property Type</label>
           <select
-            className="w-full p-2 rounded border"
+            className="w-full p-2 rounded border bg-white text-black"
             value={filters.propertyType}
             onChange={(e) =>
               setFilters({ ...filters, propertyType: e.target.value })
             }
           >
             <option value="">Select type</option>
-            <option value="house">House</option>
-            <option value="apartment">Apartment</option>
-            <option value="unit">Unit</option>
-            <option value="townhouse">Townhouse</option>
+            <option value="House">House</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Unit">Unit</option>
+            <option value="Townhouse">Townhouse</option>
           </select>
         </div>
+
       </div>
     </div>
   )}
