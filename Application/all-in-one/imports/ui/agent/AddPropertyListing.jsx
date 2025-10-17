@@ -281,9 +281,10 @@ const handleUpload = async (event) => {
 
             {/*Description Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Description </label>
-            <input 
-              type="text"
+            <textarea 
               required
+              rows={6}
+              value={description}
               placeholder="Enter a brief description of the property" 
               onChange={(e) => setDescription(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"
