@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
+import { HiOutlineInformationCircle } from "react-icons/hi";
 import { useParams } from "react-router-dom";
 import NavBar from "./Navbar.jsx";
 import Footer from "./Footer.jsx";
 import PropertyDetailsCard from "./PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
-import { Properties, Photos, Videos, AgentAvailabilities, Agents } from "../../api/database/collections"; 
+import { Properties, Photos, Videos, AgentAvailabilities, Agents } from "../../api/database/collections";
 import { Link } from "react-router-dom";
 import GuestOpenHouseModal from "./GuestOpenHouseModal.jsx";
 
@@ -17,6 +18,10 @@ import GuestOpenHouseModal from "./GuestOpenHouseModal.jsx";
 export default function DetailedPropListing() {
   const { id } = useParams();
   const[openModal, setOpenModal] = useState(false);
+  const [showEstimateHelp, setShowEstimateHelp] = useState(false);
+  const [priceEstimate, setPriceEstimate] = useState(null);
+  const [estimateLoading, setEstimateLoading] = useState(true);
+  const [estimateError, setEstimateError] = useState(null);
 
   const { isReady, property, photos, videos, openHouses, agent }=  useTracker(()=>{
     const subProps= Meteor.subscribe("properties");
@@ -47,7 +52,42 @@ export default function DetailedPropListing() {
   
     return {isReady, property, photos, videos, openHouses, agent};
   }, [id]);
-    
+
+  // Fetch price estimate when property is loaded
+  // IMPORTANT: This useEffect must be before any early returns to follow Rules of Hooks
+  useEffect(() => {
+    if (property && property.prop_address) {
+      setEstimateLoading(true);
+      setEstimateError(null);
+
+      console.log('Fetching price estimate for:', property.prop_address);
+
+      Meteor.call(
+        'property.estimatePrice',
+        property.prop_address,
+        property.prop_numbeds,
+        property.prop_numbaths,
+        property.prop_type,
+        (error, result) => {
+          setEstimateLoading(false);
+
+          if (error) {
+            console.error('Price estimate error:', error);
+            setEstimateError(error.message || 'Unable to fetch estimate');
+            setPriceEstimate(null);
+          } else {
+            console.log('Price estimate result:', result);
+            setPriceEstimate(result);
+
+            if (result.error) {
+              setEstimateError(result.error);
+            }
+          }
+        }
+      );
+    }
+  }, [property]);
+
   if (!isReady){
     return (<div className="min-h-screen flex items-center justify-center text-xl text-gray-600">Loading Properties...</div>);
   }
@@ -105,6 +145,62 @@ export default function DetailedPropListing() {
 
       {/*Main content and butons*/}
       <div className="max-w-7xl mx-auto w-full px-6">
+
+        {/* Price Estimate badge */}
+        <div className="pt-6">
+          <div className="inline-flex items-center gap-2 rounded-full bg-[#DCC9E4] px-4 py-2 shadow-sm ring-1 ring-black/5">
+            <span className="text-sm font-semibold text-gray-800">Price Estimate:</span>
+            <span className="text-sm font-bold text-[#2E2E2E]">
+              {estimateLoading ? (
+                'Loading...'
+              ) : priceEstimate && priceEstimate.estimatedPrice ? (
+                `$${priceEstimate.estimatedPrice}/week`
+              ) : (
+                'Unavailable'
+              )}
+            </span>
+            <button
+              type="button"
+              aria-label="Price estimate information"
+              onMouseEnter={() => setShowEstimateHelp(true)}
+              onMouseLeave={() => setShowEstimateHelp(false)}
+              onFocus={() => setShowEstimateHelp(true)}
+              onBlur={() => setShowEstimateHelp(false)}
+              className="ml-1 text-gray-600 hover:text-gray-800"
+            >
+              <HiOutlineInformationCircle className="h-5 w-5" />
+            </button>
+          </div>
+
+          {showEstimateHelp && (
+            <div className="relative">
+              <div className="absolute z-10 mt-2 w-72 rounded-lg bg-white p-3 text-xs text-gray-700 shadow-lg ring-1 ring-black/10">
+                {estimateLoading ? (
+                  <p>Fetching price estimate...</p>
+                ) : priceEstimate && priceEstimate.estimatedPrice ? (
+                  <>
+                    <p className="font-semibold mb-2">
+                      {priceEstimate.estimationMethod === 'ai'
+                        ? 'AI-powered price estimate'
+                        : 'Algorithm-based price estimate'}
+                    </p>
+                    {priceEstimate.note && (
+                      <p className="text-gray-600 mt-1">
+                        {priceEstimate.note}
+                      </p>
+                    )}
+                  </>
+                ) : (
+                  <p>
+                    {estimateError || 'Price estimation is currently unavailable for this property.'}
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+        {/* End Price Estimate badge */}
+
         <PropertyDetailsCard property={propertyData} />
         <div className="w-full flex flex-row gap-4 mb-8 pt-10">
 
