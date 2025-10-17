@@ -27,7 +27,7 @@ export default function AddPropertyListing() {
   const [petsAllowed, setPetsAllowed] = useState(true);
   const [bond, setBond] = useState(0);
   const [landlordEmail, setLandlordEmail] = useState("");
-
+  const [dateAvailable, setDateAvailable] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -45,6 +45,7 @@ export default function AddPropertyListing() {
         numParkSpots,
         propType,
         description,
+        dateAvailable,
         isFurnished,
         petsAllowed,
         bond,
@@ -216,6 +217,16 @@ const handleUpload = async (event) => {
               placeholder="$/week"
               min={0}
               onChange={(e) => setPricePerWeek(Number(e.target.value))} 
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
+            />
+
+            {/*Date Available Input*/}
+            <label className="text-l font-semibold text-gray-600 mb-5"> Date Available </label>
+            <input 
+              type="date" 
+              required
+              placeholder="DD/MM/YYYY"
+              onChange={(e) => setDateAvailable(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
