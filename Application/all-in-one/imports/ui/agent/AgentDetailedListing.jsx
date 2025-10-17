@@ -1,13 +1,12 @@
 import React, { useState } from "react";
-import { FaBath, FaBed, FaCar, FaCouch } from "react-icons/fa";
-import { useParams, Link, UseNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
 import PropertyDetailsCard from "../globalComponents/PropertyDetailsCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, Videos, RentalApplications, Landlord,Tenants } from "../../api/database/collections"; // importing mock for now
-import { EditPropertyModal } from "./components/EditPropertyModal";
+import EditPropertyModal from "./components/EditPropertyModal";
 import {ConfirmDeleteDialog} from "./components/ConfirmDeleteDialog";
 // import EditMediaModal from "./components/EditMediaModal";
 import { useNavigate } from "react-router-dom";
@@ -288,7 +287,8 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
       {openEditDetails && <EditPropertyModal
       isOpen={() => setOpenEditDetails(true)}
       onClose={() => setOpenEditDetails(false)}
-      propertyData={propertyData}/>}
+      propertyData={propertyData}
+      currLandlordEmail={landlord.ll_email}/>}
 
       {/* {openEditMedia && <EditMediaModal
       isOpen={() => setOpenEditMedia(true)}
