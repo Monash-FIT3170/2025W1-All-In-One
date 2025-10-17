@@ -8,6 +8,11 @@ import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
 import PropertyCard from "../globalComponents/BasicPropertyCard";
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// This page will display all the listings connected to the Landlord (should be linked to property tab in nav bar) //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 export default function AgentListings() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -25,6 +30,7 @@ export default function AgentListings() {
 
   const { isReady, properties } = useTracker(() => {
     const subProps = Meteor.subscribe("properties");
+
 
     const isReady = subProps.ready();
     const agent = Meteor.user();
@@ -111,6 +117,8 @@ export default function AgentListings() {
       {/* Search + Filters */}
       <div className="mt-4 flex justify-center">
         <div className="bg-[#CBADD8] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
+
+          {/* Search field */}
           <div className="flex items-center bg-white px-3 py-2 rounded-md w-full">
             <FaSearch className="text-gray-500 mr-2" />
             <input
@@ -122,11 +130,13 @@ export default function AgentListings() {
             />
           </div>
 
+          {/* Search button with icon */}
           <button className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md">
             <FaSearch className="mr-2" />
             Search
           </button>
 
+          {/* Filter button with icon */}
           <button 
             className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
             onClick={() => setShowFilters(!showFilters)}

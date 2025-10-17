@@ -59,7 +59,7 @@ export const LoginPage = () => {
             if (role === "tenant") {
               navigate("/TenantBasicPropListings");
             } else if (role === "landlord") {
-              navigate("/LandordProperties");
+              navigate("/LandlordProperties");
             } else if (role === "agent") {
               navigate("/dashboard");
             } else {
