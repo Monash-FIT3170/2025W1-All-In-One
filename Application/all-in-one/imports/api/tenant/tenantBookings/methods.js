@@ -77,7 +77,7 @@ Meteor.methods({
     }
 
     // Insert tenant booking record (keep a snapshot for history)
-    return TenantBookings.insertAsync({
+    const bookingId = await TenantBookings.insertAsync({
       agentAvailabilityId: avId,
       tenantId: bookingData.tenantId,
       tenantName: bookingData.tenantName,
@@ -87,6 +87,16 @@ Meteor.methods({
       status: 'booked',     
       createdAt: new Date(),
     });
+
+    // Send confirmation email to tenant
+    try {
+      await Meteor.callAsync('inspection.sendBookingConfirmation', bookingId);
+    } catch (emailErr) {
+      // Don't fail the booking if email fails, just log it
+      console.error('Failed to send booking confirmation email:', emailErr);
+    }
+
+    return bookingId;
   },
 
   async 'tenantBookings.markAsRejected'(bookingId, agentAvailabilityId) {

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { BedDouble, ShowerHead, CarFront, Users, Check, Pencil, Trash2 } from 'lucide-react';
+import { BedDouble, ShowerHead, CarFront, Users, Check, Pencil, Trash2, Mail } from 'lucide-react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { TenantBookings, Tenants, Employment } from '../../../api/database/collections';
@@ -34,6 +34,7 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
   const [draftStart, setDraftStart] = useState(toLocalInputValue(startDate));
   const [draftEnd, setDraftEnd]     = useState(toLocalInputValue(endDate));
   const [draftNotes, setDraftNotes] = useState((mergedEvent.notes ?? mergedEvent.note ?? '').toString());
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
 
   const isBooked = mergedEvent.status === 'booked';
 
@@ -171,6 +172,25 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
     );
   };
 
+  const handleSendEmail = () => {
+    if (!window.confirm('Send booking form email to all active tenants?')) return;
+    setIsSendingEmail(true);
+    Meteor.call(
+      'inspection.sendBookingEmail',
+      mergedEvent._id || mergedEvent.id,
+      [], // Empty array means send to all tenants
+      (err, result) => {
+        setIsSendingEmail(false);
+        if (err) {
+          alert('Failed to send emails: ' + err.reason);
+        } else {
+          alert(`Successfully sent ${result.sent} email(s)!${result.failed > 0 ? `\n${result.failed} failed.`: ''}`);
+        }
+      }
+    );
+  };
+
+
   const handleAddAnonymous = () => {
     const first = prompt('Enter first name');
     if (!first) return;
@@ -307,6 +327,16 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
                   >
                     <Trash2 className="w-4 h-4" />
                     Delete
+                  </button>
+                  <button
+                    className={`px-4 py-2 rounded flex items-center gap-2 text-white ${
+                      isSendingEmail ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-500 hover:bg-blue-600'
+                    }`}
+                    onClick={handleSendEmail}
+                    disabled={isSendingEmail}
+                  >
+                    <Mail className="w-4 h-4" />
+                    {isSendingEmail ? 'Sending...' : 'Email Tenants'}
                   </button>
                   <button
                     className="px-4 py-2 rounded flex items-center gap-2 bg-[#9747FF] text-white"
