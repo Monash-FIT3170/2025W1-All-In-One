@@ -8,6 +8,11 @@ import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
 import PropertyCard from "../globalComponents/BasicPropertyCard";
 
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// This page will display all the listings connected to the Landlord (should be linked to property tab in nav bar) //
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 export default function AgentListings() {
   const [searchQuery, setSearchQuery] = useState("");
   const [showFilters, setShowFilters] = useState(false);
@@ -25,6 +30,7 @@ export default function AgentListings() {
 
   const { isReady, properties } = useTracker(() => {
     const subProps = Meteor.subscribe("properties");
+
 
     const isReady = subProps.ready();
     const agent = Meteor.user();
@@ -66,6 +72,9 @@ export default function AgentListings() {
       beds: p.prop_numbeds,
       baths: p.prop_numbaths,
       cars: p.prop_numcarspots,
+      furnished: p.prop_furnish,
+      pets: p.prop_pets,
+      type: p.prop_type,
       starred: false // Agents don't need starred functionality for their own listings
     };
   });
@@ -108,6 +117,8 @@ export default function AgentListings() {
       {/* Search + Filters */}
       <div className="mt-4 flex justify-center">
         <div className="bg-[#CBADD8] p-4 rounded-lg flex gap-4 w-full" style={{ maxWidth: '1185px' }}>
+
+          {/* Search field */}
           <div className="flex items-center bg-white px-3 py-2 rounded-md w-full">
             <FaSearch className="text-gray-500 mr-2" />
             <input
@@ -119,11 +130,13 @@ export default function AgentListings() {
             />
           </div>
 
+          {/* Search button with icon */}
           <button className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md">
             <FaSearch className="mr-2" />
             Search
           </button>
 
+          {/* Filter button with icon */}
           <button 
             className="flex items-center justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
             onClick={() => setShowFilters(!showFilters)}
@@ -228,19 +241,20 @@ export default function AgentListings() {
         <div>
           <label className="block mb-1 font-semibold">Property Type</label>
           <select
-            className="w-full p-2 rounded border"
+            className="w-full p-2 rounded border bg-white text-black"
             value={filters.propertyType}
             onChange={(e) =>
               setFilters({ ...filters, propertyType: e.target.value })
             }
           >
             <option value="">Select type</option>
-            <option value="house">House</option>
-            <option value="apartment">Apartment</option>
-            <option value="unit">Unit</option>
-            <option value="townhouse">Townhouse</option>
+            <option value="House">House</option>
+            <option value="Apartment">Apartment</option>
+            <option value="Unit">Unit</option>
+            <option value="Townhouse">Townhouse</option>
           </select>
         </div>
+
       </div>
     </div>
   )}

@@ -98,8 +98,8 @@ export default function TenantBasicPropListings() {
         beds: p.prop_numbeds,
         baths: p.prop_numbaths,
         cars: p.prop_numcarspots,
-        furnished: p.prop_furnished,
-        pets: p.prop_petsAllowed,
+        furnished: p.prop_furnish,
+        pets: p.prop_pets,
         type: p.prop_type,
         starred: locallyStarred.has(p.prop_id),
         onStarToggle: (propId, newStarred) => {
@@ -223,12 +223,19 @@ export default function TenantBasicPropListings() {
 
             <div>
               <label className="block mb-1 font-semibold">Property Type</label>
-              <select className="w-full p-2 rounded border" value={filters.propertyType} onChange={(e) => setFilters({ ...filters, propertyType: e.target.value })}>
+              <select 
+                className="w-full p-2 rounded border bg-white text-black" 
+                value={filters.propertyType} 
+                onChange={(e) => 
+                  setFilters({ ...filters, propertyType: e.target.value })
+                  }
+              
+              >
                 <option value="">Select type</option>
-                <option value="house">House</option>
-                <option value="apartment">Apartment</option>
-                <option value="unit">Unit</option>
-                <option value="townhouse">Townhouse</option>
+                <option value="House">House</option>
+                <option value="Apartment">Apartment</option>
+                <option value="Unit">Unit</option>
+                <option value="Townhouse">Townhouse</option>
               </select>
             </div>
 

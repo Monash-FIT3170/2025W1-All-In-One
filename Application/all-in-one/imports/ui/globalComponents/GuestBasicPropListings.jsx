@@ -303,19 +303,19 @@ export default function GuestBasicPropListings() {
 
                         {/* Property Type */}
                         <div>
-                          <label className="block mb-1 font-semibold">Property Type</label>
+                          <label className="block mb-1 font-semibold ">Property Type</label>
                           <select
-                            className="w-full p-2 rounded border"
+                            className="w-full p-2 rounded border bg-white text-black"
                             value={filters.propertyType}
                             onChange={(e) =>
                               setFilters({ ...filters, propertyType: e.target.value })
                             }
                           >
                             <option value="">Select type</option>
-                            <option value="house">House</option>
-                            <option value="apartment">Apartment</option>
-                            <option value="unit">Unit</option>
-                            <option value="townhouse">Townhouse</option>
+                            <option value="House">House</option>
+                            <option value="Apartment">Apartment</option>
+                            <option value="Unit">Unit</option>
+                            <option value="Townhouse">Townhouse</option>
                           </select>
                         </div>
 
