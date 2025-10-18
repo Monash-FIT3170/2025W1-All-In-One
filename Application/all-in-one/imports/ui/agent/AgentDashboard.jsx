@@ -1,8 +1,16 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { Meteor } from 'meteor/meteor';
 import { Calendar } from './components/Calendar.jsx';
 import { Mail, BedDouble, ShowerHead, CarFront } from 'lucide-react';
 import { mockData } from '/imports/api/database/mockData.js';
 import AgentNavbar from './components/AgentNavbar.jsx';
+import KPISection from './components/KPISection.jsx';
+import { useTracker } from 'meteor/react-meteor-data';
+import { ExpressionOfInterest, Properties } from '/imports/api/database/collections.js';
+import { Tickets } from '/imports/api/database/collections.js';
+import { AgentAvailabilities } from '/imports/api/database/collections.js';
+import EOIList from './components/EOIList.jsx';
+import TicketList from './components/TicketList.jsx';
 
 /**
  * AgentDashboard Component
@@ -38,6 +46,10 @@ const AgentDashboard = () => {
     return age;
   };
 
+  const [openEOIModal, setOpenEOIModal] = useState(false);
+  const [openTicketsModal, setOpenTicketsModal] = useState(false);
+
+
   /**
    * Creates a combined dataset of tenants and their associated properties
    * This manually pairs tenants with properties for demonstration purposes
@@ -64,13 +76,82 @@ const AgentDashboard = () => {
     };
   });
 
+  // reactive count of pending EOIs
+  const pendingEOICount = useTracker(() => {
+    // subscribe to collections 
+    Meteor.subscribe('expressionOfInterest');
+    Meteor.subscribe('properties');
+
+    // get this agent’s ID (depends on your login setup)
+    const agentId = Meteor.userId();
+
+    // find properties belonging to this agent
+    const agentProps = Properties.find({ agent_id: agentId }).map(p => p.prop_id);
+
+    // count EOIs for those properties that are still pending
+    return ExpressionOfInterest.find({
+      propertyID: { $in: agentProps },
+      $or: [
+        { inviteSent: false }
+      ]
+  }).count();
+  }, []);
+
+  const unresolvedTicketsCount = useTracker(() => {
+    const subTickets = Meteor.subscribe('tickets'); // full publish already exists
+    if (!subTickets.ready()) return 0;
+
+    const agentId = Meteor.userId();
+
+    return Tickets.find({
+      agent_id: agentId,
+      status: 'Active'
+  }).count();
+  }, []);
+
+  const unbookedAvailabilitiesCount = useTracker(() => {
+    const subAvail = Meteor.subscribe('agentAvailabilities');
+    if (!subAvail.ready()) return 0;
+
+    const agentId = Meteor.userId();
+
+    return AgentAvailabilities.find({
+      agent_id: agentId,
+      $or: [
+        { tenant: { $exists: false } },
+        { tenant: null }
+      ]
+  }).count();
+}, []);
+
+  // KPI
+  const kpis = [
+    { label: 'Pending EOIs', value: pendingEOICount, actionLabel: 'View EOIs', onAction: () => setOpenEOIModal(true) },
+    { label: 'Unscheduled Inspections', value: '7' },
+    { label: 'Unbooked Availabilities', value: unbookedAvailabilitiesCount },
+    { label: 'Unresolved Tickets', value: unresolvedTicketsCount, actionLabel: 'View Tickets', onAction: () => setOpenTicketsModal(true) },
+  ];
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20">
       {/* Navigation bar for agent interface */}
       <AgentNavbar />
 
+      {/* KPI Section */}
+      <KPISection kpis={kpis} />
+      <EOIList
+        isOpen={openEOIModal}
+        onClose={() => setOpenEOIModal(false)}
+        eois={[]} 
+      />
+
+      <TicketList
+        isOpen={openTicketsModal}
+        onClose={() => setOpenTicketsModal(false)}
+      />
+
       {/* Calendar Section - Displays scheduling and appointment information */}
-      <div className="mt-20">
+      <div className="mt-10">
         <Calendar />
       </div>
 

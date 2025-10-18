@@ -4,7 +4,7 @@ import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { TenantBookings, Tenants, Employment } from '../../../api/database/collections';
 
-export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
+export const EventDetailModal = ({ event, onClose, onAttendanceUpdate, onDelete }) => {
   if (!event) return null;
 
   // Debug logging to see what data is being passed
@@ -157,8 +157,24 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate }) => {
       }
     );
   };
-  const handleDelete = () => {
-    if (!window.confirm('Are you sure you want to delete this availability?')) return;
+  const handleDelete = async () => {
+    const deleteLabel = (event.kind || mergedEvent.kind) === 'ticketActivity'
+      ? 'this ticket activity'
+      : 'this availability';
+    if (!window.confirm(`Are you sure you want to delete ${deleteLabel}?`)) return;
+
+    if (onDelete) {
+      try {
+        await Promise.resolve(onDelete(event));
+        if (onClose) onClose();
+      } catch (err) {
+        console.error('Failed to delete via handler:', err);
+        const message = err?.reason || err?.message || 'Unknown error';
+        alert('Failed to delete: ' + message);
+      }
+      return;
+    }
+
     Meteor.call(
       'agentAvailabilities.remove',
       mergedEvent._id || mergedEvent.id,

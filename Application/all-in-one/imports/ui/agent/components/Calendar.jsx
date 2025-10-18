@@ -21,14 +21,17 @@ import {
   TicketActivities,
   Tickets,
   Properties,
+  OtherActivities
 } from '../../../api/database/collections';
 
 import { ClearDialog } from './ClearDialog.jsx';
 import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx';
 import { ActivityTypeDialog } from './ActivityTypeDialog.jsx';
 import { EventDetailModal } from './EventDetailModal.jsx';
+import { OtherDetailModal } from './OtherDetailModal.jsx';
 import { TicketTypeDialog } from './TicketTypeDialog.jsx';
 import { TicketActivityDialog } from './TicketActivityDialog.jsx';
+import { OtherActivityDialog } from './OtherActivityDialog.jsx';
 
 const callAsync = (methodName, ...args) =>
   new Promise((resolve, reject) => {
@@ -57,6 +60,7 @@ export const Calendar = () => {
   const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
+  const [showOtherActivityDialog, setShowOtherActivityDialog] = useState(false);
 
   // ticket flow state
   const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false);
@@ -76,6 +80,7 @@ export const Calendar = () => {
     setPendingSlot(null);
     setSelectedEvent(null);
     setSelectedTicketForActivity(null);
+    setShowOtherActivityDialog(false);
   };
 
   const closeTicketPicker = () => setShowTicketTypeDialog(false);
@@ -96,6 +101,14 @@ export const Calendar = () => {
       isLoading: !h.ready(),
     };
   });
+
+  const { otherActivities } = useTracker(() => {
+    const h = Meteor.subscribe('otherActivities');
+    return {
+      otherActivities: OtherActivities.find().fetch(),
+      isLoading: !h.ready(),
+    };
+  })
 
   const { ticketsById, propertiesByPropId } = useTracker(() => {
     const tSub = Meteor.subscribe('tickets');
@@ -132,6 +145,7 @@ export const Calendar = () => {
     setShowActivityTypeDialog(false);
     if (activity_type === 'Availability') setShowAvailabilityTypeDialog(true);
     else if (activity_type === 'Ticket') setShowTicketTypeDialog(true);
+    else if (activity_type === 'Other') setShowOtherActivityDialog(true); 
   };
 
   const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note, eoi) => {
@@ -246,6 +260,26 @@ export const Calendar = () => {
     setPendingSlot(null);
   };
 
+  const handleCreateOtherActivity = async ({ start, end, title, notes }) => {
+    try {
+      await callAsync(
+        'otherActivities.insert',
+        Meteor.userId() || '',
+        start.toISOString(),
+        end.toISOString(),
+        String(title),
+        String(notes),
+      );
+    } catch (err) {
+      alert('Failed to save other activity: ' + (err.reason || err.message));
+      console.error(err);
+      return;
+    }
+
+    setShowOtherActivityDialog(false);
+    setPendingSlot(null);
+  }
+
   const toPropertyPayload = (propDoc) => {
     if (!propDoc) return null;
     // Prefer Cloudinary-style image URLs from propDoc.photo
@@ -297,7 +331,7 @@ export const Calendar = () => {
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
         <p className="text-gray-500 mt-2">
-          Click empty timeslot to schedule an activity - an availability (inspection or open house) or ticket activity.
+          Click empty timeslot to schedule an activity - an availability (inspection or open house), ticket or other activity.
         </p>
       </div>
 
@@ -404,6 +438,23 @@ export const Calendar = () => {
               };
             }),
 
+            // Other
+            ...otherActivities.map((slot) => {
+
+              return {
+                ...slot,
+                id: slot._id,
+                kind: 'otherActivity',
+                sourceId: slot._id,
+                start: new Date(slot.start),
+                end: new Date(slot.end),
+                title: slot.title,
+                backgroundColor: '#ffc9f3',
+                textColor: '#000000',
+                borderColor: '#a6005e',
+              };
+            }),
+
             ...newEvents.map((event) => ({
               ...event,
               backgroundColor: '#F2F2F2',
@@ -477,27 +528,42 @@ export const Calendar = () => {
           }}
           onClose={() => setShowTicketActivityDialog(false)}
         />
+
+        <OtherActivityDialog
+          isOpen={showOtherActivityDialog}
+          pendingSlot={pendingSlot}
+          onSelect={handleCreateOtherActivity}
+          onClose={closeDialogs}/>
       </div>
 
+
       {selectedEvent && (
-        <EventDetailModal
-          event={selectedEvent}
-          onClose={() => setSelectedEvent(null)}
-          // 🩹 FIX: delete uses robust kind/sourceId from selectedEvent
-          onDelete={() => handleDeleteEvent(selectedEvent)}
-          onAttendanceUpdate={() => {
-            if (
-              selectedEvent.type === 'Open House' ||
-              selectedEvent.availability_type === 'Open House'
-            ) {
-              const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: selectedEvent.id });
-              setSelectedEvent((prev) => ({
-                ...prev,
-                attendanceList: attendanceRecord?.attendanceList || [],
-              }));
-            }
-          }}
-        />
+        <>
+          {selectedEvent.kind === 'otherActivity' ? (
+            <OtherDetailModal
+              event={selectedEvent}
+              onClose={() => setSelectedEvent(null)}
+            />
+          ) : (
+            <EventDetailModal
+              event={selectedEvent}
+              onClose={() => setSelectedEvent(null)}
+              onDelete={handleDeleteEvent}
+              onAttendanceUpdate={() => {
+                if (
+                  selectedEvent.type === 'Open House' ||
+                  selectedEvent.availability_type === 'Open House'
+                ) {
+                  const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: selectedEvent.id });
+                  setSelectedEvent((prev) => ({
+                    ...prev,
+                    attendanceList: attendanceRecord?.attendanceList || [],
+                  }));
+                }
+              }}
+            />
+          )}
+        </>
       )}
 
       <div className="flex justify-between max-w-6xl mx-auto mt-6">
@@ -508,7 +574,7 @@ export const Calendar = () => {
           Clear All
         </button>
         <p className="text-sm text-gray-800 mb-4">
-          Clears all availabilities and ticket activities from the calendar.
+          Clears all activities from the calendar.
         </p>
       </div>
     </div>

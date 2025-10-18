@@ -329,3 +329,12 @@ TicketActivities.schema = new SimpleSchema({
   },
   createdAt: { type: Date, defaultValue: new Date() },
 });
+
+export const OtherActivities = new Mongo.Collection('otherActivities');
+OtherActivities.schema = new SimpleSchema({
+  agent_id: { type: String },
+  start: { type: String }, // stored as ISO string
+  end: { type: String }, // stored as ISO string
+  title: { type: String },
+  notes: { type: String, optional: true }
+});

@@ -1,6 +1,7 @@
 import { Meteor } from 'meteor/meteor';
 import { check, Match } from 'meteor/check';
 import { AgentAvailabilities, TicketActivities } from '/imports/api/database/collections';
+import { OtherActivities } from '../../database/collections';
 
 Meteor.methods({
   async 'agentAvailabilities.insert'(
@@ -120,6 +121,7 @@ Meteor.methods({
   async 'calendar.clearAll'() {
     await AgentAvailabilities.removeAsync({});
     await TicketActivities.removeAsync({});
+    await OtherActivities.removeAsync({});
     return true;
   },
 

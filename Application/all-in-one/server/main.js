@@ -88,6 +88,9 @@ import '/imports/api/methods/eoi.js';
 import '/imports/api/methods/inspectionEmail.js';
 import '/imports/api/agent/ticketActivities/methods.js';
 import '/imports/api/agent/ticketActivities/publications.js';
+import '/imports/api/agent/otherActivities/methods.js';
+import '/imports/api/agent/otherActivities/publications.js';
+
 import '/imports/api/methods/priceEstimate.js';
 import '/imports/api/emailTemplates.js';
 import '/imports/api/methods/properties.js';
@@ -324,4 +327,3 @@ Meteor.publish("userById", function (userId) {
     { fields: { username: 1, emails: 1, profile: 1 } }
   );
 });
-
