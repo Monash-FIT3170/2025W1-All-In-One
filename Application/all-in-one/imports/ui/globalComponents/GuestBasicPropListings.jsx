@@ -332,8 +332,8 @@ export default function GuestBasicPropListings() {
                           />
                         </div>
 
-                        {/* Clear Filters */}
-                        <div className="mt-4">
+                        {/* Filter actions */}
+                        <div className="mt-4 flex flex-wrap gap-3">
                           <button
                             className="bg-[#9747FF] text-white px-6 py-2 rounded hover:bg-[#7d3dd1]"
                             onClick={() =>
@@ -351,6 +351,12 @@ export default function GuestBasicPropListings() {
                             }
                           >
                             Clear Filters
+                          </button>
+                          <button
+                            className="bg-[#22c55e] text-white px-6 py-2 rounded hover:bg-[#16a34a]"
+                            onClick={() => setShowFilters(false)}
+                          >
+                            Apply Filters
                           </button>
                         </div>
                       </div>
@@ -386,7 +392,7 @@ export default function GuestBasicPropListings() {
 
           {/* Map content */}
           <div className="flex-1">
-            <MapView />
+            <MapView properties={filteredProperties} />
           </div>
         </div>
       </div>
