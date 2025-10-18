@@ -2,7 +2,7 @@ import { Meteor } from 'meteor/meteor';
 import { Email } from 'meteor/email';
 import { check, Match } from 'meteor/check';
 import { Mongo } from 'meteor/mongo';
-import { AgentAvailabilities, Tenants, Properties } from '/imports/api/database/collections';
+import { AgentAvailabilities, Tenants, Properties, RentalApplications } from '/imports/api/database/collections';
 
 Meteor.methods({
   /**
