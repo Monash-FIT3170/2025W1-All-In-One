@@ -7,6 +7,7 @@ import BasicPropertyCard from "../globalComponents/BasicPropertyCard";
 import { useTracker } from "meteor/react-meteor-data";
 import { Meteor } from "meteor/meteor";
 import { Properties, Photos, RentalApplications } from "../../api/database/collections";
+import { TenantChatBox } from "./components/TenantChatBox.jsx";
 
 export default function BasicLeases() {
   const userId = Meteor.userId();
@@ -330,6 +331,8 @@ const filteredLeasedProperties = leasedProperties.filter((p) => {
 
         </div>
       </div>
+
+      <TenantChatBox />
 
       <div className="h-40" /> {/* Spacer before footer */}
       <Footer />

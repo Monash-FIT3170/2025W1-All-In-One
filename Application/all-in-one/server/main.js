@@ -1,7 +1,10 @@
 process.env.MAIL_URL = "smtps://allinone3170%40gmail.com:llqwcpiqphurfowj@smtp.gmail.com:465";
 
+import { Messages } from '/imports/api/database/collections.js';
+
 import { Meteor } from 'meteor/meteor';
 import { Accounts } from 'meteor/accounts-base';
+import { check } from 'meteor/check';
 function maskMongoUrl(uri) {
   if (!uri) return '(not set)';
   try {
@@ -326,4 +329,114 @@ Meteor.publish("userById", function (userId) {
     { _id: userId },
     { fields: { username: 1, emails: 1, profile: 1 } }
   );
+});
+
+Meteor.publish('messages', function (ticketId) {
+  return Messages.find({ ticketId });
+});
+
+Meteor.methods({
+  async 'messages.insert'(agentId, tenantId, text) {
+    try {
+      if (!this.userId) {
+        throw new Meteor.Error('not-authorized', 'You must be signed in to send messages.');
+      }
+
+      console.log('[messages.insert] invoked', { agentId, tenantId, callerId: this.userId });
+
+      if (typeof agentId !== 'string' || !agentId.trim()) {
+        throw new Meteor.Error('invalid-agent', `agentId must be a string. Received: ${agentId}`);
+      }
+      if (typeof tenantId !== 'string' || !tenantId.trim()) {
+        throw new Meteor.Error('invalid-tenant', `tenantId must be a string. Received: ${tenantId}`);
+      }
+      if (typeof text !== 'string') {
+        throw new Meteor.Error('invalid-message', 'Message must be a string.');
+      }
+
+      const trimmedText = text.trim();
+      if (!trimmedText) {
+        throw new Meteor.Error('invalid-message', 'Message cannot be empty.');
+      }
+
+      const callerId = this.userId;
+      const callerUser = await Meteor.users.findOneAsync(callerId);
+      const callerEmails = (callerUser?.emails || [])
+        .map((entry) => entry?.address?.toLowerCase())
+        .filter(Boolean);
+
+      let agentDoc = await Agents.findOneAsync({ agent_id: agentId });
+      if (!agentDoc && callerEmails.length > 0) {
+        agentDoc = await Agents.findOneAsync({ agent_email: { $in: callerEmails } });
+      }
+
+      let tenantDoc = await Tenants.findOneAsync({ ten_id: tenantId });
+      if (!tenantDoc && callerEmails.length > 0) {
+        tenantDoc = await Tenants.findOneAsync({ ten_email: { $in: callerEmails } });
+      }
+
+      if (!agentDoc) console.warn('[messages.insert] missing agent doc', { agentId });
+      if (!tenantDoc) console.warn('[messages.insert] missing tenant doc', { tenantId });
+
+      const messageId = await Messages.insertAsync({
+        agent_id: agentId,
+        tenant_id: tenantId,
+        sender_id: callerId,
+        text: trimmedText,
+        createdAt: new Date(),
+      });
+
+      return { ok: true, messageId };
+    } catch (err) {
+      console.error('[messages.insert] error', {
+        agentId,
+        tenantId,
+        callerId: this.userId,
+        reason: err?.reason,
+        message: err?.message,
+        stack: err?.stack,
+      });
+
+      if (err instanceof Meteor.Error) {
+        throw err;
+      }
+
+      throw new Meteor.Error(
+        'message-insert-failed',
+        err?.reason || err?.message || 'Unable to send message right now.'
+      );
+    }
+  },
+});
+
+Meteor.publish('messages.byAgentTenant', function (agentId, tenantId) {
+  check(agentId, String);
+  check(tenantId, String);
+  if (!this.userId) return this.ready();
+
+  const directParticipant =
+    this.userId === agentId ||
+    this.userId === tenantId;
+
+  if (!directParticipant) {
+    const userDoc = Meteor.users.findOne(this.userId);
+    const userEmails = (userDoc?.emails || [])
+      .map((entry) => entry?.address?.toLowerCase())
+      .filter(Boolean);
+
+    const agentDoc = Agents.findOne({ agent_id: agentId });
+    const tenantDoc = Tenants.findOne({ ten_id: tenantId });
+
+    const agentEmail = agentDoc?.agent_email?.toLowerCase();
+    const tenantEmail = tenantDoc?.ten_email?.toLowerCase();
+
+    const matchesAgentEmail = agentEmail && userEmails.includes(agentEmail);
+    const matchesTenantEmail = tenantEmail && userEmails.includes(tenantEmail);
+
+    if (!matchesAgentEmail && !matchesTenantEmail) {
+      return this.ready();
+    }
+  }
+
+  return Messages.find({ agent_id: agentId, tenant_id: tenantId });
 });
