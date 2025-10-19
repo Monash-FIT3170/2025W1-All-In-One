@@ -500,9 +500,8 @@ async "rentalApplications.clearLandlordFinal"(appId) {
     check(propID, String);
     check(tenID, String);
   
-    await RentalApplications.updateAsync(
-      {prop_id: propID, ten_id: tenID},
-      {$set: {status: "Removed", agentFinal: "Removed"}}
+    await RentalApplications.removeAsync(
+      {prop_id: propID, ten_id: tenID}
     )
 
     },
