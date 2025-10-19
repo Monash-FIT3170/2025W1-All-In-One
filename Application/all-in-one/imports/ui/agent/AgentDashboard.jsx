@@ -154,7 +154,17 @@ const AgentDashboard = () => {
 
       for (const inspection of inspectionsToEmail) {
         try {
-          await Meteor.callAsync('inspection.sendBookingEmail', inspection.availability_id, []);
+          // Send email to the specific tenant with their email
+          const tenantEmailData = {
+            email: inspection.ten_email,
+            name: inspection.ten_fn
+          };
+
+          await Meteor.callAsync(
+            'inspection.sendBookingEmail',
+            inspection.availability_id,
+            [tenantEmailData]  // Pass specific tenant email instead of empty array
+          );
           successCount++;
         } catch (err) {
           console.error(`Failed to send email for inspection ${inspection.availability_id}:`, err);
@@ -164,7 +174,9 @@ const AgentDashboard = () => {
 
       setEmailStatus({
         type: successCount > 0 ? 'success' : 'error',
-        message: `Sent ${successCount} reminder(s), ${failCount} failed.`
+        message: availabilityId
+          ? `Email sent successfully to tenant.`
+          : `Sent ${successCount} reminder(s), ${failCount} failed.`
       });
     } catch (error) {
       console.error('Error sending inspection emails:', error);

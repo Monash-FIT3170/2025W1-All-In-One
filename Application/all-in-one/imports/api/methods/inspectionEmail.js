@@ -96,7 +96,8 @@ Time: ${formattedTime}
 PROPERTY DETAILS:
 ${propertyDetails}
 
-To book this inspection slot, please log in to your All In One account and navigate to the Upcoming Inspections page.
+To book this inspection slot, please log in to your All In One account and visit:
+${Meteor.absoluteUrl(`InspectionBooking/${availability.property?.id || availability.property_id}`)}
 
 If you have any questions, please don't hesitate to contact us.
 
@@ -150,10 +151,10 @@ All In One Team`,
         ${propertyParking ? `<div class="detail-item"><span class="label">Parking:</span> ${propertyParking}</div>` : ''}
       </div>
 
-      <p>To book this inspection slot, please log in to your All In One account and navigate to the Upcoming Inspections page.</p>
+      <p>To book this inspection slot, please click the button below to view available times and book your preferred slot.</p>
 
       <center>
-        <a href="${Meteor.absoluteUrl('upcoming-inspections')}" class="cta-button">View & Book Inspection</a>
+        <a href="${Meteor.absoluteUrl(`InspectionBooking/${availability.property?.id || availability.property_id}`)}" class="cta-button">View & Book Inspection</a>
       </center>
 
       <p>If you have any questions, please don't hesitate to contact us.</p>
