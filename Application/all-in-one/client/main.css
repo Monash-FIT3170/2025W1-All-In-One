@@ -2,7 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body {
+html,
+body {
   margin: 0;
   padding: 0;
   height: 100%;
@@ -17,7 +18,7 @@ select,
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  background-color: #FFF8E9;
+  background-color: #fff8e9;
   border: none;
   box-shadow: none;
   color: black; /* Make sure text is visible */
@@ -30,4 +31,4 @@ select,
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
   background-size: 1rem;
-} 
+}

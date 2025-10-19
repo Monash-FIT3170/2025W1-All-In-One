@@ -505,4 +505,3 @@ async "rentalApplications.clearLandlordFinal"(appId) {
     return leaseId;
   },
 });
-
