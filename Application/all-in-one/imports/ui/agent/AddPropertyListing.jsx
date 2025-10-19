@@ -59,7 +59,7 @@ export default function AddPropertyListing() {
           alert("Adding Property failed: " + err.reason);
         }
         else {
-          alert(`Property Successfully Added! id-> ${propID}`);
+          alert(`Property Successfully Added!`);
           navigate(`/AgentDetailedListing/${propID}`)  // Can change this based on where we should go after the form has been submitted
         }
       }
