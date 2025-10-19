@@ -8,12 +8,12 @@
  *
  * Also keeps ticket→property hydration from earlier.
  */
-import React, { useState } from 'react';
-import FullCalendar from '@fullcalendar/react';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
-import { Meteor } from 'meteor/meteor';
-import { useTracker } from 'meteor/react-meteor-data';
+import React, { useState } from "react";
+import FullCalendar from "@fullcalendar/react";
+import timeGridPlugin from "@fullcalendar/timegrid";
+import interactionPlugin from "@fullcalendar/interaction";
+import { Meteor } from "meteor/meteor";
+import { useTracker } from "meteor/react-meteor-data";
 
 import {
   AgentAvailabilities,
@@ -21,22 +21,24 @@ import {
   TicketActivities,
   Tickets,
   Properties,
-} from '../../../api/database/collections';
+} from "../../../api/database/collections";
 
-import { ClearDialog } from './ClearDialog.jsx';
-import { AvailabilityTypeDialog } from './AvailabilityTypeDialog.jsx';
-import { ActivityTypeDialog } from './ActivityTypeDialog.jsx';
-import { EventDetailModal } from './EventDetailModal.jsx';
-import { TicketTypeDialog } from './TicketTypeDialog.jsx';
-import { TicketActivityDialog } from './TicketActivityDialog.jsx';
+import { ClearDialog } from "./ClearDialog.jsx";
+import { AvailabilityTypeDialog } from "./AvailabilityTypeDialog.jsx";
+import { ActivityTypeDialog } from "./ActivityTypeDialog.jsx";
+import { EventDetailModal } from "./EventDetailModal.jsx";
+import { TicketTypeDialog } from "./TicketTypeDialog.jsx";
+import { TicketActivityDialog } from "./TicketActivityDialog.jsx";
 
 const callAsync = (methodName, ...args) =>
   new Promise((resolve, reject) => {
-    Meteor.call(methodName, ...args, (err, res) => (err ? reject(err) : resolve(res)));
+    Meteor.call(methodName, ...args, (err, res) =>
+      err ? reject(err) : resolve(res)
+    );
   });
 
 function toDatetimeLocal(date) {
-  if (!date) return '';
+  if (!date) return "";
   const d = new Date(date);
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().slice(0, 16);
@@ -44,24 +46,27 @@ function toDatetimeLocal(date) {
 
 // 🩹 FIX: helper to robustly detect event kind
 const detectKind = (props) => {
-  if (!props) return 'availability';
+  if (!props) return "availability";
   if (props.kind) return props.kind; // trust explicit tag when present
   // infer from common fields
-  if (props.ticket_id || props.ticket) return 'ticketActivity';
-  return 'availability';
+  if (props.ticket_id || props.ticket) return "ticketActivity";
+  return "availability";
 };
 
 export const Calendar = () => {
   const [newEvents, setNewEvents] = useState([]);
   const [showClearDialog, setShowClearDialog] = useState(false);
-  const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] = useState(false);
+  const [showAvailabilityTypeDialog, setShowAvailabilityTypeDialog] =
+    useState(false);
   const [showOpenHouseDialog, setShowOpenHouseDialog] = useState(false);
   const [showActivityTypeDialog, setShowActivityTypeDialog] = useState(false);
 
   // ticket flow state
   const [showTicketTypeDialog, setShowTicketTypeDialog] = useState(false);
-  const [showTicketActivityDialog, setShowTicketActivityDialog] = useState(false);
-  const [selectedTicketForActivity, setSelectedTicketForActivity] = useState(null);
+  const [showTicketActivityDialog, setShowTicketActivityDialog] =
+    useState(false);
+  const [selectedTicketForActivity, setSelectedTicketForActivity] =
+    useState(null);
 
   const [pendingSlot, setPendingSlot] = useState(null);
   const [selectedEvent, setSelectedEvent] = useState(null);
@@ -81,8 +86,8 @@ export const Calendar = () => {
   const closeTicketPicker = () => setShowTicketTypeDialog(false);
 
   const { availabilities } = useTracker(() => {
-    const h1 = Meteor.subscribe('agentAvailabilities');
-    Meteor.subscribe('openHouseAttendance');
+    const h1 = Meteor.subscribe("agentAvailabilities");
+    Meteor.subscribe("openHouseAttendance");
     return {
       availabilities: AgentAvailabilities.find().fetch(),
       isLoading: !h1.ready(),
@@ -90,7 +95,7 @@ export const Calendar = () => {
   });
 
   const { ticketActivities } = useTracker(() => {
-    const h = Meteor.subscribe('ticketActivities');
+    const h = Meteor.subscribe("ticketActivities");
     return {
       ticketActivities: TicketActivities.find().fetch(),
       isLoading: !h.ready(),
@@ -98,8 +103,8 @@ export const Calendar = () => {
   });
 
   const { ticketsById, propertiesByPropId } = useTracker(() => {
-    const tSub = Meteor.subscribe('tickets');
-    const pSub = Meteor.subscribe('properties');
+    const tSub = Meteor.subscribe("tickets");
+    const pSub = Meteor.subscribe("properties");
 
     const tickets = Tickets.find().fetch();
     const props = Properties.find().fetch();
@@ -108,7 +113,8 @@ export const Calendar = () => {
     tickets.forEach((t) => {
       const key = t._id || t.ticket_id;
       if (key) tMap.set(String(key), t);
-      if (t.ticket_id && !tMap.has(String(t.ticket_id))) tMap.set(String(t.ticket_id), t);
+      if (t.ticket_id && !tMap.has(String(t.ticket_id)))
+        tMap.set(String(t.ticket_id), t);
     });
 
     const pMap = new Map();
@@ -130,11 +136,18 @@ export const Calendar = () => {
 
   const handleActivityTypeSelect = (activity_type) => {
     setShowActivityTypeDialog(false);
-    if (activity_type === 'Availability') setShowAvailabilityTypeDialog(true);
-    else if (activity_type === 'Ticket') setShowTicketTypeDialog(true);
+    if (activity_type === "Availability") setShowAvailabilityTypeDialog(true);
+    else if (activity_type === "Ticket") setShowTicketTypeDialog(true);
   };
 
-  const handleAvailabilityTypeSelect = (type, start, end, propertyInfo, note, eoi) => {
+  const handleAvailabilityTypeSelect = (
+    type,
+    start,
+    end,
+    propertyInfo,
+    note,
+    eoi
+  ) => {
     setShowAvailabilityTypeDialog(false);
     handleBookingSelect({ type, start, end, ...propertyInfo, note, eoi });
   };
@@ -155,31 +168,32 @@ export const Calendar = () => {
     is_private,
     eoi,
   }) => {
-    const status = type === 'Open House' && is_private ? 'Invitation sent' : 'confirmed';
+    const status =
+      type === "Open House" && is_private ? "Invitation sent" : "confirmed";
 
     try {
       const currentUserId = Meteor.userId();
       const insertedId = await callAsync(
-        'agentAvailabilities.insert',
+        "agentAvailabilities.insert",
         start.toISOString(),
         end.toISOString(),
-        'Availability',
+        "Availability",
         type,
         { address, price, bedrooms, bathrooms, parking, image, is_private },
-        String(price ?? ''),
-        String(bedrooms ?? ''),
-        String(bathrooms ?? ''),
-        String(parking ?? ''),
-        String(image ?? ''),
+        String(price ?? ""),
+        String(bedrooms ?? ""),
+        String(bathrooms ?? ""),
+        String(parking ?? ""),
+        String(image ?? ""),
         status,
-        String(note ?? ''),
+        String(note ?? ""),
         is_private ?? false,
         currentUserId
       );
 
-      if (type === 'Open House' && !is_private) {
+      if (type === "Open House" && !is_private) {
         await callAsync(
-          'openHouseAttendance.insert',
+          "openHouseAttendance.insert",
           insertedId,
           address,
           start.toISOString(),
@@ -188,16 +202,23 @@ export const Calendar = () => {
         );
       }
 
-      if (type === 'Open House' && is_private && eoi != null) {
-        const curr_booking = AgentAvailabilities.findOne({ start: start.toISOString() });
-        const booking_id = curr_booking?._id;
-        Meteor.call('expressionOfInterest.sendInvite', eoi, booking_id, (err) => {
-          if (err) console.error('EOI invite send failed: ', err);
+      if (type === "Open House" && is_private && eoi != null) {
+        const curr_booking = AgentAvailabilities.findOne({
+          start: start.toISOString(),
         });
+        const booking_id = curr_booking?._id;
+        Meteor.call(
+          "expressionOfInterest.sendInvite",
+          eoi,
+          booking_id,
+          (err) => {
+            if (err) console.error("EOI invite send failed: ", err);
+          }
+        );
       }
     } catch (error) {
-      alert('Insert failed: ' + (error.reason || error.message));
-      console.error('Failed to create availability:', error);
+      alert("Insert failed: " + (error.reason || error.message));
+      console.error("Failed to create availability:", error);
       return;
     }
 
@@ -208,9 +229,9 @@ export const Calendar = () => {
   const handleClearButtonClick = () => setShowClearDialog(true);
 
   const handleClearConfirm = () => {
-    Meteor.call('calendar.clearAll', (error) => {
+    Meteor.call("calendar.clearAll", (error) => {
       if (error) {
-        console.error('Failed to clear calendar: ' + error.reason);
+        console.error("Failed to clear calendar: " + error.reason);
       } else {
         setNewEvents([]);
         setShowClearDialog(false);
@@ -227,17 +248,17 @@ export const Calendar = () => {
   const handleCreateTicketActivity = async ({ start, end, notes, ticket }) => {
     try {
       await callAsync(
-        'ticketActivities.insert',
+        "ticketActivities.insert",
         start.toISOString(),
         end.toISOString(),
-        String(ticket?._id || ticket?.ticket_id || ''),
-        Meteor.userId() || '',
-        ticket?.title || 'Activity',
-        String(notes || ''),
-        'pending'
+        String(ticket?._id || ticket?.ticket_id || ""),
+        Meteor.userId() || "",
+        ticket?.title || "Activity",
+        String(notes || ""),
+        "pending"
       );
     } catch (err) {
-      alert('Failed to save ticket activity: ' + (err.reason || err.message));
+      alert("Failed to save ticket activity: " + (err.reason || err.message));
       console.error(err);
       return;
     }
@@ -252,16 +273,19 @@ export const Calendar = () => {
     let firstPhotoUrl = undefined;
     if (Array.isArray(propDoc.photo)) {
       const firstNonVideoPhoto = propDoc.photo.find((item) => {
-        if (typeof item === 'string') return item.trim().length > 0;
-        if (item && typeof item === 'object') {
-          const isNotVideo = item.isVideo === false || item.isVideo === undefined;
+        if (typeof item === "string") return item.trim().length > 0;
+        if (item && typeof item === "object") {
+          const isNotVideo =
+            item.isVideo === false || item.isVideo === undefined;
           const isNotPdf = item.isPDF === false || item.isPDF === undefined;
           return Boolean(item.url) && isNotVideo && isNotPdf;
         }
         return false;
       });
-      if (typeof firstNonVideoPhoto === 'string') firstPhotoUrl = firstNonVideoPhoto;
-      else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === 'object') firstPhotoUrl = firstNonVideoPhoto.url;
+      if (typeof firstNonVideoPhoto === "string")
+        firstPhotoUrl = firstNonVideoPhoto;
+      else if (firstNonVideoPhoto && typeof firstNonVideoPhoto === "object")
+        firstPhotoUrl = firstNonVideoPhoto.url;
     }
     return {
       address: propDoc.prop_address,
@@ -279,10 +303,10 @@ export const Calendar = () => {
   const handleDeleteEvent = async (evt) => {
     try {
       const kind = detectKind(evt);
-      if (kind === 'ticketActivity') {
-        await callAsync('ticketActivities.remove', evt.sourceId || evt.id);
+      if (kind === "ticketActivity") {
+        await callAsync("ticketActivities.remove", evt.sourceId || evt.id);
       } else {
-        await callAsync('agentAvailabilities.remove', evt.sourceId || evt.id);
+        await callAsync("agentAvailabilities.remove", evt.sourceId || evt.id);
         // optional: await callAsync('openHouseAttendance.removeByBooking', evt.sourceId || evt.id);
       }
       setSelectedEvent(null);
@@ -292,12 +316,35 @@ export const Calendar = () => {
     }
   };
 
+  //Click handler for when the tenants selects a slot to book
+  const handleTenantSelect = async (info) => {
+    if (confirm(`Book inspection on ${info.startStr}?`)) {
+      await Meteor.callAsync(
+        "inspections.requestSlot",
+        info.event.id,
+        Meteor.userId()
+      );
+      alert("Inspection request sent to agent.");
+    }
+  };
+
+  const availableEvents = availabilities
+    .filter((a) => a.status === "free")
+    .map((a) => ({
+      id: a._id,
+      start: a.start,
+      end: a.end,
+      title: "Available Inspection",
+      backgroundColor: "#D1FAE5",
+    }));
+
   return (
     <div className="bg-[#FFF8E9] min-h-screen p-8">
       <div className="text-center mb-6">
         <h2 className="text-3xl font-bold text-gray-800">Calendar</h2>
         <p className="text-gray-500 mt-2">
-          Click empty timeslot to schedule an activity - an availability (inspection or open house) or ticket activity.
+          Click empty timeslot to schedule an activity - an availability
+          (inspection or open house) or ticket activity.
         </p>
       </div>
 
@@ -319,10 +366,10 @@ export const Calendar = () => {
             // Availabilities
             ...availabilities.map((slot) => {
               const type = slot.availability_type || slot.type;
-              const statusLower = String(slot.status || '').toLowerCase();
-              const isBooked = statusLower === 'booked';
+              const statusLower = String(slot.status || "").toLowerCase();
+              const isBooked = statusLower === "booked";
               const isPrivateInvite =
-                type === 'Open House' &&
+                type === "Open House" &&
                 slot.is_private === true &&
                 /^(invitation sent|invite sent|invited)$/.test(statusLower);
 
@@ -333,43 +380,43 @@ export const Calendar = () => {
                 classNames = [];
 
               if (isBooked) {
-                title = 'Booked';
-                backgroundColor = '#e5e7eb';
-                textColor = '#6b7280';
-                borderColor = '#9ca3af';
+                title = "Booked";
+                backgroundColor = "#e5e7eb";
+                textColor = "#6b7280";
+                borderColor = "#9ca3af";
               } else if (isPrivateInvite) {
-                title = 'Private Open House (Invite Sent)';
-                backgroundColor = '#e5e7eb';
-                textColor = '#374151';
-                borderColor = '#9ca3af';
-                classNames = ['invite-pending'];
-              } else if (slot.status === 'pending') {
+                title = "Private Open House (Invite Sent)";
+                backgroundColor = "#e5e7eb";
+                textColor = "#374151";
+                borderColor = "#9ca3af";
+                classNames = ["invite-pending"];
+              } else if (slot.status === "pending") {
                 title = `Pending: ${type} Availability`;
-                backgroundColor = '#F2F2F2';
-                textColor = '#000000';
-                borderColor = '#000000';
-              } else if (slot.status === 'rejected') {
-                title = 'Private Open House (Invite Rejected)';
-                backgroundColor = '#888888';
-                textColor = '#353535';
-                borderColor = '#ff0000';
-              } else if (type === 'Open House') {
-                title = 'Open House Availability';
-                backgroundColor = '#DCFFCD';
-                textColor = '#68A44F';
-                borderColor = '#A98A22';
+                backgroundColor = "#F2F2F2";
+                textColor = "#000000";
+                borderColor = "#000000";
+              } else if (slot.status === "rejected") {
+                title = "Private Open House (Invite Rejected)";
+                backgroundColor = "#888888";
+                textColor = "#353535";
+                borderColor = "#ff0000";
+              } else if (type === "Open House") {
+                title = "Open House Availability";
+                backgroundColor = "#DCFFCD";
+                textColor = "#68A44F";
+                borderColor = "#A98A22";
               } else {
-                title = 'Inspection Availability';
-                backgroundColor = '#CEF4F1';
-                textColor = '#24A89E';
-                borderColor = '#24A89E';
+                title = "Inspection Availability";
+                backgroundColor = "#CEF4F1";
+                textColor = "#24A89E";
+                borderColor = "#24A89E";
               }
 
               return {
                 ...slot,
                 id: slot._id,
                 // (we still add these; but the fix does not rely on them)
-                kind: 'availability',
+                kind: "availability",
                 sourceId: slot._id,
                 title,
                 backgroundColor,
@@ -383,22 +430,26 @@ export const Calendar = () => {
             ...ticketActivities.map((act) => {
               const ticketDoc =
                 ticketsById.get(String(act.ticket_id)) ||
-                ticketsById.get(String(act.ticket?._id || act.ticket?.ticket_id)) ||
+                ticketsById.get(
+                  String(act.ticket?._id || act.ticket?.ticket_id)
+                ) ||
                 null;
 
-              const propDoc = ticketDoc ? propertiesByPropId.get(String(ticketDoc.prop_id)) : null;
+              const propDoc = ticketDoc
+                ? propertiesByPropId.get(String(ticketDoc.prop_id))
+                : null;
 
               return {
                 ...act,
                 id: act._id,
-                kind: 'ticketActivity', // tag if present
+                kind: "ticketActivity", // tag if present
                 sourceId: act._id,
                 start: new Date(act.start),
                 end: new Date(act.end),
-                title: act.title || ticketDoc?.title || 'Ticket Activity',
-                backgroundColor: '#FFE6CC',
-                textColor: '#000000',
-                borderColor: '#FF9900',
+                title: act.title || ticketDoc?.title || "Ticket Activity",
+                backgroundColor: "#FFE6CC",
+                textColor: "#000000",
+                borderColor: "#FF9900",
                 ticket: ticketDoc || undefined,
                 property: toPropertyPayload(propDoc) || undefined,
               };
@@ -406,9 +457,9 @@ export const Calendar = () => {
 
             ...newEvents.map((event) => ({
               ...event,
-              backgroundColor: '#F2F2F2',
-              textColor: '#000000',
-              borderColor: '#000000',
+              backgroundColor: "#F2F2F2",
+              textColor: "#000000",
+              borderColor: "#000000",
             })),
           ]}
           eventClick={(info) => {
@@ -424,22 +475,35 @@ export const Calendar = () => {
               title: info.event.title,
               start: info.event.start,
               end: info.event.end,
-              kind,        // 🩹 FIX: store the resolved kind
-              sourceId,    // 🩹 FIX: store the resolved source id
+              kind, // 🩹 FIX: store the resolved kind
+              sourceId, // 🩹 FIX: store the resolved source id
               ...props,
             };
 
             // Open house: pull attendance
-            if (props.type === 'Open House' || props.availability_type === 'Open House') {
-              Meteor.subscribe('openHouseAttendance');
-              const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: base.id });
-              setSelectedEvent({ ...base, attendanceList: attendanceRecord?.attendanceList || [] });
+            if (
+              props.type === "Open House" ||
+              props.availability_type === "Open House"
+            ) {
+              Meteor.subscribe("openHouseAttendance");
+              const attendanceRecord = OpenHouseAttendance.findOne({
+                bookingID: base.id,
+              });
+              setSelectedEvent({
+                ...base,
+                attendanceList: attendanceRecord?.attendanceList || [],
+              });
               return;
             }
 
             // Ticket fallback hydration (no-op if already present)
             let hydrated = { ...base };
-            if (!hydrated.property && (hydrated.ticket_id || hydrated.ticket?.ticket_id || hydrated.ticket?._id)) {
+            if (
+              !hydrated.property &&
+              (hydrated.ticket_id ||
+                hydrated.ticket?.ticket_id ||
+                hydrated.ticket?._id)
+            ) {
               const t =
                 ticketsById.get(String(hydrated.ticket_id)) ||
                 ticketsById.get(String(hydrated.ticket?._id)) ||
@@ -451,21 +515,37 @@ export const Calendar = () => {
 
             setSelectedEvent(hydrated);
           }}
-          headerToolbar={{ left: 'prev today next', center: '', right: 'title' }}
-          buttonText={{ today: 'Today' }}
-          titleFormat={{ year: 'numeric', month: 'long' }}
+          headerToolbar={{
+            left: "prev today next",
+            center: "",
+            right: "title",
+          }}
+          buttonText={{ today: "Today" }}
+          titleFormat={{ year: "numeric", month: "long" }}
           height="auto"
         />
 
-        <ClearDialog isOpen={showClearDialog} onConfirm={handleClearConfirm} onCancel={closeDialogs} />
-        <ActivityTypeDialog isOpen={showActivityTypeDialog} onSelect={handleActivityTypeSelect} onClose={closeDialogs} />
+        <ClearDialog
+          isOpen={showClearDialog}
+          onConfirm={handleClearConfirm}
+          onCancel={closeDialogs}
+        />
+        <ActivityTypeDialog
+          isOpen={showActivityTypeDialog}
+          onSelect={handleActivityTypeSelect}
+          onClose={closeDialogs}
+        />
         <AvailabilityTypeDialog
           isOpen={showAvailabilityTypeDialog}
           pendingSlot={pendingSlot}
           onSelect={handleAvailabilityTypeSelect}
           onClose={closeDialogs}
         />
-        <TicketTypeDialog isOpen={showTicketTypeDialog} onClose={closeTicketPicker} onSelect={handleTicketChosen} />
+        <TicketTypeDialog
+          isOpen={showTicketTypeDialog}
+          onClose={closeTicketPicker}
+          onSelect={handleTicketChosen}
+        />
         <TicketActivityDialog
           isOpen={showTicketActivityDialog}
           ticket={selectedTicketForActivity}
@@ -487,10 +567,12 @@ export const Calendar = () => {
           onDelete={() => handleDeleteEvent(selectedEvent)}
           onAttendanceUpdate={() => {
             if (
-              selectedEvent.type === 'Open House' ||
-              selectedEvent.availability_type === 'Open House'
+              selectedEvent.type === "Open House" ||
+              selectedEvent.availability_type === "Open House"
             ) {
-              const attendanceRecord = OpenHouseAttendance.findOne({ bookingID: selectedEvent.id });
+              const attendanceRecord = OpenHouseAttendance.findOne({
+                bookingID: selectedEvent.id,
+              });
               setSelectedEvent((prev) => ({
                 ...prev,
                 attendanceList: attendanceRecord?.attendanceList || [],

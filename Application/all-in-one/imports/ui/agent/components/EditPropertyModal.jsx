@@ -10,9 +10,6 @@ function EditPropertyModal({isOpen, onClose, propertyData}) {
   const subUsers = Meteor.subscribe("userById", propertyData.landlord);
   const currLandlordEmail = (Meteor.users.findOne(propertyData.landlord)).emails[0].address;
 
-  console.log(propertyData.landlord);
-  console.log((Meteor.users.findOne(propertyData.landlord)));
-
   const propId = propertyData.id;
   const status = propertyData.status;
   const [propAddress, setPropAddress] = useState(propertyData.address);
