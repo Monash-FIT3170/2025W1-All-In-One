@@ -20,10 +20,15 @@ async "addProperty" ({propAddress, pricePerWeek, numBeds, numBaths, numParkSpots
       }
 
       {/* Creating Property Id */}
-      const collectionSize = await Properties.find({}, {fields: {prop_id: 1}}).countAsync() + 1;  // Counts the number of items in the collection, then adds 1 
-      const idNum = String(collectionSize).padStart(3, '0');  // Pads out the number with leading zeros to make sure the ID has 3 digits. Can be changed to have more or less.
-      const propID = "P" + idNum;   // Concatenates the number with a leading P for Properties. 
+      let collectionSize = await Properties.find({}, {fields: {prop_id: 1}}).countAsync() + 1;  // Counts the number of items in the collection, then adds 1 
+      let idNum = String(collectionSize).padStart(3, '0');  // Pads out the number with leading zeros to make sure the ID has 3 digits. Can be changed to have more or less.
+      let propID = "P" + idNum;   // Concatenates the number with a leading P for Properties. 
       
+      while ( await Properties.findOneAsync({prop_id: propID}) ){
+        collectionSize = collectionSize.valueOf() + 1;
+        idNum = String(collectionSize).padStart(3, '0');
+        propID = "P" + idNum;
+      }
 
       const date = new Date(dateAvailable);
 

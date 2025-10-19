@@ -3,6 +3,7 @@ import React, { useState } from "react";
 import { useNavigate } from 'react-router-dom';
 import Navbar from "./components/AgentNavbar";
 import Footer from "./components/Footer";
+import { Properties } from "../../api/database/collections";
 
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,14 +53,14 @@ export default function AddPropertyListing() {
         status: "Available",  // I assume if you are putting a new property, it would be available right??
         agentId,
         photo: uploadedFiles,
-      },
-      (err) => {
+      }, 
+      (err, propID) => {
         if (err) {
           alert("Adding Property failed: " + err.reason);
         }
         else {
-          alert("Property Successfully Added!");
-          navigate("/AgentListings")  // Can change this based on where we should go after the form has been submitted
+          alert(`Property Successfully Added! id-> ${propID}`);
+          navigate(`/AgentDetailedListing/${propID}`)  // Can change this based on where we should go after the form has been submitted
         }
       }
     );
