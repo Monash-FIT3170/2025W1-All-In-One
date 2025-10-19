@@ -64,13 +64,13 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
   };
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-      <div className="bg-[#CBADD8] rounded-xl px-20 py-5 flex flex-col gap-3 mx-4 shadow-lg w-[90%] max-w-4xl">
+    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 overflow-hidden">
+      <div className="bg-[#CBADD8] rounded-xl px-20 py-5 flex flex-col gap-3 mx-4 shadow-lg w-11/12 max-w-3xl overflow-y-auto max-h-[90vh]">
 
         {/* Close Button */}
         <button
           onClick={() => onClose()}
-          className="text-gray-600 hover:text-black text-2xl font-bold focus:outline-none place-self-end"
+          className="text-gray-600 hover:text-black text-2xl font-bold focus:outline-none place-self-end mt-4"
           aria-label="Close modal"
         >
           &times;
@@ -119,7 +119,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
               value={pricePerWeek}
               min={0}
               onChange={(e) => setPricePerWeek(Number(e.target.value))} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
             {/*Bond Input*/}
@@ -132,7 +132,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
               value={bond}
               min={0}
               onChange={(e) => setBond(Number(e.target.value))} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
             {/*Available Date Input*/}
@@ -144,7 +144,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
               defaultValue={formatDate(propertyData.AvailableDate)}
               value={dateAvailable}
               onChange={(e) => setDateAvailable(e.target.value)} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-2.5 mb-5 w-3/5"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block ps-10 p-2.5 mb-5 w-4/5"
             />
 
             {/*Property Type Dropdown*/}
@@ -153,7 +153,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
               defaultValue={propertyData.type}
               value={propType}
               onChange={(e) => setPropType(e.target.value)}
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5">
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-5">
                 <option>Townhouse</option>
                 <option>Apartment</option>
                 <option>House</option>
@@ -165,7 +165,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
             <select 
               defaultValue={propertyData.details.furnished ? "Yes" : "No"}
               onChange={(e) => setIsFurnished(e.target.value == "Yes")} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-10">
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-10">
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
             </select>
@@ -185,7 +185,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
               value={numBeds}
               min={0}
               onChange={(e) => setNumBeds(Number(e.target.value))} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
             {/*Bathrooms Input*/}
@@ -198,7 +198,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
               value={numBaths}
               min={0}
               onChange={(e) => setNumBaths(Number(e.target.value))} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
             {/*Parking Spot Input*/}
@@ -211,7 +211,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
               value={numParkSpots}
               min={0}
               onChange={(e) => setNumParkSpots(Number(e.target.value))} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
             {/*Landlord ID Input*/}
@@ -222,7 +222,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
               defaultValue={currLandlordEmail}
               value={landlordEmail}
               onChange={(e) => setLandlordEmail(e.target.value)} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-5"
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
             {/*Pets Allowed Dropdown*/}
@@ -230,7 +230,7 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
             <select 
               defaultValue={propertyData.Pets ? "Yes" : "No"}
               onChange={(e) => setPetsAllowed(e.target.value === "Yes")} 
-              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-3/5 p-2.5 dark:placeholder-gray-400 mb-10">
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-4/5 p-2.5 dark:placeholder-gray-400 mb-10">
                 <option value="Yes">Yes</option>
                 <option value="No">No</option>
             </select>
@@ -239,10 +239,10 @@ function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
         </div>
 
 
-        <div className="flex justify-center mb-1">
+        <div className="flex justify-center mb-5">
           <button
             onClick={handleSubmit}
-            className="w-1/1 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 px-2 rounded-md shadow-md transition duration-200">
+            className="w-1/1 bg-[#9747FF] hover:bg-violet-900 text-white font-base text-center py-2 px-4 rounded-md shadow-md transition duration-200">
             Save Details
           </button>
         </div>
