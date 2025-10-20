@@ -11,7 +11,7 @@ import SharedLease from './applyPages/SharedLease';
 import Navbar from './components/TenNavbar';
 import Footer from './components/Footer';
 import { useLocation, useParams } from "react-router-dom";
-import {RentalApplications} from '/imports/api/database/collections';
+import {RentalApplications, Properties} from '/imports/api/database/collections';
 import { useTracker } from 'meteor/react-meteor-data';
 
 function useQuery() {
@@ -32,8 +32,13 @@ function Apply() {
     return RentalApplications.findOne({ prop_id: id, ten_id: tenantId });
   }, [id, tenantId]);
 
-  console.log("Rental application:", rentalApplication);
+  const property = useTracker(() => {
+    Meteor.subscribe('properties');
+    return Properties.findOne({ prop_id: id });
+  }, [id]);
 
+  console.log("Rental application:", rentalApplication);
+  console.log("Property:", property);
   const sectionList = [
     'General',
     'Personal Details',
@@ -97,9 +102,9 @@ function Apply() {
         
         {/* Application Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold mb-2">Application - Melton South, 3338</h1>
+          <h1 className="text-2xl font-bold mb-2">Application</h1>
           <p className="text-gray-600">
-            You are applying for the property listed at Melton South, 3338
+            You are applying for the property listed at {property?.prop_address}
           </p>
         </div>
 

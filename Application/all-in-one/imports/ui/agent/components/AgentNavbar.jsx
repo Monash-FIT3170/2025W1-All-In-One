@@ -63,7 +63,7 @@ function Navbar() {
         </NavButton>
 
         {/* User avatar/profile link */}
-        <Link to="/PLACEHOLDER">
+        <Link to="">
           <img
             src="/images/user-avatar.png"
             alt="User Avatar"
