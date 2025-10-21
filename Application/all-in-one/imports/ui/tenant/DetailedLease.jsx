@@ -174,7 +174,7 @@ export default function DetailedLease() {
 
       {/*Description and buttons*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
-        <p className="font-semibold text-lg text-[#434343]">
+        <p className="font-semibold text-lg text-[#434343] whitespace-pre-line">
           {property.description}
         </p>
       </div>

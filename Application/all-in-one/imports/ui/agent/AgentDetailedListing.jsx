@@ -216,7 +216,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
       {/*Description and buttons (no buttons for now (milestone 2)*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
         <div className="p-6 flex space-x-4 mt-4"></div>
-        <p className="font-semibold text-lg text-[#434343] text-center">
+        <p className="font-semibold text-lg text-[#434343] text-center whitespace-pre-line">
           {propertyData.description}
         </p>
 

@@ -78,47 +78,11 @@ export default function LandlordDetailedPropListing() {
 
       {/*Description and buttons*/}
       <div className="max-w-7xl mx-auto p-6 text-gray-800 text-base leading-relaxed mb-12">
-        <p className="font-semibold text-lg text-[#434343]">
+        <p className="font-semibold text-lg text-[#434343] whitespace-pre-line">
           {propertyData.description}
         </p>
       </div>
 
-      {/* Feedback Form */}
-      <div className="max-w-7xl mx-auto p-6 text-gray-800">
-        <h3 className="text-lg font-semibold mb-2">Leave Feedback</h3>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            console.log("Feedback text:", feedbackText);
-            console.log("Rating:", rating);
-          }}
-          className="space-y-4"
-        >
-          <input
-            type="text"
-            placeholder="Enter your feedback"
-            value={feedbackText}
-            onChange={(e) => setFeedbackText(e.target.value)}
-            className="w-full px-4 py-2 border rounded"
-          />
-          <select
-            value={rating}
-            onChange={(e) => setRating(e.target.value)}
-            className="w-full px-4 py-2 border rounded"
-          >
-           <option value="Shortlisted">🟢 Shortlisted</option>
-                <option value="To be Reviewed">🟡 To be Reviewed</option>
-                <option value="Flagged">🔴 Flagged</option>
-          </select>
-          <button
-                  className="flex justify-center bg-[#9747FF] hover:bg-[#7d3dd1] text-white px-4 py-2 rounded-md"
-                > 
-                                 Submit
-                </button>
-        </form>
-      </div>
-
-      {/*Footer*/}
       <Footer />
     </div>
   );

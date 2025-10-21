@@ -7,9 +7,6 @@ import { useNavigate } from 'react-router-dom';
 function EditPropertyModal({isOpen, onClose, propertyData, currLandlordEmail}) {
   if(!isOpen) return null;
 
-  console.log(propertyData.landlord);
-  console.log((Meteor.users.findOne(propertyData.landlord)));
-
   const propId = propertyData.id;
   const status = propertyData.status;
   const [propAddress, setPropAddress] = useState(propertyData.address);

@@ -28,7 +28,7 @@ export default function AddPropertyListing() {
   const [petsAllowed, setPetsAllowed] = useState(true);
   const [bond, setBond] = useState(0);
   const [landlordEmail, setLandlordEmail] = useState("");
-
+  const [dateAvailable, setDateAvailable] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
@@ -46,6 +46,7 @@ export default function AddPropertyListing() {
         numParkSpots,
         propType,
         description,
+        dateAvailable,
         isFurnished,
         petsAllowed,
         bond,
@@ -220,6 +221,16 @@ const handleUpload = async (event) => {
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
             />
 
+            {/*Date Available Input*/}
+            <label className="text-l font-semibold text-gray-600 mb-5"> Date Available </label>
+            <input 
+              type="date" 
+              required
+              placeholder="DD/MM/YYYY"
+              onChange={(e) => setDateAvailable(e.target.value)} 
+              class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-xs p-2.5 dark:placeholder-gray-400 mb-5"
+            />
+
             {/*Bedrooms Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Number of Bedrooms </label>
             <input 
@@ -271,9 +282,10 @@ const handleUpload = async (event) => {
 
             {/*Description Input*/}
             <label className="text-l font-semibold text-gray-600 mb-5"> Description </label>
-            <input 
-              type="text"
+            <textarea 
               required
+              rows={6}
+              value={description}
               placeholder="Enter a brief description of the property" 
               onChange={(e) => setDescription(e.target.value)} 
               class="bg-gray-50 border border-gray-300 text-gray-900 text-sm text-left rounded-lg block w-full p-5 dark:placeholder-gray-400 mb-5"

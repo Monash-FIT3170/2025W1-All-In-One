@@ -7,4 +7,3 @@ Meteor.publish('tenantBookings.forAvailability', function (availabilityId) {
   check(availabilityId, String);
   return TenantBookings.find({ agentAvailabilityId: availabilityId });
 });
-

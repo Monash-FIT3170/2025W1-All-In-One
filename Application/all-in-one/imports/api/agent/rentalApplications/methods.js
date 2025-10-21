@@ -7,7 +7,8 @@ import {
   Addresses,
   Tenants,
   Employment,
-  SharedLeaseGroups // <-- add this collection import, define below if needed
+  SharedLeaseGroups,
+  Properties // <-- added Properties import
 } from '/imports/api/database/collections';
 import cloudinary from 'cloudinary'; // FIX: Added cloudinary import
 import { Properties } from '../../database/collections';
@@ -524,5 +525,99 @@ async "rentalApplications.clearLandlordFinal"(appId) {
 
     return leaseId;
   },
-});
 
+  // ----- NEW METHOD: set tenant_id and optionally inspected_date on Properties -----
+  async 'properties.setTenantId'(propId, tenantId, inspectedDate) {
+    check(propId, String);
+    // tenantId can be String or null (for clearing)
+    check(tenantId, Match.OneOf(String, null));
+    // inspectedDate is optional; if provided it must be a Date or null
+    if (inspectedDate !== undefined) check(inspectedDate, Match.OneOf(Date, null));
+
+    if (!this.userId) {
+      throw new Meteor.Error('not-authorized', 'You must be logged in to perform this action');
+    }
+
+    // ensure property exists
+    const property = await Properties.findOneAsync({ prop_id: propId });
+    if (!property) {
+      throw new Meteor.Error('not-found', 'Property not found');
+    }
+
+    // optional: ensure the current user owns the property (if landlord_id field exists)
+    if (property.landlord_id && property.landlord_id !== this.userId) {
+      throw new Meteor.Error('not-authorized', 'You do not own this property');
+    }
+
+    // Prepare the fields to set
+    const fieldsToSet = { tenant_id: tenantId };
+    // Only set inspected_date if the argument was explicitly provided (so clearing decision won't null it)
+    if (inspectedDate !== undefined) {
+      fieldsToSet.inspected_date = inspectedDate;
+    }
+
+    const result = await Properties.updateAsync(
+      { prop_id: propId },
+      { $set: fieldsToSet }
+    );
+
+    if (result === 0) {
+      throw new Meteor.Error('update-failed', 'Failed to set tenant on property');
+    }
+
+    return true;
+  },
+
+'properties.getAllWithTenants'() {
+  if (!this.userId) {
+    throw new Meteor.Error('not-authorized', 'You must be logged in to perform this action');
+  }
+
+  const properties = Properties.find({ tenant_id: { $exists: true, $ne: null } }).fetch();
+
+  const result = properties.map((prop) => {
+    // Convert prop to plain object
+    const propObj = {
+      prop_id: prop.prop_id,
+      landlord_id: prop.landlord_id,
+      tenant_id: prop.tenant_id,
+      inspected_date: prop.inspected_date,
+      address: prop.address || null,
+      ...prop // include other fields safely
+    };
+
+    const tenant = Tenants.findOne({ ten_id: prop.tenant_id });
+    const employment = tenant ? Employment.findOne({ ten_id: tenant.ten_id }) : null;
+
+    // Calculate inspection status label
+    let inspectionLabel = null;
+    if (prop.inspected_date) {
+      const today = new Date();
+      const inspectedDate = new Date(prop.inspected_date);
+      const monthsDiff = (today.getFullYear() - inspectedDate.getFullYear()) * 12
+                       + (today.getMonth() - inspectedDate.getMonth());
+
+      if (monthsDiff >= 5 && monthsDiff < 6) inspectionLabel = 'upcoming';
+      else if (monthsDiff >= 6) inspectionLabel = 'overdue';
+    }
+
+    return {
+      ...propObj,
+      tenantInfo: tenant
+        ? {
+            ten_id: tenant.ten_id,
+            ten_fn: tenant.ten_fn,
+            ten_ln: tenant.ten_ln,
+            ten_pn: tenant.ten_pn,
+            ten_dob: tenant.ten_dob,
+            emp_job_title: employment ? employment.emp_job_title : '—',
+          }
+        : null,
+      inspectionLabel,
+    };
+  });
+
+  return result.filter(Boolean);
+}
+
+});

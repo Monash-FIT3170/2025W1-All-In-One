@@ -1,6 +1,7 @@
 import { Outlet, Navigate } from 'react-router-dom';
 import { Meteor } from 'meteor/meteor';
 import React from 'react';
+import { useTracker } from 'meteor/react-meteor-data';
 
 /**
  * ProtectedTenantRoutes Component
@@ -23,7 +24,16 @@ import React from 'react';
  */
 const ProtectedTenantRoutes = () => {
   // Get the user's role from their profile
-  const userRole = Meteor.user()?.profile?.role;
+  
+  const {user, loggingIn} = useTracker(() => ({
+    user: Meteor.user(),
+    loggingIn: Meteor.loggingIn(),
+  }), []);
+  
+  if (loggingIn) {
+    return <div>Loading...</div>;
+  }
+  const userRole = user?.profile?.role;
 
   return (
     <div>
