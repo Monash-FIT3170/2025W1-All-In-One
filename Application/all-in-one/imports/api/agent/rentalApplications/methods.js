@@ -11,7 +11,6 @@ import {
   Properties // <-- added Properties import
 } from '/imports/api/database/collections';
 import cloudinary from 'cloudinary'; // FIX: Added cloudinary import
-import { Properties } from '../../database/collections';
 
 Meteor.methods({
   // Rental Applications
