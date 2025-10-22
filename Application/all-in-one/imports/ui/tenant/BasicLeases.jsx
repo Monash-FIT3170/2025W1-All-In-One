@@ -1,4 +1,4 @@
-import React, {useState} from "react";
+import React, {useState, useMemo} from "react";
 import { FaBath, FaBed, FaCar, FaCouch, FaSearch, FaFilter, FaTimes } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import Navbar from "./components/TenNavbar";
@@ -16,16 +16,23 @@ export default function BasicLeases() {
 
   const [showFilters, setShowFilters] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [filters, setFilters] = useState({
-    furnished: false,
-    pets: false,
-    rooms: "",
-    cars: "",
-    baths: "",
-    minPrice: "",
-    maxPrice: "",
-    propertyType: "",
-  });
+  const defaultFilters = useMemo(
+    () => ({
+      furnished: false,
+      pets: false,
+      rooms: "",
+      cars: "",
+      baths: "",
+      minPrice: "",
+      maxPrice: "",
+      propertyType: "",
+      availableFrom: "",
+    }),
+    []
+  );
+  const [filters, setFilters] = useState(() => ({ ...defaultFilters }));
+  const handleClearFilters = () => setFilters({ ...defaultFilters });
+  const handleOk = () => setShowFilters(false);
 
   const leasedProperties= useTracker(()=>{
 
@@ -309,6 +316,33 @@ const filteredLeasedProperties = leasedProperties.filter((p) => {
                 <option value="unit">Unit</option>
                 <option value="townhouse">Townhouse</option>
               </select>
+            </div>
+
+            <div>
+              <label className="block mb-1 font-semibold">Available From</label>
+              <input
+                type="date"
+                className="w-full p-2 rounded border"
+                value={filters.availableFrom}
+                onChange={(e) =>
+                  setFilters({ ...filters, availableFrom: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="mt-2 flex flex-wrap gap-3 justify-end">
+              <button
+                className="bg-[#9747FF] text-white px-6 py-2 rounded hover:bg-[#7d3dd1]"
+                onClick={handleClearFilters}
+              >
+                Clear Filters
+              </button>
+              <button
+                className="bg-[#22c55e] text-white px-6 py-2 rounded hover:bg-[#16a34a]"
+                onClick={handleOk}
+              >
+                OK
+              </button>
             </div>
           </div>
         </div>
