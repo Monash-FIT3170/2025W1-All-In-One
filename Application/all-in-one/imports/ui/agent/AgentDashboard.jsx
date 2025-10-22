@@ -98,17 +98,30 @@ const AgentDashboard = () => {
     const subAvail = Meteor.subscribe('agentAvailabilities');
     if (!subAvail.ready()) return 0;
     const agentId = Meteor.userId();
-    return AgentAvailabilities.find({
+    const now = new Date();
+    const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000); // 30 days later
+
+    // fetch all unbooked availabilities for inspections
+    const availabilities = AgentAvailabilities.find({
       agent_id: agentId,
+      type: 'Inspection', 
       $or: [{ tenant: { $exists: false } }, { tenant: null }]
-    }).count();
+    }).fetch();
+    
+    // filter inspection availabilities within the next 30 days
+    const unbookedAvailabilitiesNext30Days = availabilities.filter(a => {
+      const startDate = new Date(a.start);
+      return startDate >= now && startDate <= thirtyDaysFromNow;
+    });
+
+    return unbookedAvailabilitiesNext30Days.length; // return the count
   }, []);
 
   // KPI config — wired to open modals
   const kpis = [
     { label: 'Pending EOIs', value: pendingEOICount, actionLabel: 'View EOIs', onAction: () => setOpenEOIModal(true) },
-    { label: 'Unscheduled Inspections', value: tenantsWithProperties.length },
-    { label: 'Unbooked Availabilities', value: unbookedAvailabilitiesCount },
+    { label: 'Inspections Due in the next 30 Days', value: tenantsWithProperties.length },
+    { label: 'Unbooked Inspection Availabilities in the next 30 Days', value: unbookedAvailabilitiesCount },
     { label: 'Unresolved Tickets', value: unresolvedTicketsCount, actionLabel: 'View Tickets', onAction: () => setOpenTicketsModal(true) },
   ];
 
