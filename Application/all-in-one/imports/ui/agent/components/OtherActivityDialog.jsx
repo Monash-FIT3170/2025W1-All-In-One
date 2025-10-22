@@ -29,6 +29,12 @@ export const OtherActivityDialog = ({ isOpen, pendingSlot, onSelect, onClose }) 
     return;
   }
 
+  if (!title.trim()) {
+    alert("Please enter a title for the activity");
+    return;
+  }
+
+
   const start = dayjs(`${date} ${startTime}`, 'YYYY-MM-DD HH:mm').toDate();
   const end = dayjs(`${date} ${endTime}`, 'YYYY-MM-DD HH:mm').toDate();
 

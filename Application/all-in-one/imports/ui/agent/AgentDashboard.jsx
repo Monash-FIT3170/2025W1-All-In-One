@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Meteor } from 'meteor/meteor';
 import { useTracker } from 'meteor/react-meteor-data';
 import { Calendar } from './components/Calendar.jsx';
@@ -13,6 +13,8 @@ const AgentDashboard = () => {
   // <- restored state hooks for modals
   const [openEOIModal, setOpenEOIModal] = useState(false);
   const [openTicketsModal, setOpenTicketsModal] = useState(false);
+
+  const [availabilityWarning, setAvailabilityWarning] = useState('');
 
   // reactive computed tenantsWithProperties (inspections due)
   const { tenantsWithProperties } = useTracker(() => {
@@ -117,17 +119,37 @@ const AgentDashboard = () => {
     return unbookedAvailabilitiesNext30Days.length; // return the count
   }, []);
 
+// inspection availabilities warning message that shows up upon refresh
+  useEffect(() => {
+  if (unbookedAvailabilitiesCount < tenantsWithProperties.length) {
+    const difference = tenantsWithProperties.length - unbookedAvailabilitiesCount;
+    setAvailabilityWarning(
+      `Warning: The number of unbooked inspection availabilities is less than the number of inspections due this month. ` +
+      `Please create ${difference} new inspection availabilities on the calendar to ensure adequate availabilities for inspections.`
+    );
+  } else {
+    setAvailabilityWarning(''); // clear the warning if condition is no longer true
+  }
+}, [unbookedAvailabilitiesCount, tenantsWithProperties.length]);
+
   // KPI config — wired to open modals
   const kpis = [
     { label: 'Pending EOIs', value: pendingEOICount, actionLabel: 'View EOIs', onAction: () => setOpenEOIModal(true) },
-    { label: 'Inspections Due in the next 30 Days', value: tenantsWithProperties.length },
-    { label: 'Unbooked Inspection Availabilities in the next 30 Days', value: unbookedAvailabilitiesCount },
+    { label: 'Inspections Due this Month', value: tenantsWithProperties.length },
+    { label: 'Unbooked Inspection Availabilities this Month', value: unbookedAvailabilitiesCount },
     { label: 'Unresolved Tickets', value: unresolvedTicketsCount, actionLabel: 'View Tickets', onAction: () => setOpenTicketsModal(true) },
   ];
 
   return (
     <div className="bg-[#FFF8E9] min-h-screen pb-20">
       <AgentNavbar />
+
+      {/* Availability warning */}
+      {availabilityWarning && (
+        <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-4" role="alert">
+          <p>{availabilityWarning}</p>
+        </div>
+      )}    
 
       {/* KPI Section */}
       <KPISection kpis={kpis} />
@@ -153,7 +175,7 @@ const AgentDashboard = () => {
       {/* Tenant Inspection Section */}
       <div className="px-8 pt-16">
         <div className="mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Tenant Inspection Due in a Month</h2>
+          <h2 className="text-3xl font-bold text-gray-800 mb-2">Tenant Inspections Due this Month</h2>
           <p className="text-gray-600">All inspections due in one place!</p>
         </div>
 
