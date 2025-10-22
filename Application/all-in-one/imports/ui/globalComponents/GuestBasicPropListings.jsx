@@ -79,7 +79,7 @@ export default function GuestBasicPropListings() {
           firstPhotoUrl = firstNonVideoPhoto.url;
         }
       }
-      return{
+      return {
         id: p.prop_id,
         location: p.prop_address,
         price:`$${p.prop_pricepweek}`,
@@ -90,8 +90,16 @@ export default function GuestBasicPropListings() {
         furnished: p.prop_furnished,
         pets: p.prop_petsallowed,
         type: p.prop_type,
+        availableDate: p.prop_available_date,
       };
     });
+
+    const parseDate = (value) => {
+      if (!value) return null;
+      if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
 
     const filteredProperties = propertyCards.filter((p) => {
       // Furnished
@@ -124,6 +132,14 @@ export default function GuestBasicPropListings() {
         !p.location.toLowerCase().includes(searchQuery.toLowerCase())
       )
         return false;
+
+      if (filters.availableFrom) {
+        const filterDate = parseDate(filters.availableFrom);
+        if (filterDate) {
+          const propertyDate = parseDate(p.availableDate);
+          if (!propertyDate || propertyDate < filterDate) return false;
+        }
+      }
 
       return true;
     });

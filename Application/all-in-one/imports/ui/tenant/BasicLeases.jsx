@@ -101,49 +101,63 @@ export default function BasicLeases() {
         type: property.prop_type,
         furnished: property.prop_furnished,
         pets: property.prop_petsallowed,
-
+        availableDate: property.prop_available_date,
       };
     });
   }, [userId]);
 
+  const parseDate = (value) => {
+    if (!value) return null;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
 
 
 
-const filteredLeasedProperties = leasedProperties.filter((p) => {
-  // Furnished
-  if (filters.furnished && !p.furnished) return false;
+  const filteredLeasedProperties = leasedProperties.filter((p) => {
+    // Furnished
+    if (filters.furnished && !p.furnished) return false;
 
-  // Pets
-  if (filters.pets && !p.pets) return false;
+    // Pets
+    if (filters.pets && !p.pets) return false;
 
-  // Rooms
-  if (filters.rooms && p.beds < parseInt(filters.rooms)) return false;
+    // Rooms
+    if (filters.rooms && p.beds < parseInt(filters.rooms)) return false;
 
-  // Car spots
-  if (filters.cars && p.cars < parseInt(filters.cars)) return false;
+    // Car spots
+    if (filters.cars && p.cars < parseInt(filters.cars)) return false;
 
-  // Bathrooms
-  if (filters.baths && p.baths < parseInt(filters.baths)) return false;
+    // Bathrooms
+    if (filters.baths && p.baths < parseInt(filters.baths)) return false;
 
-  // Price
-  const price = parseInt(p.price.replace("$", "").replace(",", "") || 0);
-  if (filters.minPrice && price < parseInt(filters.minPrice)) return false;
-  if (filters.maxPrice && price > parseInt(filters.maxPrice)) return false;
+    // Price
+    const price = parseInt(p.price.replace("$", "").replace(",", "") || 0);
+    if (filters.minPrice && price < parseInt(filters.minPrice)) return false;
+    if (filters.maxPrice && price > parseInt(filters.maxPrice)) return false;
 
-  // Property Type
-  if (filters.propertyType && p.type && p.type !== filters.propertyType)
-    return false;
+    // Property Type
+    if (filters.propertyType && p.type && p.type !== filters.propertyType)
+      return false;
 
-  // Search by location/postcode
-  if (
-    searchQuery &&
-    !p.location.toLowerCase().includes(searchQuery.toLowerCase())
-  ) {
-    return false;
-  }
+    // Search by location/postcode
+    if (
+      searchQuery &&
+      !p.location.toLowerCase().includes(searchQuery.toLowerCase())
+    ) {
+      return false;
+    }
 
-  return true;
-});
+    if (filters.availableFrom) {
+      const filterDate = parseDate(filters.availableFrom);
+      if (filterDate) {
+        const propertyDate = parseDate(p.availableDate);
+        if (!propertyDate || propertyDate < filterDate) return false;
+      }
+    }
+
+    return true;
+  });
 
 
 

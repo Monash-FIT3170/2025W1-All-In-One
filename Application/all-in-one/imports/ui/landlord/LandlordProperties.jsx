@@ -71,7 +71,7 @@ export default function LandlordProperties() {
           firstPhotoUrl = firstNonVideoPhoto.url;
         }
       }
-      return{
+      return {
         id: p.prop_id,
         location: p.prop_address,
         price:`$${p.prop_pricepweek}`,
@@ -82,29 +82,45 @@ export default function LandlordProperties() {
         furnished: p.prop_furnish,
         pets: p.prop_pets,
         type: p.prop_type,
+        availableDate: p.prop_available_date,
         starred: false // Landlords don't need starred functionality for their own listings
       };
     });
 
+    const parseDate = (value) => {
+      if (!value) return null;
+      if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+      const parsed = new Date(value);
+      return Number.isNaN(parsed.getTime()) ? null : parsed;
+    };
+
     const filteredProperties = propertyCards.filter((p) => {
-    if (filters.furnished && !p.furnished) return false;
-    if (filters.pets && !p.pets) return false;
-    if (filters.rooms && p.beds < parseInt(filters.rooms)) return false;
-    if (filters.cars && p.cars < parseInt(filters.cars)) return false;
-    if (filters.baths && p.baths < parseInt(filters.baths)) return false;
+      if (filters.furnished && !p.furnished) return false;
+      if (filters.pets && !p.pets) return false;
+      if (filters.rooms && p.beds < parseInt(filters.rooms)) return false;
+      if (filters.cars && p.cars < parseInt(filters.cars)) return false;
+      if (filters.baths && p.baths < parseInt(filters.baths)) return false;
 
-    const price = parseInt(p.price.replace("$", "").replace(",", "") || 0);
-    if (filters.minPrice && price < parseInt(filters.minPrice)) return false;
-    if (filters.maxPrice && price > parseInt(filters.maxPrice)) return false;
+      const price = parseInt(p.price.replace("$", "").replace(",", "") || 0);
+      if (filters.minPrice && price < parseInt(filters.minPrice)) return false;
+      if (filters.maxPrice && price > parseInt(filters.maxPrice)) return false;
 
-    if (filters.propertyType && p.type && p.type !== filters.propertyType)
-      return false;
+      if (filters.propertyType && p.type && p.type !== filters.propertyType)
+        return false;
 
-    if (searchQuery && !p.location.toLowerCase().includes(searchQuery.toLowerCase()))
-      return false;
+      if (searchQuery && !p.location.toLowerCase().includes(searchQuery.toLowerCase()))
+        return false;
 
-    return true;
-  });
+      if (filters.availableFrom) {
+        const filterDate = parseDate(filters.availableFrom);
+        if (filterDate) {
+          const propertyDate = parseDate(p.availableDate);
+          if (!propertyDate || propertyDate < filterDate) return false;
+        }
+      }
+
+      return true;
+    });
 
 
   return (

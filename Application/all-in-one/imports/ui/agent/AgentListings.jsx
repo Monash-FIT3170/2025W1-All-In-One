@@ -82,9 +82,17 @@ export default function AgentListings() {
       furnished: p.prop_furnish,
       pets: p.prop_pets,
       type: p.prop_type,
+      availableDate: p.prop_available_date,
       starred: false // Agents don't need starred functionality for their own listings
     };
   });
+
+  const parseDate = (value) => {
+    if (!value) return null;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
 
   const filteredProperties = propertyCards.filter((p) => {
     if (filters.furnished && !p.furnished) return false;
@@ -102,6 +110,14 @@ export default function AgentListings() {
 
     if (searchQuery && !p.location.toLowerCase().includes(searchQuery.toLowerCase()))
       return false;
+
+    if (filters.availableFrom) {
+      const filterDate = parseDate(filters.availableFrom);
+      if (filterDate) {
+        const propertyDate = parseDate(p.availableDate);
+        if (!propertyDate || propertyDate < filterDate) return false;
+      }
+    }
 
     return true;
   });

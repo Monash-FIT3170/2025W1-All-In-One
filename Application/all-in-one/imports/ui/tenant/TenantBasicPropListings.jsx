@@ -62,6 +62,13 @@ export default function TenantBasicPropListings() {
 
   if (!isReady) return <div className="text-center text-gray-600 mt-10">Loading Properties...</div>;
 
+  const parseDate = (value) => {
+    if (!value) return null;
+    if (value instanceof Date && !Number.isNaN(value.getTime())) return value;
+    const parsed = new Date(value);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  };
+
     const availableProperties= properties.filter(
     (p)=> {
   // must be marked available
@@ -109,6 +116,7 @@ export default function TenantBasicPropListings() {
         pets: p.prop_pets,
         type: p.prop_type,
         starred: locallyStarred.has(p.prop_id),
+        availableDate: p.prop_available_date,
         onStarToggle: (propId, newStarred) => {
           setLocallyStarred((prev) => {
             const newSet = new Set(prev);
@@ -132,6 +140,13 @@ export default function TenantBasicPropListings() {
 
     if (filters.propertyType && p.type && p.type !== filters.propertyType) return false;
     if (searchQuery && !p.location.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+    if (filters.availableFrom) {
+      const filterDate = parseDate(filters.availableFrom);
+      if (filterDate) {
+        const propertyDate = parseDate(p.availableDate);
+        if (!propertyDate || propertyDate < filterDate) return false;
+      }
+    }
 
     return true;
   });
