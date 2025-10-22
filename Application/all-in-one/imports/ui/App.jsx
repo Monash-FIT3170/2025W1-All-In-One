@@ -64,7 +64,7 @@ const App = () => (
         <Route path="/signup" element={<SignUpPage />} />
 
         <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-  <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
         {/*Guest basic leases and detailed listing page*/}
         <Route
@@ -80,25 +80,25 @@ const App = () => (
         {/* Protected Tenant Routes - Require tenant authentication */}
         <Route element={<ProtectedTenantRoutes />}>
           {/* Signed In Tenant Page */}
-          {/* <Route
+          <Route
             path="/TenantBasicPropListings"
             element={<TenantBasicPropListings />}
           />
-          <Route path="/TenantApplications" element={<TenantApplications />} /> */}
+          <Route path="/TenantApplications" element={<TenantApplications />} />
 
           {/* Add any other protected tenant routes here */}
 
           {/* Inspection Booking Page */}
 
-          {/* <Route path="/InspectionListing" element={<PropertyListing />} />
+          <Route path="/InspectionListing" element={<PropertyListing />} />
           <Route
             path="/InspectionBooking/:id"
             element={<InspectionBooking />}
           />
-          <Route path="/UpcomingInspections" element={<UpcomingInspections />} /> */}
+          <Route path="/UpcomingInspections" element={<UpcomingInspections />} />
 
           {/* Tenant Routes - team-2*/}
-          {/* <Route path="/BasicLeases" element={<BasicLeases />} />
+          <Route path="/BasicLeases" element={<BasicLeases />} />
           <Route path="/Apply/:id" element={<Apply />} />
           <Route
             path="/TenDetailedPropListing/:id"
@@ -108,43 +108,19 @@ const App = () => (
 
           <Route path="/tenant/application/:appId" element={<ViewApplication />} />
 
-            <Route path="/Settings" element={<TenantSettings />} />" */}
+          <Route path="/Settings" element={<TenantSettings />} />
         </Route>
-        {/* Testing Tenant Routes Without Protected Routes */}
-        {/* Signed In Tenant Page */}
-        <Route
-          path="/TenantBasicPropListings"
-          element={<TenantBasicPropListings />}
-        />
-        <Route path="/TenantApplications" element={<TenantApplications />} />
-        {/* Add any other protected tenant routes here */}
-        {/* Inspection Booking Page */}
-        <Route path="/InspectionListing" element={<PropertyListing />} />
-        <Route path="/InspectionBooking/:id" element={<InspectionBooking />} />
-        <Route path="/UpcomingInspections" element={<UpcomingInspections />} />
-        {/* Tenant Routes - team-2*/}
-        <Route path="/BasicLeases" element={<BasicLeases />} />
-        <Route path="/Apply/:id" element={<Apply />} />
-        <Route
-          path="/TenDetailedPropListing/:id"
-          element={<TenDetailedPropListing />}
-        />
-        <Route path="/DetailedLease/:id" element={<DetailedLease />} />
-        <Route
-          path="/tenant/application/:appId"
-          element={<ViewApplication />}
-        />
-        <Route path="/Settings" element={<TenantSettings />} />"
+
         {/* Protected Agent Routes - Require agent authentication */}
         <Route element={<ProtectedAgentRoutes />}>
           {/* Dashboard Page*/}
-          {/* <Route path="/dashboard" element={<AgentDashboard />} />{" "} */}
+          <Route path="/dashboard" element={<AgentDashboard />} />
           {/* Dashboard after log in */}
-          {/* <Route path="/AgentDashboard" element={<AgentDashboard />} />{" "} */}
+          <Route path="/AgentDashboard" element={<AgentDashboard />} />
           {/* Proper dashboard */}
           {/* Add any other protected agent routes here */}
           {/* Agent Routes team-2 */}
-          {/* <Route path="/AddPropertyListing" element={<AddPropertyListing />} />
+          <Route path="/AddPropertyListing" element={<AddPropertyListing />} />
                   <Route path="/AgentBasicPropListing" element={<AgentBasicPorpListing/>}/>
                   <Route path="/AgentDetailedListing/:id" element={<AgentDetailedListing/>}/>
                   <Route path="/AgentDetailedPropListing/:id" element={<AgentDetailedPropListing/>}/>
@@ -155,33 +131,10 @@ const App = () => (
           
         
 
-          <Route path="/agent/application/:appId" element={<ViewApplication />} /> */}
+          <Route path="/agent/application/:appId" element={<ViewApplication />} />
         </Route>
-        {/* Testing Agents Routes Without Protected Routes */}
-        {/* Dashboard Page*/}
-        <Route path="/dashboard" element={<AgentDashboard />} />{" "}
-        {/* Dashboard after log in */}
-        <Route path="/AgentDashboard" element={<AgentDashboard />} />{" "}
-        {/* Proper dashboard */}
-        {/* Add any other protected agent routes here */}
-        {/* Agent Routes team-2 */}
-        <Route path="/AddPropertyListing" element={<AddPropertyListing />} />
-        <Route
-          path="/AgentBasicPropListing"
-          element={<AgentBasicPorpListing />}
-        />
-        <Route
-          path="/AgentDetailedListing/:id"
-          element={<AgentDetailedListing />}
-        />
-        <Route
-          path="/AgentDetailedPropListing/:id"
-          element={<AgentDetailedPropListing />}
-        />
-        <Route path="/AgentListings" element={<AgentListings />} />
-        <Route path="/AgentReviewApplication" element={<ReviewApplication />} />
-        <Route path="/EditPropertyDetails" element={<EditPropertyDetails />} />
-        <Route path="/agent/application/:appId" element={<ViewApplication />} />
+        
+        
         {/* Protected Landlord Routes */}
         <Route element={<ProtectedLandlordRoutes />}>
           {/* Signed In Landlord Page*/}
