@@ -116,23 +116,66 @@ export const EventDetailModal = ({ event, onClose, onAttendanceUpdate, onDelete 
     );
   };
   const handleSave = () => {
+    const targetId =
+      mergedEvent.sourceId ||
+      mergedEvent._id ||
+      mergedEvent.id ||
+      event.sourceId ||
+      event._id ||
+      event.id;
+
+    if (!targetId) {
+      alert('Error: Unable to determine which record to update.');
+      return;
+    }
+
+    const startDateInput = draftStart ? new Date(draftStart) : startDate;
+    const endDateInput = draftEnd ? new Date(draftEnd) : endDate;
+
+    if (Number.isNaN(startDateInput.getTime()) || Number.isNaN(endDateInput.getTime())) {
+      alert('Please provide valid start and end times.');
+      return;
+    }
+
+    const startIso = startDateInput.toISOString();
+    const endIso = endDateInput.toISOString();
+    const notesValue = (draftNotes ?? '').toString();
+
+    const resolvedKind = mergedEvent.kind || event.kind || 'availability';
+
+    const onSaved = (err) => {
+      if (err) {
+        alert('Failed to update: ' + err.reason);
+      } else {
+        setIsEditing(false);
+        if (onClose) onClose();
+      }
+    };
+
+    if (resolvedKind === 'ticketActivity') {
+      Meteor.call(
+        'ticketActivities.update',
+        targetId,
+        {
+          start: startIso,
+          end: endIso,
+          notes: notesValue,
+        },
+        onSaved
+      );
+      return;
+    }
+
     Meteor.call(
       'agentAvailabilities.update',
-      mergedEvent._id || mergedEvent.id,
+      targetId,
       {
-        start: new Date(draftStart).toISOString(),
-        end: new Date(draftEnd).toISOString(),
-        note: draftNotes,
-        notes: draftNotes,
+        start: startIso,
+        end: endIso,
+        note: notesValue,
+        notes: notesValue,
       },
-      (err) => {
-        if (err) {
-          alert('Failed to update: ' + err.reason);
-        } else {
-          setIsEditing(false);
-          if (onClose) onClose();
-        }
-      }
+      onSaved
     );
   };
 

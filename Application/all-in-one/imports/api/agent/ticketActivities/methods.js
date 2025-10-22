@@ -1,5 +1,5 @@
 import { Meteor } from 'meteor/meteor';
-import { check } from 'meteor/check';
+import { check, Match } from 'meteor/check';
 import { TicketActivities } from '/imports/api/database/collections';
 
 Meteor.methods({
@@ -33,6 +33,60 @@ Meteor.methods({
     }
 
     await TicketActivities.removeAsync({ _id: activityId });
+    return activityId;
+  },
+
+  async 'ticketActivities.update'(activityId, update) {
+    check(activityId, String);
+    check(update, Object);
+
+    const existing = await TicketActivities.findOneAsync({ _id: activityId });
+    if (!existing) {
+      throw new Meteor.Error('not-found', 'Ticket activity not found');
+    }
+
+    const $set = {};
+
+    if (update.start !== undefined) {
+      check(update.start, String);
+      $set.start = update.start;
+    }
+
+    if (update.end !== undefined) {
+      check(update.end, String);
+      $set.end = update.end;
+    }
+
+    if (update.notes !== undefined) {
+      check(update.notes, String);
+      $set.notes = update.notes;
+    } else if (update.note !== undefined) {
+      check(update.note, String);
+      $set.notes = update.note;
+    }
+
+    if (update.title !== undefined) {
+      check(update.title, String);
+      $set.title = update.title;
+    }
+
+    if (update.status !== undefined) {
+      check(
+        update.status,
+        Match.Where(
+          (value) =>
+            typeof value === 'string' &&
+            ['pending', 'in-progress', 'completed'].includes(value)
+        )
+      );
+      $set.status = update.status;
+    }
+
+    if (Object.keys($set).length === 0) {
+      return activityId;
+    }
+
+    await TicketActivities.updateAsync({ _id: activityId }, { $set });
     return activityId;
   },
 });
