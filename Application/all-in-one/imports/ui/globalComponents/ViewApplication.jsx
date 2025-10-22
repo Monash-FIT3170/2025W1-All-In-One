@@ -114,7 +114,7 @@ function ViewApplication() {
   return (
     <div>
       <div className="p-8 bg-[#FFF8E9] min-h-screen" ref={containerRef}>
-        <h1 className="text-2xl font-bold mb-4">Agent View - Application</h1>
+        <h1 className="text-2xl font-bold mb-4">View Application</h1>
         <p className="mb-6 text-gray-600">
           Viewing application for Property: {property?.prop_address}
         </p>
