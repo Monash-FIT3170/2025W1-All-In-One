@@ -288,7 +288,7 @@ const { isReady, property, photos, videos, approvedLeaseStart, landlord, tenant 
       isOpen={() => setOpenEditDetails(true)}
       onClose={() => setOpenEditDetails(false)}
       propertyData={propertyData}
-      currLandlordEmail={landlord.ll_email}/>}
+      currLandlordEmail={landlord?.ll_email ?? ''}/>}
 
       {/* {openEditMedia && <EditMediaModal
       isOpen={() => setOpenEditMedia(true)}
