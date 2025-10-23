@@ -1,5 +1,8 @@
 # 2025W1-All-In-One
 
+## Link to Deployed Application
+All-In-One --> https://all-in-one.meteorapp.com/
+
 ## Members
 Brandon Luu - bluu0013@student.monash.edu  
 Naailah Taqui Hasan - nhas0021@student.monash.edu  
@@ -14,51 +17,62 @@ Ryani Fernandopulle - rfer0035@student.monash.edu
 Stefani Rijab - srij0001@student.monash.edu  
 Thytus Benjamin - tben0015@student.monash.edu
 
-## Installing Dependencies
+## Local Installation
 
+### Installing Dependencies
 The application uses the following dependencies, which can be installed by running `npm install` in the command prompt, followed by the name of the dependency:
 
-- @babel/runtime  
-- @fullcalendar/interaction  
-- @fullcalendar/react  
-- @fullcalendar/timegrid  
-- heroicons/react  
-- clone  
-- dayjs  
-- lucide-react  
-- meteor-node-stubs  
-- react  
-- react-dom  
-- react-icons  
-- react-router  
-- react-router-dom  
-- react-slick  
-- simpl-schema  
-- slick-carousel  
-- autoprefixer  
-- postcss  
-- tailwindcss  
-
-## Running the Application Locally
+ - @babel/runtime
+ - @cloudinary/react
+ - @cloudinary/url-gen
+ - @emotion/react
+ - @emotion/styled
+ - @fullcalendar/interaction
+ - @fullcalendar/react
+ - @fullcalendar/timegrid
+ - @google/generative-ai
+ - @heroicons/react
+ - @mui/icons-material
+ - @mui/material
+ - @opentelemetry/api
+ - @react-google-maps/api
+ - @tailwindcss/postcss
+ - axios
+ - cheerio
+ - clone
+ - cloudinary
+ - dayjs
+ - dotenv
+ - lucide-react
+ - meteor-node-stubs
+ - mui
+ - next
+ - postcss-load-config
+ - react
+ - react-dom
+ - react-icons
+ - react-router
+ - react-router-dom
+ - react-slick
+ - simpl-schema
+ - slick-carousel
+ - uuid
+ - autoprefixer
+ - postcss
+ - tailwindcss
+ 
+### Running the Application Locally
+Type the following command into your terminal:
 
 ```bash
-# Without maps and API
-meteor run
-# or
-meteor
-
-# With map integration
-meteor --settings settings.json
-
-# Final run command with database
-npx dotenv -e .env -- meteor run --settings settings.json
+npm start
 ```
 
 Visit http://localhost:3000 in your browser. Use the link generated in the terminal of your VS Code.
 
 **Additional Notes:** A private key needs to be created locally in the main folder: `all-in-one-settings.json`. Add the API key to this file and add it to `.gitignore`. This ensures privacy of the API key.
 
-## Project Structure (High-Level)
+### Project Structure (High-Level)
 
 ```
 /client          →  React UI components
@@ -69,7 +83,7 @@ Visit http://localhost:3000 in your browser. Use the link generated in the termi
 /tests           →  Unit and integration tests
 ```
 
-## Hardware Requirements
+### Hardware Requirements
 
 - **CPU:** Dual-core processor (Intel i5 or AMD equivalent)
 - **RAM:** 8GB (16GB recommended)
