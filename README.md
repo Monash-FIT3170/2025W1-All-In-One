@@ -17,6 +17,12 @@ Ryani Fernandopulle - rfer0035@student.monash.edu
 Stefani Rijab - srij0001@student.monash.edu  
 Thytus Benjamin - tben0015@student.monash.edu
 
+## Introduction
+
+The All In One application is a property management platform designed to streamline interactions between landlords, tenants, and agents within a single integrated system. By consolidating application, communication, property listings, tenant requests, and administrative workflows into one application, the platform aims to reduce inefficiencies and improve the overall property management experience.
+The primary purpose of this document is to support future developers by providing the technical and procedural knowledge necessary to understand, run, and extend the system. Unlike standard user documentation, this handover documentation is developer-focused. It outlines the required software and hardware environments, provides step-by-step setup and deployment instructions, identifies common pitfalls, and highlights ongoing development considerations. By following this document, future contributors should be able to quickly run the application, understand its high-level architecture, and start contributing effectively.
+
+
 ## Local Installation
 
 ### Installing Dependencies
@@ -184,3 +190,116 @@ Create a GitHub Release for each version tag with:
 ### Additional Resources
 
 For more details about the rules and syntax, see [Semantic Versioning 2.0.0](https://semver.org/).
+
+# Pull Request Strategy
+
+## Overview
+Our PR strategy uses a **three-tier merge process** across multiple agile teams:
+1. **Individual Development** → Individual branches from `main`  
+2. **Team Integration** → Team merge branches (`Team 1`, `Team 2`, `Team 3`, `Team 4`)  
+3. **Final Integration** → Consolidated branch back to `main`
+
+---
+
+## 🧩 Stage 1: Individual Development
+
+### Branching Convention
+`<team-number>-<name>-<brief-description>`
+
+**Examples:**
+- `team-2-Kenuli-password_rest`
+- `team-1-claire-inspection-debug`
+
+> While this naming convention is recommended, we acknowledge that features may not always be named properly. This is acceptable as long as each team member knows which branch they are working on and can merge with the correct feature.
+
+### ✅ Requirements Before Creating a PR
+- All tests pass locally  
+- The assigned feature works as intended  
+- Code is linted and formatted  
+- Documentation updated  
+- Self-reviewed changes  
+
+---
+
+## 🤝 Stage 2: Team Integration
+
+### Team Branch Convention
+`<team-number>-M-<milestone-number>`
+
+**Examples:**
+- `Team4-M4`
+
+### Team Collaborative Merge Meeting
+**Attendees:** All team members  
+
+**Process:**
+1. Review each PR as a team (5–10 minutes per PR)  
+2. Merge PRs sequentially, starting with foundational changes  
+3. Address merge conflicts collaboratively  
+4. Run integration tests after each merge  
+5. Document technical debt or follow-up items  
+6. Validate full test suite and functional testing  
+
+### 🧾 Requirements Before Final Merge
+- Peer code review completed (minimum 2 approvals)  
+- All features work concurrently  
+- Code coverage thresholds met  
+
+---
+
+## 🚀 Stage 3: Final Integration
+
+### Final Branch Convention
+`<team-number>-merge → main-<milestone-number>`
+
+### Final Merge Meeting
+**Attendees:** 1–2 representatives from each team  
+
+**Process:**
+Our final integration follows a **two-step merge process** rather than merging all teams simultaneously.
+
+**Step 1 – Initial Pair Merges**
+- Teams merge in pairs (e.g., `Team 1-2`, `Team 3-4`)  
+- If a team is not ready, adjust groupings flexibly (e.g., `Team 3-4-1`, then `Team 2`)
+
+**Step 2 – Final Consolidation**
+- Merge the paired team branches into the final integration branch  
+
+**Throughout the process:**
+- Review sprint objectives and identify integration risks  
+- Merge sequentially based on dependencies  
+- Resolve cross-team conflicts collaboratively  
+- Run integration tests after each merge  
+- Complete full regression and performance testing  
+- All representatives sign off on the final state  
+- Create PR to `main`  
+
+---
+
+## 🧰 Common Issues & Troubleshooting
+
+| **Issue** | **Cause** | **Solution** |
+|------------|------------|---------------|
+| **Meteor not running – Missing dependencies** | Have not installed the relevant dependencies for the app | See the terminal for the list of missing dependencies and commands, or run `npm install` |
+| **Public API Key visible** | API key call made directly in the `.jsx` file (public repo) | Add the API key to a new file `settings.json` in the root directory, add it to `.gitignore`, and call the key from that file instead of embedding it in code |
+| **App not launching** | Wrong root directory | Ensure you’re in the correct main directory before running the app — right-click `Application/all-in-one` and select “Open in Integrated Terminal” |
+| **Installation and setup issues** | Meteor requires specific Node versions | Check version compatibility and download the correct one |
+| **Cannot commit changes** | Missing GitHub credentials | Check the output window for missing author info, then run:<br>`git config user.name "Your Name"`<br>`git config user.email "your_email@example.com"` |
+| **Port and connection problems** | Port (e.g. 3000) already in use | Move to another port or free up the current one |
+
+---
+
+## 📎 Appendix
+**Repository Link:** [https://github.com/Monash-FIT3170/2025W1-All-In-One](https://github.com/Monash-FIT3170/2025W1-All-In-One)  
+**Staging URL:** [https://all-in-one.meteorapp.com/](https://all-in-one.meteorapp.com/)  
+**Drive Folder:** [Google Drive Folder](https://drive.google.com/drive/u/0/folders/1C3975g9mkwQXP0bz3upCeNzryFYqGf5C) *  
+**Other Systems (ClickUp):** [https://app.clickup.com/9016824431/home](https://app.clickup.com/9016824431/home) *
+
+> \* Request access for the links above.
+
+---
+
+## 🤖 Generative AI Statement
+In this Handover Documentation, generative artificial intelligence tools were used only to refine language, improve clarity, and ensure a professional tone after the technical content was independently written by the contributors. AI assistance was also used to identify common and relevant sections typically included in handover documentation to ensure completeness.
+
+
