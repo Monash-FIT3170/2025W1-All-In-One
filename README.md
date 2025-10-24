@@ -25,6 +25,13 @@ The primary purpose of this document is to support future developers by providin
 
 ## Local Installation
 
+### Environment Setup
+Visual Studio Code (recommended IDE) with Meteor and React extensions  
+MongoDB Compass (optional, for database inspection)  
+Google API key (to display the Map)   
+Cloudinary (to upload media)    
+Galaxy 2.0 via Meteor (to deploy)   
+
 ### Installing Dependencies
 The application uses the following dependencies, which can be installed by running `npm install` in the command prompt, followed by the name of the dependency:
 
