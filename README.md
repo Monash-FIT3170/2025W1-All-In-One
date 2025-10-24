@@ -78,6 +78,13 @@ Visit http://localhost:3000 in your browser. Use the link generated in the termi
 
 **Additional Notes:** A private key needs to be created locally in the main folder: `all-in-one-settings.json`. Add the API key to this file and add it to `.gitignore`. This ensures privacy of the API key.
 
+### Deployment
+Staging → https://all-in-one.meteorapp.com/  
+Production → https://all-in-one.meteorapp.com/  
+Deployment of Database → mongodb://ac03:RGbt5thNptxR5uAnn@galaxyadmin_galaxyfreedb-01.mongodb.galaxy-cloud.io:30025,galaxyadmin_galaxyfreedb-02.mongodb.galaxy-cloud.io:30025,galaxyadmin_galaxyfreedb-03.mongodb.galaxy-cloud.io:30025/all-in-one-meteorapp-com?replicaSet=galaxyadmin_galaxyfreedb&ssl=true  
+Deployment → Galaxy Cloud 2.0 (through terminal)  
+
+
 ### Project Structure (High-Level)
 
 ```
@@ -95,6 +102,55 @@ Visit http://localhost:3000 in your browser. Use the link generated in the termi
 - **RAM:** 8GB (16GB recommended)
 - **Disk:** ~20GB free space
 - **OS:** Windows 10+, macOS 12+, or Ubuntu 20.04+
+
+### Software Requirements
+
+The following software is required to **develop, run, and maintain** the All-In-One Property Management System.
+
+---
+
+## Runtime / Frameworks
+- **Meteor.js** (v3.1.2 or above) – Full-stack JavaScript framework  
+- **React** (v18 or above) – Frontend UI library  
+- **Node.js** (v14 LTS or above, bundled with Meteor) – Runtime environment required for Meteor to execute  
+- **npm** (v10.8.2 or above, bundled with Node.js) – Package manager  
+
+---
+
+## Database
+- **MongoDB** (local installation) – Document-based NoSQL database  
+
+---
+
+## Version Control
+- **Git** (latest stable release) – Repository hosted on GitHub  
+
+---
+
+## UI Tools
+- **Figma** – Web application for UI wireframing and prototyping  
+
+---
+
+## Development Tools
+- **Visual Studio Code** (recommended IDE) – with Meteor and React extensions  
+- **MongoDB Compass** (optional) – For database inspection  
+
+---
+
+## Collaboration Tools
+- **ClickUp** – Project and backlog management  
+- **Google Drive** – Documentation and file sharing  
+- **Discord** – Internal team communication  
+
+---
+
+## API Key Setup
+1. Visit [Google Maps Embed API](https://developers.google.com/maps/documentation/embed/get-api-key)  
+2. Follow the steps to generate API keys  
+3. **Generate two API keys:**
+   - One for **Google Maps**  
+   - One for **Google Gemini**
 
 ## Versioning Strategy
 
